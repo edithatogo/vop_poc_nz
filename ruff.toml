@@ -1,0 +1,35 @@
+# Ruff configuration
+[tool.ruff]
+# Line length (same as Black)
+line-length = 88
+
+# Enable Pyflakes, Pycodestyle, and other rules
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "C",    # mccabe
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "PGH",  # pygrep-hooks
+    "RUF",  # ruff-specific rules
+]
+
+# Exclude files/directories
+extend-ignore = [
+    "E501",  # Line too long (use Black for line formatting instead)
+]
+
+# Set maximum McCabe complexity
+[tool.ruff.mccabe]
+max-complexity = 10
+
+# Target Python version
+target-version = "py38"
+
+# For isort (import sorting)
+[tool.ruff.isort]
+known-first-party = ["canonical_code"]
+known-third-party = ["numpy", "pandas", "scipy", "matplotlib", "seaborn", "statsmodels", "sklearn"]

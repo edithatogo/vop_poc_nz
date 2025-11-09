@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "health-economics-canonical"
+version = "0.1.0"
+description = "Canonical implementation of health economic analysis addressing reviewer feedback"
+readme = "README.md"
+authors = [{name = "Research Team"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "pandas>=1.3.0",
+    "scipy>=1.7.0",
+    "scikit-learn>=1.0.0",
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+    "statsmodels>=0.13.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.10.0",
+    "ruff>=0.1.6",
+    "black>=22.0.0",
+    "mypy>=0.950"
+]
+
+[project.urls]
+Homepage = "https://github.com/user/health-economics-canonical"
+Repository = "https://github.com/user/health-economics-canonical"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["canonical_code*"]
