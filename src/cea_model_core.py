@@ -156,6 +156,10 @@ def run_cea(model_parameters: Dict,
             subgroup_model_params = copy.deepcopy(model_parameters)
             deep_update(subgroup_model_params, subgroup_params)
             
+            # Ensure discount_rate is preserved
+            if 'discount_rate' in model_parameters:
+                subgroup_model_params['discount_rate'] = model_parameters['discount_rate']
+
             # Run CEA for the subgroup (recursively, but without the subgroups key to avoid infinite loop)
             if 'subgroups' in subgroup_model_params:
                 del subgroup_model_params['subgroups']
