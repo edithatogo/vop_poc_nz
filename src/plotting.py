@@ -608,8 +608,7 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         cluster_means = []
 
         for cluster_id in range(n_clusters):
-            means = cluster_analysis[f"cluster_{cluster_id}"]["means"]
-                [:6]  # First 6 features
+            means = cluster_analysis[f"cluster_{cluster_id}"]["means"][:6]  # First 6 features
             cluster_means.append(means)
 
         cluster_means = np.array(cluster_means).T
