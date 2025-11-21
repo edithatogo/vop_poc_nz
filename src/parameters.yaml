@@ -1,0 +1,258 @@
+hpv_vaccination:
+  states: ["Healthy", "Sick", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0, 0.85, 0.15], [0, 0, 1]]
+    new_treatment: [[0.98, 0.015, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [100, 40000, 0]
+      new_treatment: [200, 20000, 0]
+    societal:
+      standard_care: [0, 15000, 0]
+      new_treatment: [0, 8000, 0]
+  qalys:
+    standard_care: [1.0, 0.6, 0.0]
+    new_treatment: [1.0, 0.75, 0.0]
+  discount_rate: 0.03
+  productivity_costs:
+    human_capital:
+      standard_care: [0, 10000, 0] # Annual productivity loss
+      new_treatment: [0, 5000, 0]  # Reduced productivity loss
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost_per_day: 400
+    absenteeism_rate: 0.05
+  productivity_loss_states: {"Sick": 15} # State and associated annual absence days
+  subgroups:
+    High_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.99, 0.005, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+    Low_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.97, 0.025, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+
+smoking_cessation:
+  states: ["Smoker", "Ex-smoker", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+    new_treatment: [[0.85, 0.14, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [500, 4000, 0]
+      new_treatment: [1000, 4000, 0]
+    societal:
+      standard_care: [0, 0, 0]
+      new_treatment: [0, -10000, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost_per_day: 300
+    absenteeism_rate: 0.04
+  productivity_loss_states: {"Smoker": 10} # State and associated annual absence days
+  subgroups:
+    High_SES:
+      initial_population: [300, 0, 0]
+      costs:
+        societal:
+          standard_care: [0, 0, 0]
+          new_treatment: [0, -8000, 0]
+    Low_SES:
+      initial_population: [700, 0, 0]
+      costs:
+        societal:
+          standard_care: [0, 2000, 0]
+          new_treatment: [0, -12000, 0]
+  qalys:
+    standard_care: [0.8, 0.9, 0.0]
+    new_treatment: [0.8, 0.95, 0.0]
+  productivity_costs:
+    human_capital:
+      standard_care: [5000, 0, 0] # Annual productivity loss
+      new_treatment: [1000, 0, 0]  # Reduced productivity loss
+
+hepatitis_c_therapy:
+  states: ["Infected", "Cured", "Dead"]
+  transition_matrices:
+    standard_care: [[0.90, 0.05, 0.05], [0, 1, 0], [0, 0, 1]]
+    new_treatment: [[0.10, 0.85, 0.05], [0, 1, 0], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [5000, 0, 0]
+      new_treatment: [5000, 0, 0]
+    societal:
+      standard_care: [3000, 0, 0]
+      new_treatment: [500, 0, 0]
+  qalys:
+    standard_care: [0.7, 1.0, 0.0]
+    new_treatment: [0.7, 1.0, 0.0]
+  productivity_costs:
+    human_capital:
+      standard_care: [10000, 0, 0] # Annual productivity loss
+      new_treatment: [2000, 0, 0]  # Reduced productivity loss
+  friction_cost_params:
+    friction_period_days: 120
+    replacement_cost_per_day: 380
+    absenteeism_rate: 0.06
+  productivity_loss_states: {"Infected": 20} # State and associated annual absence days
+  subgroups:
+    High_SES:
+      initial_population: [400, 0, 0]
+      costs:
+        health_system:
+          standard_care: [4000, 0, 0]
+    Low_SES:
+      initial_population: [600, 0, 0]
+      costs:
+        health_system:
+          standard_care: [6000, 0, 0]
+
+childhood_obesity_prevention:
+  states: ["Healthy Weight", "Overweight/Obese", "Dead"]
+  transition_matrices:
+    standard_care: [[0.90, 0.09, 0.01], [0.05, 0.94, 0.01], [0, 0, 1]]
+    new_treatment: [[0.95, 0.04, 0.01], [0.10, 0.89, 0.01], [0, 0, 1]]
+  cycles: 18
+  initial_population: [500, 500, 0]
+  costs:
+    health_system:
+      standard_care: [100, 1500, 0]
+      new_treatment: [800, 1500, 0]
+    societal:
+      standard_care: [0, 200, 0]
+      new_treatment: [0, -500, 0]
+  qalys:
+    standard_care: [1.0, 0.9, 0.0]
+    new_treatment: [1.0, 0.9, 0.0]
+  discount_rate: 0.035
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Overweight/Obese"]
+  subgroups:
+    High_SES:
+      initial_population: [300, 200, 0]
+    Low_SES:
+      initial_population: [200, 300, 0]
+
+housing_insulation:
+  states: ["Uninsulated Home", "Insulated Home", "Dead"]
+  transition_matrices:
+    standard_care: [[0.99, 0.0, 0.01], [0, 1.0, 0], [0, 0, 1]]
+    new_treatment: [[0.5, 0.49, 0.01], [0, 1.0, 0], [0, 0, 1]]
+  cycles: 20
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [1000, 100, 0]
+      new_treatment: [4000, 100, 0]
+    societal:
+      standard_care: [200, 0, 0]
+      new_treatment: [0, -500, 0]
+  qalys:
+    standard_care: [0.95, 1.0, 0.0]
+    new_treatment: [0.95, 1.0, 0.0]
+  discount_rate: 0.04
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Uninsulated Home"]
+
+housing_insulation_scenario:
+  states: ["Uninsulated Home", "Insulated Home", "Dead"]
+  transition_matrices:
+    standard_care: [[0.99, 0.0, 0.01], [0, 1.0, 0], [0, 0, 1]]
+    new_treatment: [[0.01, 0.98, 0.01], [0, 1.0, 0], [0, 0, 1]]
+  cycles: 20
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [1000, 100, 0]
+      new_treatment: [4000, 100, 0]
+    societal:
+      standard_care: [200, 0, 0]
+      new_treatment: [0, -500, 0]
+  qalys:
+    standard_care: [0.95, 1.0, 0.0]
+    new_treatment: [0.95, 1.0, 0.0]
+  discount_rate: 0.04
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Uninsulated Home"]
+
+new_high_cost_cancer_drug:
+  states: ["Stable", "Progressed", "Dead"]
+  transition_matrices:
+    standard_care: [[0.8, 0.15, 0.05], [0, 0.7, 0.3], [0, 0, 1]]
+    new_treatment: [[0.82, 0.13, 0.05], [0, 0.7, 0.3], [0, 0, 1]]
+  cycles: 10
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [5000, 10000, 0]
+      new_treatment: [105000, 10000, 0]
+    societal:
+      standard_care: [2000, 5000, 0]
+      new_treatment: [2000, 5000, 0]
+  qalys:
+    standard_care: [0.8, 0.6, 0.0]
+    new_treatment: [0.8, 0.61, 0.0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost: 30000
+  productivity_loss_states: ["Progressed"]
+
+smoking_cessation_counselling:
+  states: ["Smoker", "Ex-smoker", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+    new_treatment: [[0.91, 0.08, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [500, 4000, 0]
+      new_treatment: [1000, 4000, 0]
+    societal:
+      standard_care: [0, 0, 0]
+      new_treatment: [0, -10000, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Smoker"]
+  qalys:
+    standard_care: [0.8, 0.9, 0.0]
+    new_treatment: [0.8, 0.9, 0.0]
+
+smoking_cessation_structural_sensitivity:
+  states: ["Smoker", "Ex-smoker", "Relapsed", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.0, 0.01], [0.02, 0.97, 0.01, 0.0], [0.1, 0, 0.89, 0.01], [0, 0, 0, 1]]
+    new_treatment: [[0.85, 0.14, 0.0, 0.01], [0.02, 0.97, 0.01, 0.0], [0.1, 0, 0.89, 0.01], [0, 0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0, 0]
+  costs:
+    health_system:
+      standard_care: [500, 4000, 500, 0]
+      new_treatment: [1000, 4000, 500, 0]
+    societal:
+      standard_care: [0, 0, 0, 0]
+      new_treatment: [0, -10000, 0, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Smoker", "Relapsed"]
+  qalys:
+    standard_care: [0.8, 0.9, 0.8, 0.0]
+    new_treatment: [0.8, 0.95, 0.8, 0.0]
