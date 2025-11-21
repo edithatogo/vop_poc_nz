@@ -272,13 +272,13 @@ def run_corrected_analysis():
     full_comparison = pd.concat(comparison_tables, ignore_index=True)
     full_parameters = pd.concat(parameters_tables, ignore_index=True)
     
-    print(f"\n{len(interventions)} interventions analyzed with corrected methodology.")
+    print(f"\n{len(selected_interventions)} interventions analyzed with corrected methodology.")
     
     # Perform value of information analysis
     print(f"\nRunning Value of Information Analysis...")
     
     # Example VOI analysis for HPV (using a simplified model for demonstration)
-    voi_results = perform_voi_analysis(interventions['HPV Vaccination'])
+    voi_results = perform_voi_analysis(selected_interventions['HPV Vaccination'])
     
     # Calculate analytical capacity costs (as requested by reviewers)
     print(f"\nCalculating analytical capacity costs...")
