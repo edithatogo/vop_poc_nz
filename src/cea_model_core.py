@@ -334,7 +334,7 @@ def _get_costs_qalys_by_perspective(model_parameters: Dict, perspective: str, pr
 
 def _calculate_icer(inc_cost: float, inc_qalys: float) -> Union[float, str]:
     """
-    Calculate ICER with proper handling of edge cases.
+    Calculate ICER with proper handling of edge cases. 
     
     Addresses the mathematical errors noted by reviewers.
     """
@@ -368,7 +368,7 @@ def _calculate_cer(cost: float, qalys: float) -> Union[float, str]:
 
 def create_parameters_table(model_parameters: Dict, sources: Dict = None) -> pd.DataFrame:
     """
-    Create a comprehensive parameters/assumptions/sources table as requested by reviewers.
+    Create a comprehensive parameters/assumptions/sources table as requested by reviewers. 
     
     Args:
         model_parameters: The model parameters dictionary
