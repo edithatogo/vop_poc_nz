@@ -89,6 +89,110 @@ def load_parameters(filepath: str = 'src/parameters.yaml') -> Dict:
         return yaml.safe_load(f)
 
 
+def get_childhood_obesity_prevention_parameters() -> Dict:
+    """
+    Placeholder for parameters for a Childhood Obesity Prevention Program.
+    In a real scenario, these would come from a literature review or data.
+    """
+    return {
+        'states': ['Healthy', 'Overweight/Obese', 'Complications'],
+        'cycles': 50, # e.g., years
+        'discount_rate': 0.03,
+        'costs': {
+            'health_system': {
+                'standard_care': [0, 500, 2000],  # Annual costs for states
+                'new_treatment': [100, 400, 1500] # Program cost + reduced complication costs
+            },
+            'societal': {
+                'standard_care': [0, 1000, 3000], # Lost out-of-pocket, informal care etc.
+                'new_treatment': [150, 700, 2500] 
+            }
+        },
+        'productivity_costs': { # For human capital method
+            'human_capital': {
+                'standard_care': [0, 5000, 10000], # Annual productivity loss
+                'new_treatment': [0, 2000, 5000]   # Reduced productivity loss
+            }
+        },
+        'productivity_loss_states': { # For friction cost method {state_name: annual_absence_days}
+            'Overweight/Obese': 10, 
+            'Complications': 30
+        },
+        'friction_cost_params': {
+            'friction_period_days': 180, 
+            'replacement_cost_per_day': 400, 
+            'absenteeism_rate': 0.05
+        },
+        'qalys': {
+            'standard_care': [0.9, 0.7, 0.5], # QALYs for states
+            'new_treatment': [0.95, 0.8, 0.6]  # Improved QALYs
+        },
+        'transition_matrices': {
+            'standard_care': [
+                [0.8, 0.15, 0.05], # Healthy -> Healthy, O/O, Complications
+                [0, 0.7, 0.3],     # O/O -> Healthy (no), O/O, Complications
+                [0, 0, 1]          # Complications -> Complications (absorbing state for simplicity)
+            ],
+            'new_treatment': [
+                [0.9, 0.08, 0.02], # Improved transition with program
+                [0.05, 0.8, 0.15],
+                [0, 0, 1]
+            ]
+        }
+    }
+
+def get_housing_insulation_parameters() -> Dict:
+    """
+    Placeholder for parameters for a Housing Insulation Program.
+    In a real scenario, these would come from a literature review or data.
+    """
+    return {
+        'states': ['Healthy', 'Respiratory Illness', 'Other Illnesses'],
+        'cycles': 30, # e.g., years
+        'discount_rate': 0.03,
+        'costs': {
+            'health_system': {
+                'standard_care': [0, 800, 1500], # Annual costs for states
+                'new_treatment': [50, 500, 1000] # Program cost + reduced illness costs
+            },
+            'societal': {
+                'standard_care': [0, 1500, 2500], # Lost out-of-pocket, informal care etc.
+                'new_treatment': [75, 1000, 1800] 
+            }
+        },
+        'productivity_costs': { # For human capital method
+            'human_capital': {
+                'standard_care': [0, 3000, 7000], # Annual productivity loss
+                'new_treatment': [0, 1000, 4000]   # Reduced productivity loss
+            }
+        },
+        'productivity_loss_states': { # For friction cost method {state_name: annual_absence_days}
+            'Respiratory Illness': 7, 
+            'Other Illnesses': 15
+        },
+        'friction_cost_params': {
+            'friction_period_days': 90, 
+            'replacement_cost_per_day': 350, 
+            'absenteeism_rate': 0.03
+        },
+        'qalys': {
+            'standard_care': [0.95, 0.8, 0.7], # QALYs for states
+            'new_treatment': [0.98, 0.88, 0.78] # Improved QALYs
+        },
+        'transition_matrices': {
+            'standard_care': [
+                [0.9, 0.07, 0.03], # Healthy -> Healthy, Resp. Illness, Other
+                [0.1, 0.75, 0.15], # Resp. Illness -> Healthy, Resp. Illness, Other
+                [0.05, 0.1, 0.85]  # Other Illnesses -> Healthy, Resp. Illness, Other
+            ],
+            'new_treatment': [
+                [0.95, 0.03, 0.02], # Improved transition with program
+                [0.15, 0.8, 0.05],
+                [0.1, 0.05, 0.85]
+            ]
+        }
+    }
+
 def run_corrected_analysis():
     """
     Run the complete analysis with all corrections and improvements.
@@ -108,23 +212,23 @@ def run_corrected_analysis():
     
     # Load parameters from YAML file
     all_params = load_parameters()
-    interventions = {
-        'HPV Vaccination': all_params['hpv_vaccination'],
-        'Smoking Cessation': all_params['smoking_cessation'],
-        'Hepatitis C Therapy': all_params['hepatitis_c_therapy'],
-        'Childhood Obesity Prevention': all_params['childhood_obesity_prevention'],
-        'Housing Insulation': all_params['housing_insulation'],
-        'New High-Cost Cancer Drug': all_params['new_high_cost_cancer_drug'],
-        'Smoking Cessation (Counselling Only)': all_params['smoking_cessation_counselling'],
-        'Housing Insulation (Scenario)': all_params['housing_insulation_scenario'],
-        'Smoking Cessation (Structural Sensitivity)': all_params['smoking_cessation_structural_sensitivity'],
+    
+    # Select a subset of interventions for the core analysis (up to 5 as per TODO)
+    # The full list is kept for potential future use or other specific analyses if needed.
+    selected_interventions = {
+        'HPV Vaccination': copy.deepcopy(all_params['hpv_vaccination']),
+        'Smoking Cessation': copy.deepcopy(all_params['smoking_cessation']),
+        'Hepatitis C Therapy': copy.deepcopy(all_params['hepatitis_c_therapy']),
+        'Childhood Obesity Prevention': get_childhood_obesity_prevention_parameters(),
+        'Housing Insulation': get_housing_insulation_parameters(),
     }
+
     
     all_results = {}
     comparison_tables = []
     parameters_tables = []
     
-    for name, params in interventions.items():
+    for name, params in selected_interventions.items():
         print(f"\nAnalyzing {name}...")
         
         hs_results = run_cea(params, perspective='health_system')
