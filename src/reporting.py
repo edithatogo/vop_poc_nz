@@ -34,10 +34,8 @@ def generate_comprehensive_report(intervention_name: str, params: Dict, wtp_thre
     else:
         dcea_table = "DCEA not applicable for this intervention as no subgroups were defined.\n"
 
-    print(f"DEBUG: Params in generate_comprehensive_report: {params}")
-    print(f"DEBUG: Type of params: {type(params)}")
-    if isinstance(params, dict):
-        print(f"DEBUG: Keys in params: {params.keys()}")
+    print(f"DEBUG: Discount Rate value: {params.get('discount_rate')}")
+    print(f"DEBUG: Discount Rate type: {type(params.get('discount_rate'))}")
 
     # Generate report
     report = f"""
