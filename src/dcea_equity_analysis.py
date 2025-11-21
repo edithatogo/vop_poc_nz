@@ -68,7 +68,7 @@ def run_dcea(subgroup_results: Dict, epsilon: float = 0.5) -> Dict:
     # For now, a simple summary. More complex equity metrics could be added.
     equity_impact = {
         'distribution_of_net_health_benefits': net_health_benefits,
-        'total_health_gain': total_gain,
+        'total_health_gain': total_health_gain,
         'variance_of_net_health_benefits': np.var(nhb_list),
         'gini_coefficient': calculate_gini(nhb_list),
         'atkinson_index': calculate_atkinson_index(nhb_list, epsilon=epsilon),
