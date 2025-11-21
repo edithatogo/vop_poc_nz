@@ -5,6 +5,7 @@ This module provides functions to generate comprehensive reports in Markdown for
 """
 
 from typing import Dict
+import copy
 from .cea_model_core import run_cea
 from .discordance_analysis import calculate_decision_discordance
 from .dcea_equity_analysis import run_dcea
