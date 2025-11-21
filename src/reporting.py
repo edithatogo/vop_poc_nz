@@ -34,9 +34,6 @@ def generate_comprehensive_report(intervention_name: str, params: Dict, wtp_thre
     else:
         dcea_table = "DCEA not applicable for this intervention as no subgroups were defined.\n"
 
-    print(f"DEBUG: Discount Rate value: {params.get('discount_rate')}")
-    print(f"DEBUG: Discount Rate type: {type(params.get('discount_rate'))}")
-
     # Generate report
     report = f"""
 # Comprehensive CEA Report: {intervention_name}
@@ -49,7 +46,7 @@ This report presents a comprehensive cost-effectiveness analysis of {interventio
 
 - **Model Type**: Three-state Markov model
 - **Time Horizon**: {params['cycles']} years
-- **Discount Rate**: {params['discount_rate'] * 100}%
+- **Discount Rate**: {params.get('discount_rate', 0.03) * 100}%
 - **WTP Threshold**: ${wtp_threshold:,.0f} per QALY
 
 ## Results
