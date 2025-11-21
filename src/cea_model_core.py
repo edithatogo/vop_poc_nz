@@ -125,10 +125,11 @@ def deep_update(d, u):
             d[k] = v
     return d
 
-def run_cea(model_parameters: Dict, 
-            perspective: str = 'health_system', 
+def run_cea(model_parameters: Dict,
+            perspective: str = 'health_system',
             wtp_threshold: float = 50000.0,
-            productivity_cost_method: str = 'human_capital') -> Dict:
+            productivity_cost_method: str = 'human_capital',
+            discount_rate: float = None) -> Dict:
     """
     Runs a cost-effectiveness analysis, handling subgroups for DCEA if present.
 
@@ -137,14 +138,18 @@ def run_cea(model_parameters: Dict,
         perspective: 'health_system' or 'societal'
         wtp_threshold: Willingness-to-pay threshold per QALY
         productivity_cost_method: 'human_capital' or 'friction_cost'
+        discount_rate: Optional discount rate to override model_parameters.
 
     Returns:
         Dictionary with comprehensive CEA results, including subgroup results if applicable.
     """
     if perspective not in ['health_system', 'societal']:
         raise ValueError("Perspective must be 'health_system' or 'societal'")
-    
+
     _validate_model_parameters(model_parameters)
+
+    if discount_rate is None:
+        discount_rate = model_parameters.get('discount_rate', 0.03)
 
     if 'subgroups' in model_parameters:
         # Perform DCEA by running CEA for each subgroup
@@ -155,17 +160,13 @@ def run_cea(model_parameters: Dict,
             # Create a deep copy of the base parameters and update with subgroup-specific values
             subgroup_model_params = copy.deepcopy(model_parameters)
             deep_update(subgroup_model_params, subgroup_params)
-            
-            # Ensure discount_rate is preserved
-            if 'discount_rate' in model_parameters:
-                subgroup_model_params['discount_rate'] = model_parameters['discount_rate']
 
             # Run CEA for the subgroup (recursively, but without the subgroups key to avoid infinite loop)
             if 'subgroups' in subgroup_model_params:
                 del subgroup_model_params['subgroups']
 
             print(f"DEBUG: Running subgroup {subgroup_name} with params: {subgroup_model_params.keys()}")
-            sub_results = run_cea(subgroup_model_params, perspective, wtp_threshold, productivity_cost_method)
+            sub_results = run_cea(subgroup_model_params, perspective, wtp_threshold, productivity_cost_method, discount_rate)
             subgroup_results[subgroup_name] = sub_results
 
             # Aggregate results
@@ -173,7 +174,7 @@ def run_cea(model_parameters: Dict,
             total_qalys_sc += sub_results['qalys_standard_care']
             total_cost_nt += sub_results['cost_new_treatment']
             total_qalys_nt += sub_results['qalys_new_treatment']
-        
+
         # Use aggregated results for the main CEA calculations
         cost_sc, qalys_sc, cost_nt, qalys_nt = total_cost_sc, total_qalys_sc, total_cost_nt, total_qalys_nt
         # After aggregation, the subgroup_results dict is part of the final return
@@ -191,10 +192,10 @@ def run_cea(model_parameters: Dict,
             model_parameters, perspective, productivity_cost_method
         )
 
-        model_sc = MarkovModel(states, tm_standard_care)
+        model_sc = MarkovModel(states, tm_standard_care, discount_rate=discount_rate)
         cost_sc, qalys_sc = model_sc.run(cycles, initial_population, costs_standard, qalys_standard)
 
-        model_nt = MarkovModel(states, tm_new_treatment)
+        model_nt = MarkovModel(states, tm_new_treatment, discount_rate=discount_rate)
         cost_nt, qalys_nt = model_nt.run(cycles, initial_population, costs_new, qalys_new)
         subgroup_results = None
 
