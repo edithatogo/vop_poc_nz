@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Ellipse
 import os
+from typing import Dict
 from .value_of_information import ProbabilisticSensitivityAnalysis, calculate_evpi
 from graphviz import Digraph
 
