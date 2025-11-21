@@ -58,6 +58,7 @@ from .plotting import (
     plot_comparative_three_way_dsa,
     plot_cluster_analysis,
     plot_comparative_clusters,
+    plot_decision_tree,
 )
 from .cluster_analysis import ClusterAnalysis
 from .bia_model import project_bia, bia_to_markdown_table
