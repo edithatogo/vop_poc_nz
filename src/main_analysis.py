@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 import yaml
+import copy
 
 # Import our corrected modules (assumes running as installed package or with src on PYTHONPATH)
 from .cea_model_core import run_cea, create_parameters_table, generate_comparative_icer_table
@@ -214,7 +215,6 @@ def run_corrected_analysis():
     all_params = load_parameters()
     
     # Select a subset of interventions for the core analysis (up to 5 as per TODO)
-    # The full list is kept for potential future use or other specific analyses if needed.
     selected_interventions = {
         'HPV Vaccination': copy.deepcopy(all_params['hpv_vaccination']),
         'Smoking Cessation': copy.deepcopy(all_params['smoking_cessation']),
@@ -222,7 +222,6 @@ def run_corrected_analysis():
         'Childhood Obesity Prevention': get_childhood_obesity_prevention_parameters(),
         'Housing Insulation': get_housing_insulation_parameters(),
     }
-
     
     all_results = {}
     comparison_tables = []
@@ -244,7 +243,7 @@ def run_corrected_analysis():
             all_results[name]['societal'][method] = s_results
             
             # Create a name for the table that includes the method
-            table_name = f"{name} ({method.replace('_', ' ').title()}")
+            table_name = f"{name} ({method.replace('_', ' ').title()})"
             comp_table = generate_comparative_icer_table(hs_results, s_results, table_name)
             comparison_tables.append(comp_table)
 
