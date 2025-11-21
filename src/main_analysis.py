@@ -98,6 +98,7 @@ def get_childhood_obesity_prevention_parameters() -> Dict:
     """
     return {
         'states': ['Healthy', 'Overweight/Obese', 'Complications'],
+        'initial_population': [500, 500, 0],
         'cycles': 50, # e.g., years
         'discount_rate': 0.03,
         'costs': {
@@ -150,6 +151,7 @@ def get_housing_insulation_parameters() -> Dict:
     """
     return {
         'states': ['Healthy', 'Respiratory Illness', 'Other Illnesses'],
+        'initial_population': [1000, 0, 0],
         'cycles': 30, # e.g., years
         'discount_rate': 0.03,
         'costs': {
