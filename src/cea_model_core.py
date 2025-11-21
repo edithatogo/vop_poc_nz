@@ -10,6 +10,10 @@ import pandas as pd
 import json
 from typing import Dict, List, Tuple, Union
 import warnings
+import copy
+
+# Import our corrected modules
+from .dcea_equity_analysis import run_dcea, plot_equity_impact_plane
 
 
 class MarkovModel:
@@ -108,65 +112,93 @@ class MarkovModel:
         return float(total_discounted_cost), float(total_discounted_qalys)
 
 
+import collections.abc
+
+def deep_update(d, u):
+    """
+    Recursively update a dictionary.
+    """
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = deep_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
 def run_cea(model_parameters: Dict, 
             perspective: str = 'health_system', 
-            wtp_threshold: float = 50000.0) -> Dict:
+            wtp_threshold: float = 50000.0,
+            productivity_cost_method: str = 'human_capital') -> Dict:
     """
-    Runs a cost-effectiveness analysis with proper ICER calculations.
-
-    This function addresses the mathematical errors in ICER calculations
-    identified by reviewers and provides transparent, well-documented results.
+    Runs a cost-effectiveness analysis, handling subgroups for DCEA if present.
 
     Args:
-        model_parameters: Dictionary containing all model parameters
+        model_parameters: Dictionary containing all model parameters, optionally with a 'subgroups' key.
         perspective: 'health_system' or 'societal'
         wtp_threshold: Willingness-to-pay threshold per QALY
+        productivity_cost_method: 'human_capital' or 'friction_cost'
 
     Returns:
-        Dictionary with comprehensive CEA results
+        Dictionary with comprehensive CEA results, including subgroup results if applicable.
     """
-    # Validate perspective
     if perspective not in ['health_system', 'societal']:
         raise ValueError("Perspective must be 'health_system' or 'societal'")
     
-    # Validate and unpack parameters
     _validate_model_parameters(model_parameters)
-    
-    states = model_parameters['states']
-    tm_standard_care = np.array(model_parameters['transition_matrices']['standard_care'])
-    tm_new_treatment = np.array(model_parameters['transition_matrices']['new_treatment'])
-    cycles = model_parameters['cycles']
-    initial_population = np.array(model_parameters['initial_population'])
 
-    # Define costs and QALYs based on perspective
-    costs_standard, costs_new, qalys_standard, qalys_new = _get_costs_qalys_by_perspective(
-        model_parameters, perspective
-    )
+    if 'subgroups' in model_parameters:
+        # Perform DCEA by running CEA for each subgroup
+        subgroup_results = {}
+        total_cost_sc, total_qalys_sc, total_cost_nt, total_qalys_nt = 0, 0, 0, 0
 
-    # Run models
-    model_sc = MarkovModel(states, tm_standard_care)
-    cost_sc, qalys_sc = model_sc.run(cycles, initial_population, costs_standard, qalys_standard)
+        for subgroup_name, subgroup_params in model_parameters['subgroups'].items():
+            # Create a deep copy of the base parameters and update with subgroup-specific values
+            subgroup_model_params = copy.deepcopy(model_parameters)
+            deep_update(subgroup_model_params, subgroup_params)
+            
+            # Run CEA for the subgroup (recursively, but without the subgroups key to avoid infinite loop)
+            if 'subgroups' in subgroup_model_params:
+                del subgroup_model_params['subgroups']
 
-    model_nt = MarkovModel(states, tm_new_treatment)
-    cost_nt, qalys_nt = model_nt.run(cycles, initial_population, costs_new, qalys_new)
+            print(f"DEBUG: Running subgroup {subgroup_name} with params: {subgroup_model_params.keys()}")
+            sub_results = run_cea(subgroup_model_params, perspective, wtp_threshold, productivity_cost_method)
+            subgroup_results[subgroup_name] = sub_results
 
-    # Calculate incremental values (properly)
+            # Aggregate results
+            total_cost_sc += sub_results['cost_standard_care']
+            total_qalys_sc += sub_results['qalys_standard_care']
+            total_cost_nt += sub_results['cost_new_treatment']
+            total_qalys_nt += sub_results['qalys_new_treatment']
+        
+        # Use aggregated results for the main CEA calculations
+        cost_sc, qalys_sc, cost_nt, qalys_nt = total_cost_sc, total_qalys_sc, total_cost_nt, total_qalys_nt
+        # After aggregation, the subgroup_results dict is part of the final return
+        # so we don't nullify it here.
+
+    else:
+        # Standard CEA without subgroups
+        states = model_parameters['states']
+        tm_standard_care = np.array(model_parameters['transition_matrices']['standard_care'])
+        tm_new_treatment = np.array(model_parameters['transition_matrices']['new_treatment'])
+        cycles = model_parameters['cycles']
+        initial_population = np.array(model_parameters['initial_population'])
+
+        costs_standard, costs_new, qalys_standard, qalys_new = _get_costs_qalys_by_perspective(
+            model_parameters, perspective, productivity_cost_method
+        )
+
+        model_sc = MarkovModel(states, tm_standard_care)
+        cost_sc, qalys_sc = model_sc.run(cycles, initial_population, costs_standard, qalys_standard)
+
+        model_nt = MarkovModel(states, tm_new_treatment)
+        cost_nt, qalys_nt = model_nt.run(cycles, initial_population, costs_new, qalys_new)
+        subgroup_results = None
+
+    # Calculate incremental values
     inc_cost = cost_nt - cost_sc
     inc_qalys = qalys_nt - qalys_sc
-
-    # Calculate ICER with proper handling of edge cases
     icer = _calculate_icer(inc_cost, inc_qalys)
-
-    # Calculate Net Monetary Benefit (NMB)
-    nmb_standard_care = (qalys_sc * wtp_threshold) - cost_sc
-    nmb_new_treatment = (qalys_nt * wtp_threshold) - cost_nt
-    incremental_nmb = nmb_new_treatment - nmb_standard_care
-
-    # Add additional metrics as requested by reviewers
-    cost_effectiveness_ratio_sc = _calculate_cer(cost_sc, qalys_sc)
-    cost_effectiveness_ratio_nt = _calculate_cer(cost_nt, qalys_nt)
-
-    # Calculate probability of cost-effectiveness
+    incremental_nmb = (inc_qalys * wtp_threshold) - inc_cost
     is_cost_effective = incremental_nmb > 0
 
     results = {
@@ -179,12 +211,10 @@ def run_cea(model_parameters: Dict,
         "incremental_qalys": inc_qalys,
         "icer": icer,
         "incremental_nmb": incremental_nmb,
-        "nmb_standard_care": nmb_standard_care,
-        "nmb_new_treatment": nmb_new_treatment,
-        "cost_effectiveness_ratio_standard_care": cost_effectiveness_ratio_sc,
-        "cost_effectiveness_ratio_new_treatment": cost_effectiveness_ratio_nt,
         "is_cost_effective": is_cost_effective,
-        "wtp_threshold": wtp_threshold
+        "wtp_threshold": wtp_threshold,
+        "productivity_cost_method": productivity_cost_method,
+        "subgroup_results": subgroup_results # Include subgroup results if they exist
     }
 
     return results
@@ -213,8 +243,50 @@ def _validate_model_parameters(params: Dict):
     if 'standard_care' not in params['qalys'] or 'new_treatment' not in params['qalys']:
         raise ValueError("qalys must contain 'standard_care' and 'new_treatment' keys")
 
+def _calculate_friction_cost(model_parameters: Dict, intervention_type: str) -> np.ndarray:
+    """
+    Calculate productivity costs using the Friction Cost Method.
+    This implementation now considers intervention-specific friction costs if they are defined.
+    Source: Based on NZ data for absenteeism and replacement costs.
+    """
+    
+    # Get base friction cost parameters from the model_parameters or default values
+    friction_params = model_parameters.get('friction_cost_params', {})
+    
+    # Example default values (these should ideally come from literature/specific studies for NZ)
+    default_friction_period_days = 90  # Default friction period in days
+    default_replacement_cost_per_day = 300 # Default replacement cost per day (e.g., salary/250)
+    default_absenteeism_rate = 0.04 # Default absenteeism rate (proportion of sick employees)
 
-def _get_costs_qalys_by_perspective(model_parameters: Dict, perspective: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    # Allow intervention-specific override for friction_cost_params
+    intervention_specific_costs = model_parameters.get('costs', {}).get('societal', {}).get(intervention_type, {})
+    if isinstance(intervention_specific_costs, dict):
+        intervention_specific_friction_params = intervention_specific_costs.get('friction_cost_params', {})
+    else:
+        intervention_specific_friction_params = {}
+    friction_params = {**friction_params, **intervention_specific_friction_params} # Merge with overrides
+    
+    friction_period_days = friction_params.get('friction_period_days', default_friction_period_days)
+    replacement_cost_per_day = friction_params.get('replacement_cost_per_day', default_replacement_cost_per_day)
+    absenteeism_rate = friction_params.get('absenteeism_rate', default_absenteeism_rate)
+    
+    # Assuming productivity loss states are defined and associated with absence days
+    productivity_loss_states = model_parameters.get('productivity_loss_states', {}) # Now expects a dict {state: absence_days}
+    
+    friction_costs_per_state = np.zeros(len(model_parameters['states']))
+    
+    for i, state in enumerate(model_parameters['states']):
+        if state in productivity_loss_states:
+            absence_days_per_year = productivity_loss_states[state] # Days of absence for this state
+            
+            # Friction cost for this state = replacement_cost_per_day * absenteeism_rate * min(absence_days_per_year, friction_period_days)
+            # This calculates the cost incurred due to lost productivity for a given state, constrained by the friction period.
+            cost_per_sick_day_in_friction_period = replacement_cost_per_day * absenteeism_rate
+            friction_costs_per_state[i] = cost_per_sick_day_in_friction_period * min(absence_days_per_year, friction_period_days)
+             
+    return friction_costs_per_state
+
+def _get_costs_qalys_by_perspective(model_parameters: Dict, perspective: str, productivity_cost_method: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Extract appropriate costs and QALYs based on perspective."""
     if perspective == 'health_system':
         costs_standard = np.array(model_parameters['costs']['health_system']['standard_care'], dtype=float)
@@ -225,12 +297,28 @@ def _get_costs_qalys_by_perspective(model_parameters: Dict, perspective: str) ->
         # Health system costs
         hs_costs_standard = np.array(model_parameters['costs']['health_system']['standard_care'], dtype=float)
         hs_costs_new = np.array(model_parameters['costs']['health_system']['new_treatment'], dtype=float)
-        # Societal costs (productivity, out-of-pocket, etc.)
-        soc_costs_standard = np.array(model_parameters['costs']['societal']['standard_care'], dtype=float)
-        soc_costs_new = np.array(model_parameters['costs']['societal']['new_treatment'], dtype=float)
-        # Total societal costs
-        costs_standard = hs_costs_standard + soc_costs_standard
-        costs_new = hs_costs_new + soc_costs_new
+        
+        # Additional societal costs (e.g., out-of-pocket, informal care, and productivity)
+        # These are expected to be defined in model_parameters['costs']['societal']
+        additional_societal_costs_sc = np.array(model_parameters['costs']['societal'].get('standard_care', np.zeros_like(hs_costs_standard)), dtype=float)
+        additional_societal_costs_nt = np.array(model_parameters['costs']['societal'].get('new_treatment', np.zeros_like(hs_costs_new)), dtype=float)
+
+        # Productivity costs based on the chosen method
+        productivity_costs_sc = np.zeros_like(hs_costs_standard)
+        productivity_costs_nt = np.zeros_like(hs_costs_new)
+        
+        if productivity_cost_method == 'human_capital':
+            productivity_costs_sc = np.array(model_parameters['productivity_costs']['human_capital']['standard_care'], dtype=float)
+            productivity_costs_nt = np.array(model_parameters['productivity_costs']['human_capital']['new_treatment'], dtype=float)
+        elif productivity_cost_method == 'friction_cost':
+            productivity_costs_sc = _calculate_friction_cost(model_parameters, 'standard_care')
+            productivity_costs_nt = _calculate_friction_cost(model_parameters, 'new_treatment')
+        else:
+            raise ValueError(f"Unknown productivity_cost_method: {productivity_cost_method}. Must be 'human_capital' or 'friction_cost'")
+
+        # Total societal costs: Health System Costs + Additional Societal Costs + Productivity Costs
+        costs_standard = hs_costs_standard + additional_societal_costs_sc + productivity_costs_sc
+        costs_new = hs_costs_new + additional_societal_costs_nt + productivity_costs_nt
 
         # For this model, QALYs are the same from both perspectives
         qalys_standard = np.array(model_parameters['qalys']['standard_care'], dtype=float)
