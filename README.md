@@ -23,6 +23,7 @@ canonical_code/
 │   ├── cea_model_core.py   # Corrected CEA model with validation
 │   ├── dcea_analysis.py    # Full DCEA implementation 
 │   ├── value_of_information.py  # Proper VOI analysis
+│   ├── parameters.yaml     # Model parameters
 │   └── main_analysis.py    # Full integrated analysis
 ├── data/                   # Data files (if any)
 ├── docs/                   # Documentation
@@ -54,7 +55,28 @@ canonical_code/
 - Research prioritization guidance
 - Population-level impact assessment
 
-### 4. Transparency and Documentation
+### 4. Advanced Sensitivity Analyses
+- Comprehensive two-way Deterministic Sensitivity Analysis (DSA)
+- Three-way DSA with 3D visualizations
+- Comparative DSA for interventions
+
+### 5. Decision Discordance and Threshold Analysis
+- Quantifies decision discordance between perspectives
+- Identifies decision-switching points through threshold analysis
+
+### 6. Budget Impact Analysis (BIA)
+- Comprehensive projection of financial consequences of adopting new interventions
+
+### 7. Cluster Analysis
+- Identifies intervention archetypes and cost-effectiveness patterns using clustering techniques
+
+### 8. Bespoke Plotting Library
+- Generates publication-grade plots including CE planes with ellipses, CEAC, CEAF, EVPI, net benefit curves, and various DSA plots.
+
+### 9. Automated Reporting
+- Generates comprehensive Markdown reports for each intervention summarizing key findings.
+
+### 10. Transparency and Documentation
 - Comprehensive parameters/assumptions/sources table
 - Detailed code documentation
 - CHEERS 2022 compliance report
@@ -78,6 +100,12 @@ canonical_code/
    pip install -r requirements.txt
    ```
 
+## Configuration
+
+The model parameters are defined in `src/parameters.yaml`. A template file, `src/parameters.yaml.template`, is provided. To run the analysis with your own parameters, copy the template to `src/parameters.yaml` and modify the values as needed.
+
+The `parameters.yaml` file is ignored by git, so your local changes will not be committed.
+
 ## Usage
 
 Run the comprehensive analysis with:
@@ -88,7 +116,7 @@ python main_analysis.py
 ```
 
 This will:
-- Perform corrected CEA for all three interventions (HPV, smoking cessation, hepatitis C)
+- Perform corrected CEA for all interventions defined in `parameters.yaml`
 - Generate comparative ICER tables
 - Create parameters documentation
 - Run value of information analysis

@@ -3,8 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "health-economics-canonical"
+name = "vop_poc_nz"
 version = "0.1.0"
+requires-python = ">=3.8"
 description = "Canonical implementation of health economic analysis addressing reviewer feedback"
 readme = "README.md"
 authors = [{name = "Research Team"}]
@@ -44,5 +45,5 @@ Homepage = "https://github.com/user/health-economics-canonical"
 Repository = "https://github.com/user/health-economics-canonical"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["canonical_code*"]
+where = ["." ]
+include = ["vop_poc_nz*"]

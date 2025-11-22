@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-TextStat analysis of the canonical health economic analysis code.
+TextStat analysis of a specified file.
 
-This script analyzes the text complexity and readability of the codebase.
+This script analyzes the text complexity and readability of a given file.
 """
 
 import os
-import glob
+import sys
 import textstat
 from typing import Dict, List
 
@@ -18,10 +18,6 @@ def analyze_file(filepath: str) -> Dict:
             content = f.read()
         
         if not content.strip():
-            return {}
-        
-        # Skip binary files
-        if not all(ord(c) < 128 for c in content[:1000]):  # Check first 1000 chars
             return {}
         
         # Calculate text statistics
@@ -48,62 +44,23 @@ def analyze_file(filepath: str) -> Dict:
         return {}
 
 
-def analyze_directory(directory: str, extensions: List[str] = ['.py', '.md', '.txt']) -> List[Dict]:
-    """Analyze all files in a directory."""
-    all_stats = []
-    
-    for ext in extensions:
-        files = glob.glob(f"{directory}/**/*{ext}", recursive=True)
-        for file in files:
-            stats = analyze_file(file)
-            if stats:
-                all_stats.append(stats)
-    
-    return all_stats
-
-
-def print_summary(stats_list: List[Dict]):
+def print_summary(stats: Dict):
     """Print a summary of the textstat analysis."""
-    if not stats_list:
-        print("No files analyzed.")
+    if not stats:
+        print("No file analyzed.")
         return
     
     print("\n" + "="*80)
-    print("TEXTSTAT ANALYSIS SUMMARY")
+    print(f"TEXTSTAT ANALYSIS SUMMARY FOR: {os.path.basename(stats.get('filename', 'unknown'))}")
     print("="*80)
     
-    # Calculate averages
-    avg_flesch = sum(s['flesch_reading_ease'] for s in stats_list if s.get('flesch_reading_ease')) / len(stats_list)
-    avg_grade = sum(s['flesch_kincaid_grade'] for s in stats_list if s.get('flesch_kincaid_grade')) / len(stats_list)
-    avg_difficult_words = sum(s['difficult_words'] for s in stats_list if s.get('difficult_words')) / len(stats_list)
-    avg_gunning_fog = sum(s['gunning_fog'] for s in stats_list if s.get('gunning_fog')) / len(stats_list)
-    
-    print(f"Total files analyzed: {len(stats_list)}")
-    print(f"Average Flesch Reading Ease: {avg_flesch:.2f}")
-    print(f"Average Flesch-Kincaid Grade Level: {avg_grade:.2f}")
-    print(f"Average Difficult Words per File: {avg_difficult_words:.2f}")
-    print(f"Average Gunning Fog Index: {avg_gunning_fog:.2f}")
-    
-    print("\nFile-by-file breakdown:")
-    print("-" * 80)
-    print(f"{'File':<40} {'Flesch':<8} {'Grade':<8} {'Gunning':<8} {'Complexity':<10}")
-    print("-" * 80)
-    
-    for stat in stats_list:
-        filename = os.path.basename(stat.get('filename', 'unknown'))[:39]
-        flesch = stat.get('flesch_reading_ease', 0)
-        grade = stat.get('flesch_kincaid_grade', 0)
-        gunning = stat.get('gunning_fog', 0)
+    flesch = stats.get('flesch_reading_ease', 0)
+    grade = stats.get('flesch_kincaid_grade', 0)
+    gunning = stats.get('gunning_fog', 0)
         
-        # Simple complexity classification
-        if grade < 8:
-            complexity = "Low"
-        elif grade < 12:
-            complexity = "Medium"
-        else:
-            complexity = "High"
-            
-        print(f"{filename:<40} {flesch:<8.1f} {grade:<8.1f} {gunning:<8.1f} {complexity:<10}")
+    print(f"Flesch Reading Ease: {flesch:.2f}")
+    print(f"Flesch-Kincaid Grade Level: {grade:.2f}")
+    print(f"Gunning Fog Index: {gunning:.2f}")
     
     print("\nReadability Interpretation:")
     print("-" * 40)
@@ -126,12 +83,19 @@ def print_summary(stats_list: List[Dict]):
 
 def main():
     """Main function to run textstat analysis."""
-    project_dir = "/Users/doughnut/Library/CloudStorage/OneDrive-VictoriaUniversityofWellington-STAFF/Submitted/policy_societaldam_pharma/canonical_code"
+    if len(sys.argv) != 2:
+        print("Usage: python run_textstat_analysis.py <file_path>")
+        sys.exit(1)
+        
+    file_path = sys.argv[1]
     
-    print(f"Analyzing text complexity of files in: {project_dir}")
+    if not os.path.exists(file_path):
+        print(f"Error: File not found at {file_path}")
+        sys.exit(1)
     
-    # Analyze Python, Markdown, and text files
-    stats = analyze_directory(project_dir, ['.py', '.md', '.txt'])
+    print(f"Analyzing text complexity of file: {file_path}")
+    
+    stats = analyze_file(file_path)
     
     print_summary(stats)
 

@@ -1,0 +1,49 @@
+# This is a template for the parameters.yaml file.
+# Copy this file to parameters.yaml and fill in the values.
+
+hpv_vaccination:
+  states: ["Healthy", "Sick", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0, 0.85, 0.15], [0, 0, 1]]
+    new_treatment: [[0.98, 0.015, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [100, 40000, 0]
+      new_treatment: [200, 20000, 0]
+    societal:
+      standard_care: [0, 15000, 0]
+      new_treatment: [0, 8000, 0]
+  qalys:
+    standard_care: [1.0, 0.6, 0.0]
+    new_treatment: [1.0, 0.75, 0.0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Sick"]
+  subgroups:
+    High_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.99, 0.005, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+    Low_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.97, 0.025, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+
+smoking_cessation:
+  # ...
+
+hepatitis_c_therapy:
+  # ...
+
+childhood_obesity_prevention:
+  # ...
+
+housing_insulation:
+  # ...
+
+new_high_cost_cancer_drug:
+  # ...

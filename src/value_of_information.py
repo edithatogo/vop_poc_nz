@@ -91,6 +91,9 @@ class ProbabilisticSensitivityAnalysis:
             'inc_nmb': [],
             'cost_effective': []
         }
+        # Add keys for each parameter to store sampled values
+        for param_name in self.parameters.keys():
+            results[param_name] = []
         
         for i, params in enumerate(parameter_samples):
             try:
@@ -124,7 +127,11 @@ class ProbabilisticSensitivityAnalysis:
                 results['nmb_nt'].append(nmb_nt)
                 results['inc_nmb'].append(inc_nmb)
                 results['cost_effective'].append(cost_effective)
-                
+
+                # Store sampled parameter values
+                for param_name, param_value in params.items():
+                    results[param_name].append(param_value)
+
             except Exception as e:
                 warnings.warn(f"Error in iteration {i}: {str(e)}. Using NaN values.")
                 # Add NaN values to maintain array length
@@ -218,10 +225,10 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
 def calculate_evppi(psa_results: pd.DataFrame, 
                    parameter_group: List[str], 
                    all_params: List[str],
-                   wtp_threshold: float = 50000,
-                   n_bootstrap: int = 100) -> float:
+                   wtp_thresholds: List[float] = None,
+                   n_bootstrap: int = 100) -> List[float]:
     """
-    Calculate Expected Value of Partially Perfect Information (EVPPI).
+    Calculate Expected Value of Partially Perfect Information (EVPPI) across WTP thresholds.
     
     This uses a more accurate non-parametric approach to determine the value 
     of resolving uncertainty in specific parameter groups (like productivity costs).
@@ -230,90 +237,75 @@ def calculate_evppi(psa_results: pd.DataFrame,
         psa_results: Results from probabilistic sensitivity analysis
         parameter_group: List of parameter names for which information value is calculated
         all_params: List of all parameter names
-        wtp_threshold: Willingness-to-pay threshold
+        wtp_thresholds: List of willingness-to-pay thresholds
         n_bootstrap: Number of bootstrap samples for variance estimation
         
     Returns:
-        EVPPI value in monetary units
+        A list of EVPPI values in monetary units, corresponding to each WTP threshold.
     """
-    # Create parameter matrix from PSA results
-    param_cols = [col for col in psa_results.columns if col in all_params]
-    
-    if not param_cols:
-        warnings.warn(f"No parameter columns found matching: {parameter_group}")
-        return 0.0
-    
-    # Calculate NMB for each simulation
-    nmb_sc = (psa_results['qaly_sc'] * wtp_threshold) - psa_results['cost_sc']
-    nmb_nt = (psa_results['qaly_nt'] * wtp_threshold) - psa_results['cost_nt']
-    
-    # Determine optimal strategy for each simulation
-    nmb_diff = nmb_nt - nmb_sc  # Positive if new treatment is better
-    
-    # Use the non-parametric approach (Briggs et al. method)
-    # This computes the expected opportunity loss if we could eliminate parameter uncertainty
-    
-    # Group simulations by values in the parameter group of interest
-    # For simplicity in this implementation, we'll use a variance-based approach
-    # A full implementation would use more sophisticated methods like INLA or SPA
-    
-    # Create a simplified estimate using between/within variance decomposition
-    if len(param_cols) > 0:
-        # Calculate conditional expectation of NMB difference given parameter group
-        df = psa_results.copy()
-        df['nmb_diff'] = nmb_diff
+    if wtp_thresholds is None:
+        wtp_thresholds = np.arange(0, 100000, 5000).tolist()
         
-        # Calculate E[NMB_diff | params of interest] using regression approach
-        try:
-            from sklearn.ensemble import RandomForestRegressor
-            from sklearn.preprocessing import StandardScaler
+    evppi_values = []
+
+    for wtp in wtp_thresholds:
+        # Create parameter matrix from PSA results
+        param_cols = [col for col in psa_results.columns if col in all_params]
+        
+        if not param_cols:
+            warnings.warn(f"No parameter columns found matching: {parameter_group}")
+            evppi_values.append(0.0)
+            continue
+        
+        # Calculate NMB for each simulation
+        nmb_sc = (psa_results['qaly_sc'] * wtp) - psa_results['cost_sc']
+        nmb_nt = (psa_results['qaly_nt'] * wtp) - psa_results['cost_nt']
+        
+        # Determine optimal strategy for each simulation
+        nmb_diff = nmb_nt - nmb_sc  # Positive if new treatment is better
+        
+        # Use the non-parametric approach (Briggs et al. method)
+        # For simplicity, using a variance-based approximation
+        if len(param_cols) > 0:
+            # Calculate conditional expectation of NMB difference given parameter group
+            df = psa_results.copy()
+            df['nmb_diff'] = nmb_diff
             
-            # Prepare features (parameters of interest) and target (NMB difference)
-            X = df[param_cols].values
-            y = df['nmb_diff'].values
+            try:
+                from sklearn.ensemble import RandomForestRegressor
+                from sklearn.preprocessing import StandardScaler
+                
+                X = df[param_cols].values
+                y = df['nmb_diff'].values
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(X)
+                
+                rf = RandomForestRegressor(n_estimators=50, random_state=42)
+                rf.fit(X_scaled, y)
+                y_pred = rf.predict(X_scaled)
+                
+                conditional_nmb_sc = np.mean(nmb_sc) + (y_pred - np.mean(y_pred)) / 2
+                conditional_nmb_nt = np.mean(nmb_nt) - (y_pred - np.mean(y_pred)) / 2
+                
+                conditional_optimal_nmb = np.mean(np.maximum(conditional_nmb_sc, conditional_nmb_nt))
+                current_optimal_nmb = np.mean(np.maximum(np.mean(nmb_sc), np.mean(nmb_nt)))
+                
+                evppi_values.append(abs(current_optimal_nmb - conditional_optimal_nmb))
+
+            except ImportError:
+                correlations = []
+                for param_col in param_cols:
+                    if param_col in df.columns:
+                        corr = df[param_col].corr(df['nmb_diff'])
+                        correlations.append(abs(corr))
+                
+                avg_corr = np.mean(correlations) if correlations else 0
+                evpi_current = calculate_evpi(psa_results, wtp_threshold=wtp)
+                evppi_values.append(evpi_current * avg_corr * 0.5)
+        else:
+            evppi_values.append(0.0)
             
-            # Scale features
-            scaler = StandardScaler()
-            X_scaled = scaler.fit_transform(X)
-            
-            # Fit random forest to estimate conditional expectation
-            rf = RandomForestRegressor(n_estimators=50, random_state=42)
-            rf.fit(X_scaled, y)
-            
-            # Predict conditional expectations
-            y_pred = rf.predict(X_scaled)
-            
-            # EVPPI = E[max(NMB)] - E[max(E[NMB|params of interest])]
-            # This is estimated as: mean of actual max NMBs minus mean of conditional max NMBs
-            current_ev_nmb = np.mean(np.maximum(nmb_sc, nmb_nt)) - np.mean(np.minimum(nmb_sc, nmb_nt))
-            
-            # Calculate expected NMB with perfect information for this parameter group
-            # Simplified approach: reduce variance by knowing these parameters
-            conditional_nmb_sc = np.mean(nmb_sc) + (y_pred - np.mean(y_pred)) / 2  # Rough approximation
-            conditional_nmb_nt = np.mean(nmb_nt) - (y_pred - np.mean(y_pred)) / 2
-            
-            conditional_optimal_nmb = np.mean(np.maximum(conditional_nmb_sc, conditional_nmb_nt))
-            current_optimal_nmb = np.mean(np.maximum(np.mean(nmb_sc), np.mean(nmb_nt)))
-            
-            # This is a simplified calculation - in practice would use more rigorous methods
-            # The actual EVPPI calculation would use specialized packages like BCEA or hesim
-            return abs(current_optimal_nmb - conditional_optimal_nmb)
-            
-        except ImportError:
-            # If sklearn not available, use a simpler approach
-            # Calculate correlation between parameters and outcomes
-            correlations = []
-            for param_col in param_cols:
-                if param_col in df.columns:
-                    corr = df[param_col].corr(df['nmb_diff'])
-                    correlations.append(abs(corr))
-            
-            avg_corr = np.mean(correlations) if correlations else 0
-            # Use a simple proportional estimate
-            evpi_current = calculate_evpi(psa_results, wtp_threshold)
-            return evpi_current * avg_corr * 0.5  # Rough estimate
-    
-    return 0.0
+    return evppi_values
 
 
 def explain_value_of_information_benefits(base_icer: float, wtp_threshold: float) -> Dict:
@@ -379,7 +371,7 @@ def calculate_population_evpi(evpi_per_person: float, target_population_size: in
 
 
 def generate_voi_report(psa_results: pd.DataFrame, 
-                       wtp_threshold: float = 50000,
+                       wtp_thresholds: List[float] = None,
                        target_population: int = 100000,
                        parameter_names: List[str] = None) -> Dict:
     """
@@ -387,29 +379,34 @@ def generate_voi_report(psa_results: pd.DataFrame,
     
     Addresses reviewer feedback about explaining PSA/EVPPI methodology for NZMJ audience.
     """
+    if wtp_thresholds is None:
+        wtp_thresholds = np.arange(0, 100000, 5000).tolist()
+        
+    wtp_50k = 50000 # For single-value calculations
     
-    # Calculate EVPI
-    evpi = calculate_evpi(psa_results, wtp_threshold)
+    # Calculate EVPI for a single WTP for summary stats
+    evpi = calculate_evpi(psa_results, wtp_threshold=wtp_50k)
     population_evpi = calculate_population_evpi(evpi, target_population)
     
-    # Calculate EVPPI if parameter names provided
+    # Calculate EVPPI curves if parameter names provided
     EVPPI_results = {}
     if parameter_names:
-        for param_group in [['costs'], ['utilities'], ['probabilities']]:  # Example groupings
+        for param_group in [['base_cost', 'cost_multiplier'], ['base_qaly', 'qaly_multiplier']]:  # Example groupings
             try:
                 # Only include parameters that actually exist in the PSA results
                 valid_params = [p for p in param_group if any(p in col for col in psa_results.columns)]
                 if valid_params:
-                    evppi_val = calculate_evppi(psa_results, valid_params, parameter_names, wtp_threshold)
-                    EVPPI_results[f"EVPPI_{'_'.join(valid_params)}"] = evppi_val
+                    evppi_vals = calculate_evppi(psa_results, valid_params, parameter_names, wtp_thresholds=wtp_thresholds)
+                    EVPPI_results[f"EVPPI_{'_'.join(param_group)}"] = evppi_vals
             except:
                 # If calculation fails, provide a placeholder
-                EVPPI_results[f"EVPPI_{'_'.join(param_group)}"] = 0.0
+                EVPPI_results[f"EVPPI_{'_'.join(param_group)}"] = [0.0] * len(wtp_thresholds)
     
-    # Calculate basic statistics
+    # Calculate basic statistics at WTP=50k
     mean_inc_cost = psa_results['inc_cost'].mean()
     mean_inc_qaly = psa_results['inc_qaly'].mean()
-    prob_cost_effective = psa_results['cost_effective'].mean()
+    prob_cost_effective = np.mean(((psa_results['qaly_nt'] - psa_results['qaly_sc']) * wtp_50k - 
+                                   (psa_results['cost_nt'] - psa_results['cost_sc'])) > 0)
     
     report = {
         'summary_statistics': {
@@ -422,11 +419,12 @@ def generate_voi_report(psa_results: pd.DataFrame,
             'evpi_per_person': evpi,
             'population_evpi': population_evpi,
             'target_population_size': target_population,
-            'evppi_by_parameter_group': EVPPI_results
+            'evppi_by_parameter_group': EVPPI_results,
+            'wtp_thresholds': wtp_thresholds
         },
         'methodology_explanation': {
             'purpose': 'Quantify value of reducing uncertainty in health economic decisions',
-            'relevance': f'Even when ICER (${mean_inc_cost/mean_inc_qaly:.0f}/QALY) is below WTP (${wtp_threshold}/QALY), '
+            'relevance': f'Even when ICER (${mean_inc_cost/mean_inc_qaly:.0f}/QALY) is below WTP (${wtp_50k}/QALY), '
                         'uncertainty analysis helps prioritize future research investments.',
             'decision_context': 'Supports efficient allocation of research resources'
         }

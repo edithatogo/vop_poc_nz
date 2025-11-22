@@ -31,5 +31,5 @@ target-version = "py38"
 
 # For isort (import sorting)
 [tool.ruff.isort]
-known-first-party = ["canonical_code"]
+known-first-party = ["vop_poc_nz"]
 known-third-party = ["numpy", "pandas", "scipy", "matplotlib", "seaborn", "statsmodels", "sklearn"]

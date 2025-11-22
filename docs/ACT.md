@@ -1,0 +1,65 @@
+# Activity Log
+
+## 2025-11-19
+
+- **16:30:00** - Renamed `TODO.md` to `TODO.md.bak`.
+- **16:30:05** - Created `vop_poc_nz_summary.md` summarizing the canonical codebase.
+- **16:30:10** - Updated `TODO.md` to mark the first task as complete.
+- **16:31:00** - Ran `codebase_investigator` on `study_1_nzmj_proof_of_concept/` and saved the report to `study_1_report.md`.
+- **16:31:05** - Ran `codebase_investigator` on `study_2_focused_cea/` and saved the report to `study_2_report.md`.
+- **16:31:10** - Ran `codebase_investigator` on `hybrid_study/` and saved the report to `hybrid_study_report.md`.
+- **16:31:15** - Updated `TODO.md` to mark the second task as complete.
+- **16:32:00** - Created `feature_matrix.csv` to compare features across codebases.
+- **16:32:05** - Updated `TODO.md` to mark the third task as complete.
+- **16:33:00** - Reviewed `dcea_analysis.py`, searched for best practices, and created `dcea_review.md`.
+- **16:33:05** - Updated `TODO.md` to mark the fourth task as complete.
+- **16:34:00** - Prioritized features for integration and updated `TODO.md` with the detailed plan.
+- **16:34:05** - Updated `TODO.md` to mark the "Prioritize and Plan Feature Integration" task as complete.
+- **16:35:00** - Created `feature/dsa-integration` branch.
+- **16:35:05** - Ported DSA code to `vop_poc_nz/src/dsa_analysis.py` and `vop_poc_nz/src/cea_model_dsa.py`.
+- **16:35:10** - Updated `vop_poc_nz/src/main_analysis.py` to call DSA functions.
+- **16:35:15** - Updated `TODO.md` to mark the DSA integration task as complete.
+- **16:36:00** - Created `feature/discordance-analysis` branch.
+- **16:36:05** - Ported discordance analysis code to `vop_poc_nz/src/discordance_analysis.py`.
+- **16:36:10** - Updated `vop_poc_nz/src/main_analysis.py` to call discordance analysis functions.
+- **16:36:15** - Updated `TODO.md` to mark the discordance analysis integration task as complete.
+- **16:37:00** - Created `feature/threshold-analysis` branch.
+- **16:37:05** - Ported threshold analysis code to `vop_poc_nz/src/threshold_analysis.py`.
+- **16:37:10** - Updated `vop_poc_nz/src/main_analysis.py` to call threshold analysis functions.
+- **16:37:15** - Updated `TODO.md` to mark the threshold analysis integration task as complete.
+- **16:38:00** - Created `feature/ce-plane-integration` branch.
+- **16:38:05** - Ported CE plane plotting code to `vop_poc_nz/src/plotting.py`.
+- **16:38:10** - Updated `vop_poc_nz/src/main_analysis.py` to call the CE plane plotting function.
+- **16:38:15** - Updated `TODO.md` to mark the CE plane integration task as complete.
+- **16:39:00** - Created `feature/plotting-library-integration` branch.
+- **16:39:05** - Ported plotting library to `vop_poc_nz/src/plotting.py` and `vop_poc_nz/src/cluster_analysis.py`.
+- **16:39:10** - Updated `vop_poc_nz/src/main_analysis.py` to call new plotting and cluster analysis functions.
+- **16:39:15** - Updated `TODO.md` to mark the plotting library and cluster analysis integration tasks as complete.
+- **16:40:00** - Created `feature/bia-integration` branch.
+- **16:40:05** - Ported BIA code to `vop_poc_nz/src/bia_model.py`.
+- **16:40:10** - Updated `vop_poc_nz/src/main_analysis.py` to call BIA functions.
+- **16:40:15** - Updated `TODO.md` to mark the BIA integration task as complete.
+- **16:41:00** - Created `feature/reporting-integration` branch.
+- **16:41:05** - Ported automated reporting code to `vop_poc_nz/src/reporting.py`.
+- **16:41:10** - Updated `vop_poc_nz/src/main_analysis.py` to call the reporting function.
+- **16:41:15** - Updated `TODO.md` to mark the automated reporting integration task as complete.
+- **16:42:00** - Refactored `dcea_analysis.py` to use `pylogit` and implemented preference heterogeneity analysis.
+- **16:42:05** - Updated `main_analysis.py` to use the new DCEA implementation.
+- **16:42:10** - Updated `TODO.md` to mark the "Enhance DCEA Implementation" task as complete.
+- **16:43:00** - Identified visualization requirements and updated `TODO.md`.
+- **16:43:05** - Updated `TODO.md` to mark the "Identify Visualization Requirements" task as complete.
+- **16:44:00** - Fixed syntax error in `plotting.py`.
+- **16:44:05** - Ran `main_analysis.py` to generate visualizations.
+- **16:44:10** - Updated `TODO.md` to mark the "Generate Visualizations" task as complete.
+- **16:45:00** - Updated `test_new_features.py` to include `discount_rate` in `self.test_params`.
+- **16:45:05** - Simplified parameter modification logic in `threshold_analysis.py`.
+- **16:45:10** - Updated `test_new_features.py` to use `new_treatment_cost_multiplier` in `test_threshold_analysis`.
+- **16:45:15** - Modified `calculate_decision_discordance` in `discordance_analysis.py` to ensure `loss_from_discordance` is float.
+- **16:45:20** - Updated `test_new_features.py` imports for plotting module.
+- **16:45:25** - Ran new tests and all passed.
+- **16:45:30** - Updated `TODO.md` to mark "Update and Create Tests" task as complete.
+- **16:46:00** - Updated `vop_poc_nz/README.md` to reflect new features.
+- **16:46:05** - Created `documentation.md` for architecture, features, and usage.
+- **16:46:10** - Updated `TODO.md` to mark "Update Documentation" task as complete.
+- **16:47:00** - Created `vop_poc_nz/notebooks/tutorial.ipynb`.
+- **16:47:05** - Updated `TODO.md` to mark "Create Tutorial Notebook" task as complete.

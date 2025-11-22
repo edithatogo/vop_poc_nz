@@ -305,7 +305,7 @@ def run_corrected_analysis():
     # Perform Threshold Analysis
     print(f"\nPerforming Threshold Analysis...")
     threshold_results = {}
-    for name, params in interventions.items():
+    for name, params in selected_interventions.items():
         # Define parameter ranges for threshold analysis
         parameter_ranges = {
             'cost_hs_new_treatment_state_0': np.linspace(params['costs']['health_system']['new_treatment'][0] * 0.5, params['costs']['health_system']['new_treatment'][0] * 1.5, 20)
@@ -315,7 +315,7 @@ def run_corrected_analysis():
     # Perform Probabilistic Analysis
     print(f"\nPerforming Probabilistic Sensitivity Analysis (PSA)...")
     probabilistic_results = {}
-    for name, params in interventions.items():
+    for name, params in selected_interventions.items():
         # Define placeholder parameter distributions for PSA for each intervention
         # In a full implementation, these would be carefully derived from literature or expert opinion
         psa_distributions = {
@@ -363,7 +363,7 @@ def run_corrected_analysis():
     # Perform Budget Impact Analysis
     print(f"\nPerforming Budget Impact Analysis (BIA)...")
     bia_results = {}
-    for name, params in interventions.items():
+    for name, params in selected_interventions.items():
         bia_params = {
             'population_size': 100000,
             'eligible_prop': 0.1,
@@ -378,13 +378,13 @@ def run_corrected_analysis():
     # Generate Comprehensive Report
     print(f"\nGenerating Comprehensive Reports...")
     reports = {}
-    for name, params in interventions.items():
+    for name, params in selected_interventions.items():
         reports[name] = generate_comprehensive_report(name, params)
         with open(f"output/{name}_report.md", "w") as f:
             f.write(reports[name])
 
     # Perform DSA
-    dsa_results = perform_dsa_analysis(interventions)
+    dsa_results = perform_dsa_analysis(selected_interventions)
 
     # Perform Cluster Analysis
     print(f"\nPerforming Cluster Analysis...")

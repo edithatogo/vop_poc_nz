@@ -1,0 +1,19 @@
+# Project To-Do List
+
+This document lists the outstanding tasks for the 'Value of Perspective' research project.
+
+## High Priority
+
+- [ ] **Execute Systematic Literature Review:** The protocol has been developed, but the search needs to be executed by an external agent.
+- [ ] **Data Extraction:** The data from the selected studies needs to be extracted by an external agent.
+- [ ] **Model Parameterization:** The advanced economic model needs to be parameterized with the real-world data.
+
+## Medium Priority
+
+- [ ] **Develop User Interface for Policy Tool:** The back-end model needs to be connected to a user-friendly front-end.
+- [ ] **Write User Guides and Training Materials:** Comprehensive documentation needs to be developed for the policy tool.
+
+## Low Priority
+
+- [ ] **Explore Alternative Predictive Models:** The current plan is to use a logistic regression model, but other machine learning models could be explored.
+- [ ] **Conduct Qualitative Interviews with Policymakers:** To supplement the quantitative findings, it would be valuable to conduct qualitative interviews with policymakers about how they would use the outputs of this analysis.

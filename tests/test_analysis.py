@@ -6,16 +6,14 @@ to address reviewer feedback.
 """
 
 import unittest
-import sys
-import os
-# Add the src directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
-
 import numpy as np
 import pandas as pd
-from cea_model_core import MarkovModel, run_cea, _calculate_icer, _calculate_cer, create_parameters_table
-from dcea_analysis import DCEDataProcessor, DCEAnalyzer
-from value_of_information import (
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.cea_model_core import MarkovModel, run_cea, _calculate_icer, _calculate_cer, create_parameters_table
+from src.dcea_analysis import DCEDataProcessor, DCEAnalyzer
+from src.value_of_information import (
     ProbabilisticSensitivityAnalysis, 
     calculate_evpi, 
     calculate_evppi
@@ -48,6 +46,12 @@ class TestCorrectedCEACalculations(unittest.TestCase):
             "qalys": {
                 "standard_care": [1, 0.7, 0],
                 "new_treatment": [1, 0.8, 0]
+            },
+            "productivity_costs": {
+                "human_capital": {
+                    "standard_care": [0, 1000, 0],
+                    "new_treatment": [0, 500, 0]
+                }
             }
         }
     
@@ -226,6 +230,12 @@ class TestTransparencyFeatures(unittest.TestCase):
             "qalys": {
                 "standard_care": [1, 0.7, 0],
                 "new_treatment": [1, 0.8, 0]
+            },
+            "productivity_costs": {
+                "human_capital": {
+                    "standard_care": [0, 1000, 0],
+                    "new_treatment": [0, 500, 0]
+                }
             }
         }
     
@@ -246,22 +256,3 @@ class TestTransparencyFeatures(unittest.TestCase):
         # Check that we have some parameters documented
         self.assertGreater(len(params_table), 0)
 
-
-def run_all_tests():
-    """Run all tests."""
-    unittest.main(argv=[''], verbosity=2, exit=False)
-
-
-if __name__ == '__main__':
-    print("Running tests for canonical health economic analysis code...")
-    print("="*60)
-    
-    # Need to handle the import issue by adding the src directory to path
-    import sys
-    import os
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
-    
-    # Import the function here after adding to path
-    from cea_model_core import create_parameters_table
-    
-    run_all_tests()
