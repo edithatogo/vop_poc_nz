@@ -45,7 +45,7 @@ from .dsa_analysis import (
 )
 from .discordance_analysis import calculate_decision_discordance
 from .threshold_analysis import run_threshold_analysis
-from .plotting import (
+from .visualizations import (
     plot_cost_effectiveness_plane,
     plot_ceac,
     plot_ceaf,

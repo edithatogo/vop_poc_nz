@@ -11,7 +11,7 @@ import pandas as pd
 from src.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
 from src.discordance_analysis import calculate_decision_discordance
 from src.threshold_analysis import run_threshold_analysis
-from src.plotting import *
+from src.visualizations import *
 from src.cluster_analysis import ClusterAnalysis
 from src.bia_model import project_bia, bia_to_markdown_table
 from src.reporting import generate_comprehensive_report
