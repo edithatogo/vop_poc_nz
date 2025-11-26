@@ -11,7 +11,7 @@ help:
 	@echo "  make test         Run all tests with pytest"
 	@echo "  make test-cov     Run tests with coverage report"
 	@echo "  make lint         Lint code with ruff"
-	@echo "  make format       Format code with black"
+	@echo "  make format       Format code with ruff"
 	@echo "  make check        Run linting, formatting, and tests"
 	@echo "  make clean        Clean up build artifacts and cache files"
 	@echo ""
@@ -34,7 +34,7 @@ lint:
 
 # Format code with black
 format:
-	black src/ tests/
+	ruff format src/ tests/
 
 # Run all checks (linting, formatting, tests)
 check: lint test

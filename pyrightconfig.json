@@ -1,0 +1,18 @@
+{
+  "include": ["src"],
+  "exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "build",
+    "dist",
+    ".venv",
+    "env",
+    "venv",
+    "output",
+    "data"
+  ],
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "strict"
+}

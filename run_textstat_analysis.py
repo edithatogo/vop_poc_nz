@@ -7,19 +7,20 @@ This script analyzes the text complexity and readability of a given file.
 
 import os
 import sys
+from typing import Dict
+
 import textstat
-from typing import Dict, List
 
 
 def analyze_file(filepath: str) -> Dict:
     """Analyze a single file with textstat metrics."""
     try:
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(filepath, encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        
+
         if not content.strip():
             return {}
-        
+
         # Calculate text statistics
         stats = {
             'filename': filepath,
@@ -37,7 +38,7 @@ def analyze_file(filepath: str) -> Dict:
             'linsear_write_formula': textstat.linsear_write_formula(content),
             'gunning_fog': textstat.gunning_fog(content)
         }
-        
+
         return stats
     except Exception as e:
         print(f"Error analyzing {filepath}: {e}")
@@ -49,19 +50,19 @@ def print_summary(stats: Dict):
     if not stats:
         print("No file analyzed.")
         return
-    
+
     print("\n" + "="*80)
     print(f"TEXTSTAT ANALYSIS SUMMARY FOR: {os.path.basename(stats.get('filename', 'unknown'))}")
     print("="*80)
-    
+
     flesch = stats.get('flesch_reading_ease', 0)
     grade = stats.get('flesch_kincaid_grade', 0)
     gunning = stats.get('gunning_fog', 0)
-        
+
     print(f"Flesch Reading Ease: {flesch:.2f}")
     print(f"Flesch-Kincaid Grade Level: {grade:.2f}")
     print(f"Gunning Fog Index: {gunning:.2f}")
-    
+
     print("\nReadability Interpretation:")
     print("-" * 40)
     print("Flesch Reading Ease: ")
@@ -86,17 +87,17 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: python run_textstat_analysis.py <file_path>")
         sys.exit(1)
-        
+
     file_path = sys.argv[1]
-    
+
     if not os.path.exists(file_path):
         print(f"Error: File not found at {file_path}")
         sys.exit(1)
-    
+
     print(f"Analyzing text complexity of file: {file_path}")
-    
+
     stats = analyze_file(file_path)
-    
+
     print_summary(stats)
 
 

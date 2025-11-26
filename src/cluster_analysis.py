@@ -1,16 +1,15 @@
 import numpy as np
-import pandas as pd
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-import matplotlib.pyplot as plt
-import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+
 
 class ClusterAnalysis:
     """
     Comprehensive cluster analysis for identifying intervention archetypes and cost-effectiveness patterns.
     """
+
     def __init__(self, all_results, models):
         self.all_results = all_results
         self.models = models
@@ -28,11 +27,11 @@ class ClusterAnalysis:
         # Extract key features for clustering
         features = []
 
-        for i in range(min(n_simulations, len(results['inc_cost']))):
+        for i in range(min(n_simulations, len(results["inc_cost"]))):
             # Base cost-effectiveness metrics
-            inc_cost = results['inc_cost'][i]
-            inc_qalys = results['inc_qaly'][i]
-            icer = inc_cost / inc_qalys if inc_qalys != 0 else float('inf')
+            inc_cost = results["inc_cost"][i]
+            inc_qalys = results["inc_qaly"][i]
+            icer = inc_cost / inc_qalys if inc_qalys != 0 else float("inf")
 
             # Net monetary benefits at different WTP thresholds
             wtp_20k = (inc_qalys * 20000) - inc_cost
@@ -47,17 +46,27 @@ class ClusterAnalysis:
             if intervention_name == "HPV Vaccination":
                 # HPV-specific features
                 primary_cost = abs(np.random.normal(100, 20))  # Vaccine cost variation
-                productivity_cost = abs(np.random.normal(2000, 500))  # Productivity impact
-                secondary_cost = abs(np.random.normal(50000, 10000))  # Cancer treatment costs
+                productivity_cost = abs(
+                    np.random.normal(2000, 500)
+                )  # Productivity impact
+                secondary_cost = abs(
+                    np.random.normal(50000, 10000)
+                )  # Cancer treatment costs
             elif intervention_name == "Smoking Cessation":
                 # Smoking cessation-specific features
                 primary_cost = abs(np.random.normal(500, 100))  # Intervention cost
-                productivity_cost = abs(np.random.normal(3000, 800))  # Productivity impact
-                secondary_cost = abs(np.random.normal(10000, 2000))  # Downstream health costs
+                productivity_cost = abs(
+                    np.random.normal(3000, 800)
+                )  # Productivity impact
+                secondary_cost = abs(
+                    np.random.normal(10000, 2000)
+                )  # Downstream health costs
             else:  # Hepatitis C
                 # Hepatitis C-specific features
                 primary_cost = abs(np.random.normal(2000, 400))  # Treatment cost
-                productivity_cost = abs(np.random.normal(4000, 1000))  # Productivity impact
+                productivity_cost = abs(
+                    np.random.normal(4000, 1000)
+                )  # Productivity impact
                 secondary_cost = abs(np.random.normal(5, 1))  # QALY improvement
 
             # Create feature vector
@@ -70,17 +79,19 @@ class ClusterAnalysis:
                 wtp_100k,
                 primary_cost,
                 productivity_cost,
-                secondary_cost
+                secondary_cost,
             ]
 
             features.append(feature_vector)
 
         return np.array(features)
 
-    def perform_clustering(self, intervention_name, n_clusters_range=range(2, 6)):
+    def perform_clustering(self, intervention_name, n_clusters_range=None):
         """
         Perform K-means clustering with optimal cluster number selection.
         """
+        if n_clusters_range is None:
+            n_clusters_range = range(2, 6)
         print(f"Performing clustering analysis for {intervention_name}...")
 
         # Prepare data
@@ -115,28 +126,32 @@ class ClusterAnalysis:
             # Fallback to 2 clusters if no good clustering found
             final_kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
             final_kmeans.fit(features_pca)
-            best_silhouette = silhouette_score(features_pca, final_kmeans.predict(features_pca))
+            best_silhouette = silhouette_score(
+                features_pca, final_kmeans.predict(features_pca)
+            )
         else:
             final_kmeans = best_kmeans
 
         cluster_labels = final_kmeans.predict(features_pca)
 
         # Analyze cluster characteristics
-        cluster_analysis = self.analyze_clusters(features, cluster_labels, intervention_name)
+        cluster_analysis = self.analyze_clusters(
+            features, cluster_labels, intervention_name
+        )
 
         # Store results
         self.cluster_results[intervention_name] = {
-            'features': features,
-            'features_scaled': features_scaled,
-            'features_pca': features_pca,
-            'cluster_labels': cluster_labels,
-            'n_clusters': best_n_clusters,
-            'cluster_centers': final_kmeans.cluster_centers_,
-            'silhouette_score': best_silhouette,
-            'pca_explained_variance': pca.explained_variance_ratio_,
-            'scaler': scaler,
-            'pca': pca,
-            'cluster_analysis': cluster_analysis
+            "features": features,
+            "features_scaled": features_scaled,
+            "features_pca": features_pca,
+            "cluster_labels": cluster_labels,
+            "n_clusters": best_n_clusters,
+            "cluster_centers": final_kmeans.cluster_centers_,
+            "silhouette_score": best_silhouette,
+            "pca_explained_variance": pca.explained_variance_ratio_,
+            "scaler": scaler,
+            "pca": pca,
+            "cluster_analysis": cluster_analysis,
         }
 
         return self.cluster_results[intervention_name]
@@ -147,9 +162,15 @@ class ClusterAnalysis:
         """
         n_clusters = len(np.unique(cluster_labels))
         feature_names = [
-            'Incremental Cost', 'Incremental QALYs', 'ICER',
-            'NMB at $20k', 'NMB at $50k', 'NMB at $100k',
-            'Primary Cost Component', 'Productivity Impact', 'Secondary Cost Component'
+            "Incremental Cost",
+            "Incremental QALYs",
+            "ICER",
+            "NMB at $20k",
+            "NMB at $50k",
+            "NMB at $100k",
+            "Primary Cost Component",
+            "Productivity Impact",
+            "Secondary Cost Component",
         ]
 
         cluster_analysis = {}
@@ -173,14 +194,14 @@ class ClusterAnalysis:
             # Find most distinctive features
             distinctive_features = np.argsort(np.abs(standardized_diffs))[::-1][:3]
 
-            cluster_analysis[f'cluster_{cluster_id}'] = {
-                'size': cluster_size,
-                'percentage': cluster_percentage,
-                'means': cluster_means,
-                'stds': cluster_stds,
-                'distinctive_features': distinctive_features,
-                'feature_names': [feature_names[i] for i in distinctive_features],
-                'standardized_differences': standardized_diffs
+            cluster_analysis[f"cluster_{cluster_id}"] = {
+                "size": cluster_size,
+                "percentage": cluster_percentage,
+                "means": cluster_means,
+                "stds": cluster_stds,
+                "distinctive_features": distinctive_features,
+                "feature_names": [feature_names[i] for i in distinctive_features],
+                "standardized_differences": standardized_diffs,
             }
 
         return cluster_analysis
