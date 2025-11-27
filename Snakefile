@@ -12,11 +12,14 @@ Usage:
 configfile: "src/parameters.yaml"
 
 # Default output directory if not specified
-OUTPUT_DIR = config.get("output_dir", "output")
+# Output directory configuration
+VERSION = config.get("version", "latest")
+OUTPUT_DIR = f"output/{VERSION}"
 
 rule all:
     input:
         f"{OUTPUT_DIR}/reports/policy_brief.md",
+        f"{OUTPUT_DIR}/combined_report.md",
         f"{OUTPUT_DIR}/figures/dashboard_ce_voi_societal.png",
         f"{OUTPUT_DIR}/figures/discordance_loss.png"
 
@@ -25,6 +28,7 @@ rule run_analysis:
         directory(f"{OUTPUT_DIR}/figures"),
         directory(f"{OUTPUT_DIR}/reports"),
         f"{OUTPUT_DIR}/reports/policy_brief.md",
+        f"{OUTPUT_DIR}/combined_report.md",
         f"{OUTPUT_DIR}/figures/dashboard_ce_voi_societal.png",
         f"{OUTPUT_DIR}/figures/discordance_loss.png"
     params:

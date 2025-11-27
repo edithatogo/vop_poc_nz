@@ -7,7 +7,7 @@ population subgroups.
 """
 
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -70,7 +70,7 @@ def apply_equity_weights(
 def run_dcea(
     subgroup_results: Dict,
     epsilon: float = 0.5,
-    equity_weights: Dict[str, float] = None,
+    equity_weights: Optional[Dict[str, float]] = None,
 ) -> Dict:
     """
     Performs a distributional cost-effectiveness analysis.
@@ -198,6 +198,48 @@ def generate_dcea_results_table(
     return df
 
 
+def calculate_inequality_aversion_sensitivity(
+    subgroup_results: Dict, epsilon_range: List[float] = None
+) -> pd.DataFrame:
+    """
+    Calculates DCEA metrics for a range of inequality aversion parameters (epsilon).
+
+    Args:
+        subgroup_results: Dictionary of CEA results per subgroup.
+        epsilon_range: List of epsilon values to test. Defaults to 0-10.
+
+    Returns:
+        DataFrame containing epsilon, Atkinson Index, and Social Welfare metrics.
+    """
+    if epsilon_range is None:
+        epsilon_range = [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]
+
+    net_health_benefits = {}
+    for subgroup, results in subgroup_results.items():
+        net_health_benefits[subgroup] = results["incremental_nmb"]
+
+    nhb_list = list(net_health_benefits.values())
+    mean_nhb = np.mean(nhb_list)
+
+    results = []
+    for eps in epsilon_range:
+        atkinson = calculate_atkinson_index(nhb_list, epsilon=eps)
+        # Social Welfare Function (SWF) based on Atkinson: W = Mean * (1 - Atkinson)
+        # This represents the "Equally Distributed Equivalent" (EDE)
+        ede = mean_nhb * (1 - atkinson)
+
+        results.append(
+            {
+                "epsilon": eps,
+                "atkinson_index": atkinson,
+                "ede_net_benefit": ede,
+                "mean_net_benefit": mean_nhb,
+            }
+        )
+
+    return pd.DataFrame(results)
+
+
 def plot_lorenz_curve(
     dcea_results: Dict, intervention_name: str, output_dir: str = "output/figures/"
 ):
@@ -288,13 +330,13 @@ def plot_equity_impact_plane(
 
     ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
     ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
-    
+
     # Add 45-degree line to show where Weighted = Unweighted (Neutrality)
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
         np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
     ]
-    ax.plot(lims, lims, 'k-', alpha=0.5, zorder=0, label="Equity Neutrality")
+    ax.plot(lims, lims, "k-", alpha=0.5, zorder=0, label="Equity Neutrality")
 
     ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
     ax.set_ylabel("Equity (Weighted Net Health Benefit)", fontsize=12)
@@ -305,7 +347,7 @@ def plot_equity_impact_plane(
     # Annotate quadrants relative to the 45-degree line (Neutrality)
     # Points above line = Pro-Equity (Weighted > Unweighted)
     # Points below line = Anti-Equity (Weighted < Unweighted)
-    
+
     ax.text(
         0.05,
         0.95,

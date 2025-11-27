@@ -16,7 +16,7 @@ def project_bia(
 ) -> pd.DataFrame:
     """
     Project budget impact over multiple years with optional discounting.
-    
+
     Args:
         population_size: Total eligible population
         eligible_prop: Proportion of population that is eligible
@@ -27,14 +27,14 @@ def project_bia(
         horizon_years: Number of years to project
         adherence: Proportion of patients who adhere to treatment
         discount_rate: Annual discount rate (default 3%)
-    
+
     Returns:
         DataFrame with year-by-year budget impact
     """
     years = list(range(1, horizon_years + 1))
     out: List[dict[str, float]] = []
     cumulative_discounted_net = 0.0
-    
+
     for i, y in enumerate(years):
         uptake = uptake_by_year[min(i, len(uptake_by_year) - 1)]
         treated = population_size * eligible_prop * uptake * adherence
@@ -43,14 +43,14 @@ def project_bia(
         )
         offsets = treated * offset_cost_per_patient
         net = gross - offsets
-        
+
         # Apply discounting (start of year)
         discount_factor = (1 + discount_rate) ** (y - 1)
         discounted_gross = gross / discount_factor
         discounted_offsets = offsets / discount_factor
         discounted_net = net / discount_factor
         cumulative_discounted_net += discounted_net
-        
+
         out.append(
             {
                 "year": y,
@@ -65,7 +65,6 @@ def project_bia(
             }
         )
     return pd.DataFrame(out)
-
 
 
 def bia_to_markdown_table(

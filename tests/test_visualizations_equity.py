@@ -1,7 +1,9 @@
+import pandas as pd
+
 from src.dcea_equity_analysis import plot_equity_impact_plane
 from src.visualizations import (
     plot_equity_efficiency_plane,
-    plot_inequality_aversion_curve,
+    plot_inequality_aversion_sensitivity,
     plot_inequality_staircase,
     plot_price_acceptability_curve,
     plot_societal_drivers,
@@ -22,13 +24,17 @@ def test_equity_plots(tmp_path):
 
     # Equity impact plane
     # Inequality aversion curve
-    aversion_range = [0.0, 0.5, 1.0]
-    strategy_benefits = {
-        "A": [(100.0, 10.0), (120.0, 12.0)],
-        "B": [(90.0, 20.0), (110.0, 18.0)],
-    }
-    plot_inequality_aversion_curve(
-        aversion_range, strategy_benefits, output_dir=str(out_dir)
+    plot_inequality_aversion_sensitivity(
+        pd.DataFrame(
+            {
+                "epsilon": [0.0, 0.5, 1.0],
+                "atkinson_index": [0.1, 0.2, 0.3],
+                "ede_net_benefit": [100, 90, 80],
+                "mean_net_benefit": [110, 110, 110],
+            }
+        ),
+        intervention_name="A",
+        output_dir=str(out_dir),
     )
 
     # Inequality staircase

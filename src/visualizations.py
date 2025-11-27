@@ -191,9 +191,7 @@ def plot_cost_effectiveness_plane(
     )
 
 
-def plot_comparative_ce_plane(
-    all_results, output_dir="output/figures/"
-):
+def plot_comparative_ce_plane(all_results, output_dir="output/figures/"):
     """
     Create side-by-side cost-effectiveness plane plots (Health System vs Societal).
     """
@@ -211,19 +209,19 @@ def plot_comparative_ce_plane(
 
     for i, perspective in enumerate(perspectives):
         ax = axes[i]
-        
+
         # Iterate over all interventions
         for model_name, results in all_results.items():
             # Extract data for this perspective
             # Note: The structure of all_results differs slightly based on how it was constructed
             # In analysis.py: all_results[name] = {"health_system": hs_results, "societal": {method: s_results}}
             # We need to handle this structure carefully.
-            
+
             data = None
             if perspective == "health_system":
                 if "health_system" in results:
                     data = results["health_system"]
-            else: # societal
+            else:  # societal
                 # Default to human_capital for the main plot if multiple exist
                 if "societal" in results:
                     soc_res = results["societal"]
@@ -231,25 +229,27 @@ def plot_comparative_ce_plane(
                         data = soc_res["human_capital"]
                     elif "friction_cost" in soc_res:
                         data = soc_res["friction_cost"]
-            
+
             if data:
                 # Check if we have bootstrap results (scatter) or just point estimates
-                if "inc_cost" in data and isinstance(data["inc_cost"], (list, np.ndarray)):
-                     ax.scatter(
-                        data["inc_cost"], 
-                        data["inc_qaly"], 
-                        alpha=0.4, 
-                        s=15, 
-                        label=model_name
+                if "inc_cost" in data and isinstance(
+                    data["inc_cost"], (list, np.ndarray)
+                ):
+                    ax.scatter(
+                        data["inc_cost"],
+                        data["inc_qaly"],
+                        alpha=0.4,
+                        s=15,
+                        label=model_name,
                     )
                 else:
                     # Point estimate
                     ax.scatter(
-                        data.get("incremental_cost", 0), 
-                        data.get("incremental_qalys", 0), 
-                        s=100, 
+                        data.get("incremental_cost", 0),
+                        data.get("incremental_qalys", 0),
+                        s=100,
                         marker="D",
-                        label=model_name
+                        label=model_name,
                     )
 
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
@@ -796,8 +796,8 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         n_clusters = results["n_clusters"]
         cluster_analysis = results["cluster_analysis"]
 
-        # Create figure with subplots (1 row, 2 columns)
-        fig, axes = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
+        # Create figure with subplots (2 rows, 2 columns)
+        fig, axes = plt.subplots(2, 2, figsize=(16, 12), dpi=300)
         fig.suptitle(
             f"Cluster Analysis Results: {intervention_name}\n({n_clusters} Clusters, Silhouette Score: {results['silhouette_score']:.3f})",
             fontsize=16,
@@ -805,7 +805,7 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         )
 
         # 1. PCA scatter plot
-        ax = axes[0]
+        ax = axes[0, 0]
         colors = ["blue", "red", "green", "orange", "purple"][:n_clusters]
         for cluster_id in range(n_clusters):
             cluster_mask = cluster_labels == cluster_id
@@ -844,7 +844,7 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         ax.grid(True, alpha=0.3)
 
         # 2. Cluster characteristics comparison
-        ax = axes[1]
+        ax = axes[0, 1]
         feature_names = [
             "Inc Cost",
             "Inc QALYs",
@@ -2335,13 +2335,20 @@ def plot_annual_cash_flow(
 
     apply_default_style()
     fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
-    
+
     width = 0.35
     x = np.arange(len(years))
-    
-    ax.bar(x - width/2, gross_costs, width, label='Gross Cost', color='firebrick', alpha=0.8)
-    ax.bar(x + width/2, net_costs, width, label='Net Cost', color='navy', alpha=0.8)
-    
+
+    ax.bar(
+        x - width / 2,
+        gross_costs,
+        width,
+        label="Gross Cost",
+        color="firebrick",
+        alpha=0.8,
+    )
+    ax.bar(x + width / 2, net_costs, width, label="Net Cost", color="navy", alpha=0.8)
+
     ax.set_xlabel("Year")
     ax.set_ylabel("Cost ($)")
     ax.set_title(f"Annual Budget Impact: {intervention}")
@@ -2349,7 +2356,7 @@ def plot_annual_cash_flow(
     ax.set_xticklabels(years)
     ax.legend()
     ax.grid(alpha=0.3, axis="y")
-    
+
     plt.tight_layout()
     save_figure(
         fig,
@@ -2370,29 +2377,34 @@ def plot_discordance_loss(
         return
 
     apply_default_style()
-    
+
     names = [r["intervention"] for r in discordance_results]
     losses = [r["loss_from_discordance"] for r in discordance_results]
-    
+
     # Filter out zero losses if desired, or keep to show alignment
     # For impact, we highlight the non-zero ones
-    
+
     fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
-    
-    bars = ax.bar(names, losses, color='darkred', alpha=0.7)
-    
+
+    bars = ax.bar(names, losses, color="darkred", alpha=0.7)
+
     ax.set_ylabel("Opportunity Cost ($)")
     ax.set_title("Value of Perspective: Cost of Decision Discordance")
     ax.grid(alpha=0.3, axis="y")
-    
+
     # Add value labels
     for bar in bars:
         height = bar.get_height()
         if height > 0:
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                    f'${height:,.0f}',
-                    ha='center', va='bottom', rotation=0)
-    
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height,
+                f"${height:,.0f}",
+                ha="center",
+                va="bottom",
+                rotation=0,
+            )
+
     plt.tight_layout()
     save_figure(
         fig,
@@ -2401,28 +2413,56 @@ def plot_discordance_loss(
     )
 
 
-def plot_inequality_aversion_curve(
-    aversion_range: List[float],
-    strategy_benefits: Dict[str, List[tuple]],
+def plot_inequality_aversion_sensitivity(
+    sensitivity_results: pd.DataFrame,
+    intervention_name: str,
     output_dir: str = "output/figures/",
 ):
     """
-    Shows how the preferred strategy flips as society becomes more inequality-averse.
-    strategy_benefits: {strategy: [(unweighted_nb, equity_impact), ...] aligned to aversion_range}
+    Plots the results of the inequality aversion sensitivity analysis.
+
+    Args:
+        sensitivity_results: DataFrame with epsilon, atkinson_index, and ede_net_benefit.
+        intervention_name: Name of the intervention.
+        output_dir: Directory to save the plot.
     """
-    if not aversion_range or not strategy_benefits:  # pragma: no cover - guard
-        print("Inputs missing for inequality aversion curve.")
-        return
+    os.makedirs(output_dir, exist_ok=True)
     apply_default_style()
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
-    for strategy, benefits in strategy_benefits.items():
-        weighted_nb = [b[0] + (p * b[1]) for p, b in zip(aversion_range, benefits)]
-        x_vals = aversion_range[: len(weighted_nb)]
-        ax.plot(x_vals, weighted_nb, label=strategy)
-    ax.set_xlabel("Inequality Aversion Parameter")
-    ax.set_ylabel("Equity-Weighted Net Benefit")
-    ax.set_title("Inequality Aversion Sensitivity")
-    ax.legend()
-    ax.grid(alpha=0.3)
-    plt.tight_layout()
-    save_figure(fig, output_dir, build_filename_base("inequality_aversion_curve"))
+
+    fig, ax1 = plt.subplots(figsize=(10, 6), dpi=300)
+
+    color = "tab:red"
+    ax1.set_xlabel("Inequality Aversion Parameter (ε)")
+    ax1.set_ylabel("Atkinson Index (Inequality)", color=color)
+    ax1.plot(
+        sensitivity_results["epsilon"],
+        sensitivity_results["atkinson_index"],
+        color=color,
+        marker="o",
+        label="Atkinson Index",
+    )
+    ax1.tick_params(axis="y", labelcolor=color)
+    ax1.grid(True, alpha=0.3)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = "tab:blue"
+    ax2.set_ylabel("Equally Distributed Equivalent (EDE) Net Benefit ($)", color=color)
+    ax2.plot(
+        sensitivity_results["epsilon"],
+        sensitivity_results["ede_net_benefit"],
+        color=color,
+        marker="s",
+        linestyle="--",
+        label="Social Welfare (EDE)",
+    )
+    ax2.tick_params(axis="y", labelcolor=color)
+
+    plt.title(f"Inequality Aversion Sensitivity: {intervention_name}")
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
+    save_figure(
+        fig,
+        output_dir,
+        build_filename_base("inequality_sensitivity", intervention_name),
+    )

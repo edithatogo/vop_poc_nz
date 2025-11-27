@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from src.cluster_analysis import ClusterAnalysis
@@ -20,7 +21,7 @@ from src.visualizations import (
     plot_comparative_two_way_dsa,
     plot_evp_curve,
     plot_financial_risk_protection,
-    plot_inequality_aversion_curve,
+    plot_inequality_aversion_sensitivity,
     plot_inequality_staircase,
     plot_societal_drivers,
     plot_structural_tornado,
@@ -49,6 +50,12 @@ def base_params():
             },
         },
         "qalys": {"standard_care": [1.0, 0.7, 0.0], "new_treatment": [1.0, 0.8, 0.0]},
+        "productivity_costs": {
+            "human_capital": {
+                "standard_care": [0, 200, 0],
+                "new_treatment": [0, 150, 0],
+            }
+        },
     }
 
 
@@ -160,12 +167,16 @@ def test_additional_visuals_and_dashboards(tmp_path):
     )
     plot_inequality_staircase(["Stage1", "Stage2"], [1.1, 0.9], output_dir=str(fig_dir))
     plot_financial_risk_protection(["A", "B"], [10, 20], output_dir=str(fig_dir))
-    plot_inequality_aversion_curve(
-        aversion_range=[0.0, 0.5, 1.0],
-        strategy_benefits={
-            "Strategy A": [(100, 10), (90, 9), (80, 8)],
-            "Strategy B": [(80, 8), (85, 9), (90, 10)],
-        },
+    plot_inequality_aversion_sensitivity(
+        pd.DataFrame(
+            {
+                "epsilon": [0.0, 0.5, 1.0],
+                "atkinson_index": [0.1, 0.2, 0.3],
+                "ede_net_benefit": [100, 90, 80],
+                "mean_net_benefit": [110, 110, 110],
+            }
+        ),
+        intervention_name="Strategy A",
         output_dir=str(fig_dir),
     )
 

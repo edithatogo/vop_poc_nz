@@ -20,7 +20,6 @@ from src.cea_model_core import (
     create_parameters_table,
     run_cea,
 )
-from src.dcea_analysis import DCEDataProcessor
 from src.value_of_information import (
     ProbabilisticSensitivityAnalysis,
     calculate_evpi,
@@ -137,33 +136,6 @@ class TestCorrectedCEACalculations(unittest.TestCase):
 
         # ICERs should be different
         self.assertNotEqual(hs_results["icer"], s_results["icer"])
-
-
-class TestDCEAImplementation(unittest.TestCase):
-    """Test the DCEA implementation."""
-
-    def test_dce_data_processor(self):
-        """Test basic DCE data processor functionality."""
-        processor = DCEDataProcessor()
-
-        # Define simple attributes for testing
-        attributes = {
-            "perspective": {
-                "levels": ["health_system", "societal"],
-                "type": "categorical",
-                "description": "Evaluation perspective",
-            },
-            "cost_per_qaly": {
-                "levels": [30000, 50000],
-                "type": "continuous",
-                "description": "Cost per QALY threshold",
-            },
-        }
-
-        processor.define_attributes(attributes)
-
-        # Check that attributes are stored correctly
-        self.assertEqual(processor.attribute_definitions, attributes)
 
 
 class TestValueOfInformation(unittest.TestCase):

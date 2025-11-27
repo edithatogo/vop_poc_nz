@@ -6,9 +6,9 @@ based on the results from the analysis pipeline.
 """
 
 import os
+
 import numpy as np
 
-from ..bia_model import bia_to_markdown_table
 from ..dcea_equity_analysis import (
     plot_equity_impact_plane,
     plot_lorenz_curve,
@@ -24,6 +24,7 @@ from ..visualizations import (
     compose_bia_dashboard,
     compose_dashboard,
     compose_equity_dashboard,
+    plot_annual_cash_flow,
     plot_ceac,
     plot_ceaf,
     plot_comparative_ce_plane,
@@ -32,11 +33,12 @@ from ..visualizations import (
     plot_discordance_loss,
     plot_evpi,
     plot_evppi,
+    plot_inequality_aversion_sensitivity,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,
-    plot_annual_cash_flow,
 )
+
 
 def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     """
@@ -58,20 +60,61 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     for name, report in results["reports"].items():
         with open(os.path.join(output_dir, f"{name}_report.md"), "w") as f:
             f.write(report)
-            
+
+    # Combine reports
+    with open(os.path.join(output_dir, "combined_report.md"), "w") as outfile:
+        # Start with Policy Brief (will be generated later, but we can structure it here or append)
+        # Actually, let's just combine the intervention reports for now
+        outfile.write("# Combined Analysis Report\n\n")
+        for name, report in results["reports"].items():
+            outfile.write(f"\n\n---\n\n# {name}\n\n")
+            outfile.write(report)
+
     # 2. Generate Plots
     print("\nGenerating all plots...")
     wtp_thresholds = np.linspace(0, 100000, 21)
-    
+
     # CE Plane & Curves
-    plot_cost_effectiveness_plane(results["probabilistic_results"], perspective="societal", output_dir=figures_dir)
+    plot_cost_effectiveness_plane(
+        results["probabilistic_results"], perspective="societal", output_dir=figures_dir
+    )
     plot_comparative_ce_plane(results["intervention_results"], output_dir=figures_dir)
-    plot_ceac(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
-    plot_ceaf(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
-    plot_evpi(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
-    plot_net_benefit_curves(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
-    plot_value_of_perspective(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
-    plot_pop_evpi(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_ceac(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_ceaf(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_evpi(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_net_benefit_curves(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_value_of_perspective(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_pop_evpi(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        perspective="societal",
+        output_dir=figures_dir,
+    )
     plot_evppi(results["voi_analysis"], output_dir=figures_dir)
 
     # Decision Trees
@@ -91,7 +134,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
             gross_costs=bia_df["gross_cost"].tolist(),
             net_costs=bia_df["net_cost"].tolist(),
             output_dir=figures_dir,
-            intervention=name
+            intervention=name,
         )
     compose_bia_dashboard(output_dir=figures_dir)
 
@@ -105,9 +148,20 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     if equity_interventions:
         compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
 
+    # Inequality Aversion Sensitivity Plots
+    for name, res in results["intervention_results"].items():
+        if "societal" in res and "human_capital" in res["societal"]:
+            sensitivity_data = res["societal"]["human_capital"].get(
+                "inequality_sensitivity"
+            )
+            if sensitivity_data is not None and not sensitivity_data.empty:
+                plot_inequality_aversion_sensitivity(
+                    sensitivity_data, name, output_dir=figures_dir
+                )
+
     # Discordance Loss Plot
     discordance_data = []
-    for name, res in results["intervention_results"].items():
+    for _name, res in results["intervention_results"].items():
         if "discordance" in res:
             discordance_data.append(res["discordance"])
     if discordance_data:
@@ -116,13 +170,19 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     # 3. Dashboards
     dashboard_images = [
         os.path.join(figures_dir, "cost_effectiveness_plane_societal.png"),
-        os.path.join(figures_dir, "cost_effectiveness_acceptability_curve_societal.png"),
-        os.path.join(figures_dir, "cost_effectiveness_acceptability_frontier_societal.png"),
+        os.path.join(
+            figures_dir, "cost_effectiveness_acceptability_curve_societal.png"
+        ),
+        os.path.join(
+            figures_dir, "cost_effectiveness_acceptability_frontier_societal.png"
+        ),
         os.path.join(figures_dir, "expected_value_perfect_information_societal.png"),
         os.path.join(figures_dir, "net_benefit_curves_societal.png"),
         os.path.join(figures_dir, "value_of_perspective_societal.png"),
         os.path.join(figures_dir, "population_evpi_societal.png"),
-        os.path.join(figures_dir, "expected_value_partial_perfect_information_societal.png"),
+        os.path.join(
+            figures_dir, "expected_value_partial_perfect_information_societal.png"
+        ),
     ]
     compose_dashboard(
         dashboard_images,
@@ -133,5 +193,5 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     # 4. Policy Brief
     print("\nGenerating Policy Brief...")
     generate_policy_brief(results["intervention_results"], output_dir=reports_dir)
-    
+
     print(f"\nReporting complete. Outputs saved to {output_dir}/")

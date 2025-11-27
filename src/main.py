@@ -7,19 +7,21 @@ This script orchestrates the full analysis workflow:
 """
 
 import argparse
-import sys
-from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
 
 from .pipeline.analysis import run_analysis_pipeline
 from .pipeline.reporting import run_reporting_pipeline
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Run Health Economic Analysis Pipeline")
+    parser = argparse.ArgumentParser(
+        description="Run Health Economic Analysis Pipeline"
+    )
     parser.add_argument(
-        "--output-dir", 
-        type=str, 
-        default="output", 
-        help="Directory to save outputs"
+        "--output-dir", type=str, default="output", help="Directory to save outputs"
     )
     args = parser.parse_args()
 
@@ -32,6 +34,7 @@ def main():
     run_reporting_pipeline(results, output_dir=args.output_dir)
 
     print("\nPipeline execution completed successfully.")
+
 
 if __name__ == "__main__":
     main()
