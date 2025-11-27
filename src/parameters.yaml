@@ -39,6 +39,76 @@ hpv_vaccination:
     rationale: "HPV vaccination target: females aged 9-26 in NZ. Annual cohort ~30k, 5-year horizon covers ~350k."
     source: "Ministry of Health (2023) immunisation coverage data"
   
+  # DSA Parameter Ranges for Sensitivity Analysis
+  # All ranges represent ±50% from base values unless otherwise noted
+  # References provided for clinical/economic justification
+  dsa_parameter_ranges:
+    wtp_threshold:
+      base: 50000
+      range: [25000, 75000]
+      rationale: "NZ cost-effectiveness threshold range. No official threshold but $45k-$50k commonly used."
+      source: "Pharmaceutical Management Agency (PHARMAC) funding decisions 2010-2023"
+    
+    cost_multiplier:
+      base: 1.0
+      range: [0.5, 2.0]
+      rationale: "Uncertainty in health system costs due to pricing variations and delivery models."
+      source: "Expert opinion and historical cost variations in NZ immunisation programs"
+    
+    qaly_multiplier:
+      base: 1.0
+      range: [0.5, 1.5]
+      rationale: "Uncertainty in QALY weights for HPV-related disease states."
+      source: "Canfell et al. (2008) Vaccine cost-effectiveness analysis"
+    
+    discount_rate:
+      base: 0.03
+      range: [0.0, 0.10]
+      rationale: "NZ Treasury recommended range 0-10% for health sector (3.5% central)."
+      source: "NZ Treasury (2023) Guidelines on the Use of Discount Rates"
+    
+    transition_healthy_to_sick:
+      base: 0.04  # From transition matrix [0.95, 0.04, 0.01]
+      range: [0.02, 0.08]
+      rationale: "HPV infection incidence varies by age, sexual behavior, vaccination coverage."
+      source: "Brotherton et al. (2016) NZ HPV surveillance data"
+    
+    transition_sick_to_dead:
+      base: 0.15  # From transition matrix [0, 0.85, 0.15]
+      range: [0.10, 0.25]
+      rationale: "Cervical cancer mortality rate uncertainty from treatment advances."
+      source: "Ministry of Health (2022) Cancer Registry data"
+    
+    cost_sick_hs:
+      base: 48000  # Health system cost for sick state
+      range: [30000, 70000]
+      rationale: "Cervical cancer treatment costs vary by stage and complications."
+      source: "Sheridan et al. (2020) NZ cancer treatment cost study"
+    
+    cost_sick_societal:
+      base: 18000  # Societal cost for sick state
+      range: [10000, 30000]
+      rationale: "Indirect costs (caregiver time, transportation) vary widely."
+      source: "Access Economics (2008) Cancer cost burden in NZ"
+    
+    qaly_sick:
+      base: 0.6  # QALY for sick state
+      range: [0.4, 0.75]
+      rationale: "Quality of life with cervical cancer varies by stage and treatment response."
+      source: "Peasgood et al. (2010) Health state utility values for cervical cancer"
+    
+    productivity_cost_sick:
+      base: 12000  # Annual productivity loss when sick
+      range: [6000, 20000]
+      rationale: "Lost productivity varies by employment status, age, and disease severity."
+      source: "Stats NZ (2023) Average wage data and workforce participation"
+    
+    friction_period_days:
+      base: 90
+      range: [60, 180]
+      rationale: "Time to replace absent worker varies by skill level and labor market."
+      source: "Koopmanschap et al. (1995) Friction cost method literature"
+  
   subgroups:
     High_SES:
       initial_population: [500, 0, 0]
