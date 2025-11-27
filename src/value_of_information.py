@@ -248,15 +248,11 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
     expected_nmb_sc = np.mean(nmb_sc)
     expected_nmb_nt = np.mean(nmb_nt)
     current_optimal_nmb = max(expected_nmb_sc, expected_nmb_nt)
-    
-    print(f"DEBUG: Expected NMB SC={expected_nmb_sc}")
-    print(f"DEBUG: Expected NMB NT={expected_nmb_nt}")
-    print(f"DEBUG: Current Optimal={current_optimal_nmb}")
 
     # EVPI = Expected value with perfect information - Expected value with current info
     expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
     print(f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}")
-    
+
     evpi = expected_nmb_with_perfect_info - current_optimal_nmb
     print(f"DEBUG: Raw EVPI={evpi}")
 
