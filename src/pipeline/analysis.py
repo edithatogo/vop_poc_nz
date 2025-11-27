@@ -50,12 +50,17 @@ def load_parameters(filepath: str = "src/parameters.yaml") -> Dict:
 
 def perform_voi_analysis(params: Dict) -> Dict:
     """Placeholder for VOI analysis."""
-    return {"evpi": 0, "evppi": {}}
+    return {
+        "value_of_information": {
+            "evppi_by_parameter_group": {},
+            "wtp_thresholds": list(np.linspace(0, 100000, 21)),
+        }
+    }
 
 
 def perform_dsa_analysis(interventions: Dict) -> Dict:
     """Placeholder for DSA analysis."""
-    return {}
+    return {"1_way": {}, "2_way": {}, "3_way": {}}
 
 
 def calculate_analytical_capacity_costs(

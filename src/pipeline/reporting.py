@@ -109,9 +109,16 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         perspective="societal",
         output_dir=figures_dir,
     )
+    # Extract population sizes for EVPI plot
+    population_sizes = {}
+    for name, params in results.get("selected_interventions", {}).items():
+        bia_pop = params.get("bia_population", {})
+        population_sizes[name] = bia_pop.get("total_population", 100000)
+
     plot_pop_evpi(
         results["probabilistic_results"],
         wtp_thresholds,
+        population_sizes,
         perspective="societal",
         output_dir=figures_dir,
     )

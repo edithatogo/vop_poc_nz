@@ -174,6 +174,10 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     """
     apply_default_style()
 
+    if not dsa_results:
+        print("No one-way DSA results to plot.")
+        return
+
     for model_name, results in dsa_results.items():
         for perspective in ["hs", "soc"]:
             fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
@@ -343,6 +347,10 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
     apply_default_style()
 
     model_names = list(dsa_results.keys())
+    if not model_names:
+        print("No two-way DSA results to plot.")
+        return
+
     n_models = len(model_names)
 
     for perspective in ["hs", "soc"]:
@@ -538,6 +546,9 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
     apply_default_style()
 
     model_names = list(dsa_results.keys())
+    if not model_names:
+        print("No three-way DSA results to plot.")
+        return
 
     for model_name in model_names:
         data = dsa_results[model_name]
