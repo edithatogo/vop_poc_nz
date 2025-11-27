@@ -231,19 +231,17 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
     nmb_sc = (psa_results["qaly_sc"] * wtp_threshold) - psa_results["cost_sc"]
     nmb_nt = (psa_results["qaly_nt"] * wtp_threshold) - psa_results["cost_nt"]
 
-    # DEBUG PRINTS
+    # DEBUG PRINTS (Reduced)
     print(f"\nDEBUG: WTP={wtp_threshold}")
-    print(f"DEBUG: SC Cost={psa_results['cost_sc'].values}, QALY={psa_results['qaly_sc'].values}")
-    print(f"DEBUG: NT Cost={psa_results['cost_nt'].values}, QALY={psa_results['qaly_nt'].values}")
-    print(f"DEBUG: NMB SC={nmb_sc.values}")
-    print(f"DEBUG: NMB NT={nmb_nt.values}")
+    print(f"DEBUG: NMB SC Mean={np.mean(nmb_sc)}")
+    print(f"DEBUG: NMB NT Mean={np.mean(nmb_nt)}")
 
     # Stack NMBs for each strategy to find the optimal for each simulation
     nmb_matrix = np.column_stack([nmb_sc, nmb_nt])
 
     # Find maximum NMB across all strategies for each simulation (perfect info scenario)
     max_nmb_per_sim = np.max(nmb_matrix, axis=1)
-    print(f"DEBUG: Max NMB per sim={max_nmb_per_sim}")
+    print(f"DEBUG: Max NMB per sim (mean)={np.mean(max_nmb_per_sim)}")
 
     # Find the expected NMB with current information (current optimal strategy)
     # Use Python's max for scalars to avoid ambiguity
