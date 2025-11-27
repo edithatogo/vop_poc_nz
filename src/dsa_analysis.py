@@ -23,6 +23,7 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
             "cost_multiplier": np.linspace(0.5, 2.0, n_points),
             "qaly_multiplier": np.linspace(0.5, 1.5, n_points),
             "discount_rate": np.linspace(0.0, 0.10, n_points),
+            "wtp_threshold": np.linspace(25000, 75000, n_points),  # NZ-appropriate WTP range
         }
 
         dsa_results = {}
@@ -47,6 +48,7 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
 
             for param_value in param_range:
                 temp_params = copy.deepcopy(model_params)
+                current_wtp = wtp_threshold  # Default WTP
 
                 if param_name == "cost_multiplier":
                     temp_params["costs"]["health_system"]["new_treatment"][0] *= (
@@ -57,24 +59,26 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
                     temp_params["qalys"]["new_treatment"][1] *= param_value
                 elif param_name == "discount_rate":
                     temp_params["discount_rate"] = param_value
+                elif param_name == "wtp_threshold":
+                    current_wtp = param_value  # Vary WTP instead of params
 
                 # Health system perspective
                 hs_results = run_cea(
                     temp_params,
                     perspective="health_system",
-                    wtp_threshold=wtp_threshold,
+                    wtp_threshold=current_wtp,
                 )
-                nmb_hs = (hs_results["incremental_qalys"] * wtp_threshold) - hs_results[
+                nmb_hs = (hs_results["incremental_qalys"] * current_wtp) - hs_results[
                     "incremental_cost"
                 ]
                 param_results_hs.append(nmb_hs)
 
                 # Societal perspective
                 soc_results = run_cea(
-                    temp_params, perspective="societal", wtp_threshold=wtp_threshold
+                    temp_params, perspective="societal", wtp_threshold=current_wtp
                 )
                 nmb_soc = (
-                    soc_results["incremental_qalys"] * wtp_threshold
+                    soc_results["incremental_qalys"] * current_wtp
                 ) - soc_results["incremental_cost"]
                 param_results_soc.append(nmb_soc)
 
