@@ -258,9 +258,14 @@ def run_analysis_pipeline() -> Dict:
     print("\nPerforming Budget Impact Analysis (BIA)...")
     bia_results = {}
     for name, params in selected_interventions.items():
+        # Use intervention-specific population parameters
+        bia_pop = params.get("bia_population", {})
+        total_pop = bia_pop.get("total_population", 100000)  # Fallback to 100k
+        eligible_prop = bia_pop.get("eligible_proportion", 0.1)  # Fallback to 10%
+        
         bia_params = {
-            "population_size": 100000,
-            "eligible_prop": 0.1,
+            "population_size": total_pop,
+            "eligible_prop": eligible_prop,
             "uptake_by_year": [0.1, 0.2, 0.3, 0.4, 0.5],
             "cost_per_patient": params["costs"]["health_system"]["new_treatment"][0],
             "offset_cost_per_patient": params["costs"]["health_system"]["standard_care"][
@@ -269,6 +274,7 @@ def run_analysis_pipeline() -> Dict:
             "discount_rate": 0.03,  # Added discount rate
         }
         bia_results[name] = project_bia(**bia_params)
+        print(f"  {name}: Population={total_pop:,}, Eligible={eligible_prop:.0%} ({total_pop *eligible_prop:,.0f} people)")
 
     # 10. Comprehensive Reports
     print("\nGenerating Comprehensive Reports...")
