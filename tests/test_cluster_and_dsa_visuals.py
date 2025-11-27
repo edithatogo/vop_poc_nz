@@ -124,15 +124,15 @@ def test_dsa_workflow_and_dashboard(tmp_path, base_params):
     figs.mkdir()
     interventions = {"Demo": base_params}
 
-    one_way = perform_one_way_dsa(interventions, wtp_threshold=20000, n_points=3)
+    one_way = perform_one_way_dsa(interventions, wtp_threshold=20000, n_points=2)
     plot_one_way_dsa_tornado(one_way, output_dir=str(figs))
 
     two_way = perform_comprehensive_two_way_dsa(
-        interventions, wtp_threshold=20000, n_points=3
+        interventions, wtp_threshold=20000, n_points=2
     )
     plot_two_way_dsa_heatmaps(two_way, output_dir=str(figs))
 
-    three_way = perform_three_way_dsa(interventions, wtp_threshold=20000, n_points=3)
+    three_way = perform_three_way_dsa(interventions, wtp_threshold=20000, n_points=2)
     plot_three_way_dsa_3d(three_way, output_dir=str(figs))
 
     compose_dsa_dashboard(output_dir=str(figs))

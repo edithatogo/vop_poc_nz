@@ -36,10 +36,6 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         ruff check . --exit-zero
         
-    - name: Debug EVPI Test
-      run: |
-        pytest tests/test_evpi_properties.py
-
     - name: Test with pytest
       run: |
         pytest
