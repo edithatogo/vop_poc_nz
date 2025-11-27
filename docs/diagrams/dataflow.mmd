@@ -1,0 +1,82 @@
+%%{init: {'theme':'base', 'flowchart': {'curve':'basis'}}}%%
+
+graph LR
+    %% Title: Data Flow Diagram
+    %% Caption: Flow of parameters and data through the analysis pipeline from YAML configuration to final outputs
+    %% Abbreviations: YAML=YAML Ain't Markup Language, CEA=Cost-Effectiveness Analysis, ICER=Incremental Cost-Effectiveness Ratio, QALY=Quality-Adjusted Life Year, NMB=Net Monetary Benefit, WTP=Willingness-To-Pay
+
+    YAML[parameters.yaml<br/>intervention definitions<br/>subgroups<br/>transition matrices]
+    
+    subgraph "Parameter Loading"
+        LOAD[load_parameters<br/>validate inputs]
+    end
+    
+    subgraph "CEA Execution"
+        MARKOV[Markov Model<br/>state transitions<br/>cost/QALY accumulation]
+        CALC[Calculate Metrics<br/>ICER, NMB<br/>inc_cost, inc_qaly]
+        SUBGRP[Subgroup Analysis<br/>recursive CEA calls<br/>aggregation]
+    end
+    
+    subgraph "DCEA Processing"
+        EQUITY[Equity Metrics<br/>Gini coefficient<br/>Atkinson index]
+        WEIGHT[Apply Weights<br/>equity-weighted NMB<br/>EDE calculation]
+    end
+    
+    subgraph "VOI Analysis"
+        PSA[Monte Carlo PSA<br/>parameter sampling<br/>n=1000-10000]
+        EVPI[EVPI Calculation<br/>E[max NMB] - max E[NMB]]
+        EVPPI[EVPPI Calculation<br/>two-level expectation]
+    end
+    
+    subgraph "Sensitivity Analysis"
+        DSA1[One-Way DSA<br/>tornado diagrams]
+        DSA2[Two-Way DSA<br/>heatmaps]
+        DSA3[Three-Way DSA<br/>3D surfaces]
+    end
+    
+    subgraph "Output Generation"
+        TABLES[Tables<br/>comparative ICER<br/>parameters/sources<br/>DCEA summary]
+        FIGS[Figures<br/>CE planes<br/>Lorenz curves<br/>CEAC/CEAF]
+        REPORT[Reports<br/>combined markdown<br/>policy brief<br/>dashboard]
+    end
+    
+    %% Flow
+    YAML --> LOAD
+    LOAD --> MARKOV
+    MARKOV --> CALC
+    CALC --> SUBGRP
+    
+    SUBGRP -->|subgroup_results| EQUITY
+    SUBGRP -->|base_case| PSA
+    
+    EQUITY --> WEIGHT
+    
+    PSA --> EVPI
+    PSA --> EVPPI
+    PSA --> DSA1
+    
+    CALC --> DSA1
+    DSA1 --> DSA2
+    DSA2 --> DSA3
+    
+    CALC --> TABLES
+    WEIGHT --> TABLES
+    EVPI --> TABLES
+    EVPPI --> TABLES
+    
+    CALC --> FIGS
+    EQUITY --> FIGS
+    PSA --> FIGS
+    DSA1 --> FIGS
+    DSA2 --> FIGS
+    DSA3 --> FIGS
+    
+    TABLES --> REPORT
+    FIGS --> REPORT
+    
+    %% Styling
+    style YAML fill:#fff9c4
+    style MARKOV fill:#e1f5ff
+    style EQUITY fill:#fff3e0
+    style PSA fill:#e8f5e9
+    style REPORT fill:#f3e5f5
