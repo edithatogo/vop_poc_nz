@@ -569,21 +569,14 @@ def plot_value_of_perspective(
 def plot_pop_evpi(
     all_results,
     wtp_thresholds,
+    population_sizes: Dict[str, int],
     output_dir="output/figures/",
     perspective: Optional[str] = None,
 ):
     """
     Create population EVPI plots for the societal perspective.
-    Temporarily simplified as only societal perspective PSA is currently available.
     """
     apply_default_style()
-
-    # Assume population sizes (these would need to be adjusted based on actual data)
-    population_sizes = {
-        "HPV Vaccination": 100000,  # Annual cohort for HPV vaccination
-        "Smoking Cessation": 500000,  # Adult smokers in NZ
-        "Hepatitis C Therapy": 50000,  # Chronic HCV cases in NZ
-    }
 
     fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
     fig.suptitle(
@@ -595,9 +588,8 @@ def plot_pop_evpi(
     model_names = list(all_results.keys())
     for model_name in model_names:
         psa_results = all_results[model_name]
-        pop_size = population_sizes.get(
-            model_name, 1
-        )  # Default to 1 to avoid division by zero
+        # Use provided population size, default to 1 if missing (with warning ideally)
+        pop_size = population_sizes.get(model_name, 1)
 
         # Calculate EVPI per person for each WTP threshold
         evpi_per_person_values = [
