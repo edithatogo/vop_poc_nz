@@ -12,7 +12,6 @@ from src.value_of_information import (
 )
 from src.visualizations import plot_cumulative_nmb, plot_efficiency_frontier
 
-
 MINIMAL_PARAMS = {
     "states": ["Healthy", "Dead"],
     "transition_matrices": {
@@ -58,7 +57,9 @@ def test_threshold_and_dsa_smoke():
     assert "cost_multiplier" in threshold_results
 
     # One-way DSA should process without error
-    dsa_results = perform_one_way_dsa({"Test": MINIMAL_PARAMS}, wtp_threshold=20000, n_points=3)
+    dsa_results = perform_one_way_dsa(
+        {"Test": MINIMAL_PARAMS}, wtp_threshold=20000, n_points=3
+    )
     assert "Test" in dsa_results
 
 
@@ -66,7 +67,9 @@ def test_cluster_and_voi_smoke(tmp_path):
     # Cluster analysis on simple simulated data
     inc_cost = [0.0, 100.0, -50.0, 20.0]
     inc_qaly = [0.1, 0.2, 0.05, 0.15]
-    analyzer = ClusterAnalysis({"Test": {"inc_cost": inc_cost, "inc_qaly": inc_qaly}}, ["Test"])
+    analyzer = ClusterAnalysis(
+        {"Test": {"inc_cost": inc_cost, "inc_qaly": inc_qaly}}, ["Test"]
+    )
     data = analyzer.prepare_clustering_data("Test", n_simulations=4)
     assert data.shape[0] == 4
 
@@ -81,11 +84,18 @@ def test_cluster_and_voi_smoke(tmp_path):
     )
     evpi = calculate_evpi(psa_df, wtp_threshold=50000)
     assert evpi >= 0
-    evppi = calculate_evppi(psa_df, ["cost_nt"], ["cost_nt", "cost_sc", "qaly_sc", "qaly_nt"], wtp_thresholds=[50000])
+    evppi = calculate_evppi(
+        psa_df,
+        ["cost_nt"],
+        ["cost_nt", "cost_sc", "qaly_sc", "qaly_nt"],
+        wtp_thresholds=[50000],
+    )
     assert len(evppi) == 1
     population_evpi = calculate_population_evpi(evpi, target_population_size=1000)
     assert population_evpi >= evpi
-    explain = explain_value_of_information_benefits(base_icer=20000, wtp_threshold=50000)
+    explain = explain_value_of_information_benefits(
+        base_icer=20000, wtp_threshold=50000
+    )
     assert explain.get("base_case_info") is not None
 
 

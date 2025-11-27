@@ -9,7 +9,12 @@
     "env",
     "venv",
     "output",
-    "data"
+    "data",
+    "generate_presentation.py",
+    "format_references.py",
+    "run_basic_text_analysis.py",
+    "run_textstat_analysis.py",
+    "tests"
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,

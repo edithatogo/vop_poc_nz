@@ -1,5 +1,3 @@
-import pandas as pd
-
 from src.dcea_equity_analysis import (
     calculate_atkinson_index,
     calculate_gini,

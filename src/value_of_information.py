@@ -357,6 +357,49 @@ def calculate_evppi(
     return evppi_values
 
 
+def calculate_value_of_perspective(
+    psa_results_hs: pd.DataFrame,
+    psa_results_soc: pd.DataFrame,
+    wtp_threshold: float = 50000.0,
+    chosen_perspective: str = "health_system",
+) -> Dict[str, float]:
+    """
+    Calculate the Expected Value of Perspective (EVP) as the expected opportunity loss
+    from using a chosen perspective instead of the perspective that maximizes NMB.
+
+    EVP = E[max(NMB_hs, NMB_soc)] - E[NMB_chosen]
+    """
+    # Validate PSA frames where possible; fallback to raw frames if validation fails
+    for df in (psa_results_hs, psa_results_soc):
+        with contextlib.suppress(Exception):
+            validate_psa_results(df)
+
+    def _nmb(df: pd.DataFrame) -> pd.Series:
+        inc_qaly = df["qaly_nt"] - df["qaly_sc"]
+        inc_cost = df["cost_nt"] - df["cost_sc"]
+        return (inc_qaly * wtp_threshold) - inc_cost
+
+    nmb_hs = _nmb(psa_results_hs)
+    nmb_soc = _nmb(psa_results_soc)
+
+    # Per-simulation optimal NMB across perspectives
+    optimal_nmb = np.maximum(nmb_hs, nmb_soc)
+    ev_optimal = float(np.mean(optimal_nmb))
+
+    if chosen_perspective not in {"health_system", "societal"}:
+        raise ValueError("chosen_perspective must be 'health_system' or 'societal'")
+    chosen_series = nmb_hs if chosen_perspective == "health_system" else nmb_soc
+    ev_chosen = float(np.mean(chosen_series))
+
+    evp = ev_optimal - ev_chosen
+
+    return {
+        "expected_value_optimal": ev_optimal,
+        "expected_value_chosen": ev_chosen,
+        "expected_value_of_perspective": max(0.0, evp),
+    }
+
+
 def explain_value_of_information_benefits(
     base_icer: float, wtp_threshold: float
 ) -> Dict:

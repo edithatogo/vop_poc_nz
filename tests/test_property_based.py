@@ -1,7 +1,8 @@
 import math
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from src.cea_model_core import _validate_model_parameters
 from src.value_of_information import ProbabilisticSensitivityAnalysis
@@ -9,13 +10,28 @@ from src.value_of_information import ProbabilisticSensitivityAnalysis
 
 def build_param_strategy():
     beta_params = st.fixed_dictionaries(
-        {"distribution": st.just("beta"), "params": st.fixed_dictionaries({"alpha": st.floats(0.5, 5.0), "beta": st.floats(0.5, 5.0)})}
+        {
+            "distribution": st.just("beta"),
+            "params": st.fixed_dictionaries(
+                {"alpha": st.floats(0.5, 5.0), "beta": st.floats(0.5, 5.0)}
+            ),
+        }
     )
     gamma_params = st.fixed_dictionaries(
-        {"distribution": st.just("gamma"), "params": st.fixed_dictionaries({"shape": st.floats(0.5, 5.0), "scale": st.floats(0.5, 5.0)})}
+        {
+            "distribution": st.just("gamma"),
+            "params": st.fixed_dictionaries(
+                {"shape": st.floats(0.5, 5.0), "scale": st.floats(0.5, 5.0)}
+            ),
+        }
     )
     normal_params = st.fixed_dictionaries(
-        {"distribution": st.just("normal"), "params": st.fixed_dictionaries({"mean": st.floats(-5.0, 5.0), "std": st.floats(0.1, 2.0)})}
+        {
+            "distribution": st.just("normal"),
+            "params": st.fixed_dictionaries(
+                {"mean": st.floats(-5.0, 5.0), "std": st.floats(0.1, 2.0)}
+            ),
+        }
     )
     uniform_params = st.fixed_dictionaries(
         {
@@ -32,7 +48,9 @@ def build_param_strategy():
 
 
 @settings(max_examples=15, deadline=None)
-@given(param_def=build_param_strategy(), n_samples=st.integers(min_value=1, max_value=5))
+@given(
+    param_def=build_param_strategy(), n_samples=st.integers(min_value=1, max_value=5)
+)
 def test_psa_sample_parameters_property(param_def, n_samples):
     # Single-parameter PSA sampling should produce consistent lengths and valid ranges per distribution.
     psa = ProbabilisticSensitivityAnalysis(
@@ -61,10 +79,16 @@ def test_psa_sample_parameters_property(param_def, n_samples):
 def test_validate_model_parameters_property():
     base = {
         "states": ["A", "B"],
-        "transition_matrices": {"standard_care": [[1, 0], [0, 1]], "new_treatment": [[1, 0], [0, 1]]},
+        "transition_matrices": {
+            "standard_care": [[1, 0], [0, 1]],
+            "new_treatment": [[1, 0], [0, 1]],
+        },
         "cycles": 1,
         "initial_population": [1, 0],
-        "costs": {"health_system": {"standard_care": [0, 0], "new_treatment": [0, 0]}, "societal": {"standard_care": [0, 0], "new_treatment": [0, 0]}},
+        "costs": {
+            "health_system": {"standard_care": [0, 0], "new_treatment": [0, 0]},
+            "societal": {"standard_care": [0, 0], "new_treatment": [0, 0]},
+        },
         "qalys": {"standard_care": [1, 0], "new_treatment": [1, 0]},
     }
     # Should not raise with complete minimal structure

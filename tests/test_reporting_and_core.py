@@ -1,11 +1,11 @@
 import pandas as pd
 
+from src.bia_model import bia_to_markdown_table
 from src.cea_model_core import run_cea
 from src.dcea_equity_analysis import run_dcea
-from src.reporting import generate_comprehensive_report, generate_dcea_results_table
-from src.bia_model import bia_to_markdown_table
-from src.value_of_information import ProbabilisticSensitivityAnalysis
 from src.main_analysis import generate_cheers_report
+from src.reporting import generate_comprehensive_report, generate_dcea_results_table
+from src.value_of_information import ProbabilisticSensitivityAnalysis
 
 
 def minimal_params():
@@ -74,7 +74,13 @@ def test_reporting_and_dcea_table(tmp_path):
 
     # bia_to_markdown_table covers to_int_safe error branch
     df_bad = pd.DataFrame(
-        {"year": ["bad"], "treated": ["n/a"], "gross_cost": [1.0], "offsets": [0.0], "net_cost": [1.0]}
+        {
+            "year": ["bad"],
+            "treated": ["n/a"],
+            "gross_cost": [1.0],
+            "offsets": [0.0],
+            "net_cost": [1.0],
+        }
     )
     md = bia_to_markdown_table(df_bad)
     assert "| 0 |" in md
@@ -83,19 +89,28 @@ def test_reporting_and_dcea_table(tmp_path):
     assert empty == "DCEA results are not available.\n"
 
     cheers = generate_cheers_report()
-    assert cheers["cheers_2022_compliance"]["met_items"] == cheers["cheers_2022_compliance"]["total_items"]
+    assert (
+        cheers["cheers_2022_compliance"]["met_items"]
+        == cheers["cheers_2022_compliance"]["total_items"]
+    )
 
 
 def test_run_cea_subgroups_and_friction():
     params = minimal_params()
-    results = run_cea(params, perspective="societal", productivity_cost_method="friction_cost")
+    results = run_cea(
+        params, perspective="societal", productivity_cost_method="friction_cost"
+    )
     assert results["subgroup_results"] is not None
 
 
 def test_psa_sampling_distributions():
     def model(params, intervention_type="standard_care"):
         base = 100 + params["shift"]
-        return (base, base / 50) if intervention_type == "standard_care" else (base * 1.1, base / 45)
+        return (
+            (base, base / 50)
+            if intervention_type == "standard_care"
+            else (base * 1.1, base / 45)
+        )
 
     parameters = {
         "shift": {"distribution": "gamma", "params": {"shape": 2.0, "scale": 5.0}},

@@ -1,6 +1,3 @@
-import numpy as np
-import pandas as pd
-
 from src.dcea_equity_analysis import plot_equity_impact_plane
 from src.visualizations import (
     plot_equity_efficiency_plane,
@@ -30,7 +27,9 @@ def test_equity_plots(tmp_path):
         "A": [(100.0, 10.0), (120.0, 12.0)],
         "B": [(90.0, 20.0), (110.0, 18.0)],
     }
-    plot_inequality_aversion_curve(aversion_range, strategy_benefits, output_dir=str(out_dir))
+    plot_inequality_aversion_curve(
+        aversion_range, strategy_benefits, output_dir=str(out_dir)
+    )
 
     # Inequality staircase
     stages = ["Eligibility", "Access", "Uptake", "Adherence", "Efficacy"]
@@ -48,7 +47,9 @@ def test_equity_plots(tmp_path):
         "variance_of_net_health_benefits": 10.0,
         "distribution_of_net_health_benefits": {"Q1": 30, "Q2": 70},
     }
-    plot_equity_efficiency_plane(["A", "B"], [1.0, 2.0], [0.2, -0.1], output_dir=str(out_dir))
+    plot_equity_efficiency_plane(
+        ["A", "B"], [1.0, 2.0], [0.2, -0.1], output_dir=str(out_dir)
+    )
     plot_equity_impact_plane(dcea_results, "Demo", output_dir=str(out_dir))
 
     # Price acceptability

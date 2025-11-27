@@ -1,10 +1,11 @@
+import copy
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 
-from .cea_model_dsa import run_cea
+from .cea_model_core import run_cea
 from .visualizations import apply_default_style, build_filename_base, save_figure
 
 
@@ -19,9 +20,9 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
 
         # Define parameter ranges
         param_ranges = {
-            "cost_multiplier": np.linspace(0.5, 1.5, n_points),
-            "qaly_multiplier": np.linspace(0.8, 1.2, n_points),
-            "discount_rate": np.linspace(0.0, 0.06, n_points),
+            "cost_multiplier": np.linspace(0.5, 2.0, n_points),
+            "qaly_multiplier": np.linspace(0.5, 1.5, n_points),
+            "discount_rate": np.linspace(0.0, 0.10, n_points),
         }
 
         dsa_results = {}
@@ -45,7 +46,7 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
             param_results_soc = []
 
             for param_value in param_range:
-                temp_params = model_params.copy()
+                temp_params = copy.deepcopy(model_params)
 
                 if param_name == "cost_multiplier":
                     temp_params["costs"]["health_system"]["new_treatment"][0] *= (
@@ -163,8 +164,8 @@ def perform_comprehensive_two_way_dsa(  # noqa: C901
         if "HPV" in model_name:
             param1_name = "Vaccine Cost Multiplier"
             param2_name = "Cancer Treatment Cost Reduction"
-            param1_range = np.linspace(0.5, 1.5, n_points)
-            param2_range = np.linspace(0.5, 1.0, n_points)
+            param1_range = np.linspace(0.5, 2.0, n_points)
+            param2_range = np.linspace(0.5, 1.5, n_points)
         elif "Smoking" in model_name:
             param1_name = "Intervention Cost Multiplier"
             param2_name = "Productivity Cost Multiplier"
@@ -173,8 +174,8 @@ def perform_comprehensive_two_way_dsa(  # noqa: C901
         elif "Hepatitis C" in model_name:
             param1_name = "Treatment Cost Multiplier"
             param2_name = "QALY Improvement Multiplier"
-            param1_range = np.linspace(0.5, 2.0, n_points)
-            param2_range = np.linspace(0.8, 1.2, n_points)
+            param1_range = np.linspace(0.5, 2.5, n_points)
+            param2_range = np.linspace(0.5, 1.5, n_points)
         elif "Obesity" in model_name:
             param1_name = "Intervention Cost Multiplier"
             param2_name = "Societal Benefit Multiplier"
@@ -188,15 +189,15 @@ def perform_comprehensive_two_way_dsa(  # noqa: C901
         else:  # Cancer drug
             param1_name = "Drug Cost Multiplier"
             param2_name = "QALY Gain Multiplier"
-            param1_range = np.linspace(0.5, 2.0, n_points)
-            param2_range = np.linspace(0.8, 1.2, n_points)
+            param1_range = np.linspace(0.5, 2.5, n_points)
+            param2_range = np.linspace(0.5, 1.5, n_points)
 
         dsa_grid_hs = []
         dsa_grid_soc = []
 
         for p1 in param1_range:
             for p2 in param2_range:
-                temp_params = model_params.copy()
+                temp_params = copy.deepcopy(model_params)
 
                 if "HPV" in model_name:
                     temp_params["costs"]["health_system"]["new_treatment"][0] *= p1
@@ -349,9 +350,9 @@ def perform_three_way_dsa(  # noqa: C901
             param1_name = "Vaccine Cost Multiplier"
             param2_name = "Cancer Treatment Cost Multiplier"
             param3_name = "QALY Improvement Multiplier"
-            p1_range = np.linspace(0.5, 1.5, n_points)
-            p2_range = np.linspace(0.5, 1.5, n_points)
-            p3_range = np.linspace(0.8, 1.2, n_points)
+            p1_range = np.linspace(0.5, 2.0, n_points)
+            p2_range = np.linspace(0.5, 2.0, n_points)
+            p3_range = np.linspace(0.5, 1.5, n_points)
         elif "Smoking" in model_name:
             param1_name = "Intervention Cost Multiplier"
             param2_name = "Productivity Cost Multiplier"
@@ -393,7 +394,7 @@ def perform_three_way_dsa(  # noqa: C901
         for p1 in p1_range:
             for p2 in p2_range:
                 for p3 in p3_range:
-                    temp_params = model_params.copy()
+                    temp_params = copy.deepcopy(model_params)
 
                     if "HPV" in model_name:
                         temp_params["costs"]["health_system"]["new_treatment"][0] *= p1
@@ -477,8 +478,9 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         )
         values = np.array([point["nmb"] for point in data["dsa_grid"]])
 
-        # Create slices at different levels of p3
-        p3_slices = [0.25, 0.5, 0.75]  # Quartiles
+        # Create slices at different levels of p3 (min, median, max)
+        p3_min, p3_max = np.min(data["p3_range"]), np.max(data["p3_range"])
+        p3_slices = [p3_min, (p3_min + p3_max) / 2, p3_max]
 
         fig = plt.figure(figsize=(5 * len(p3_slices), 5), dpi=300)
         fig.suptitle(

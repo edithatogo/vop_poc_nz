@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 # Import our corrected modules
+from .validation import validate_costs_and_qalys, validate_transition_matrices
 
 
 class MarkovModel:
@@ -296,6 +297,10 @@ def _validate_model_parameters(params: Dict):
     # Validate structure of qalys
     if "standard_care" not in params["qalys"] or "new_treatment" not in params["qalys"]:
         raise ValueError("qalys must contain 'standard_care' and 'new_treatment' keys")
+
+    # Deeper validation of matrices and arrays
+    validate_transition_matrices(params)
+    validate_costs_and_qalys(params)
 
 
 def _calculate_friction_cost(

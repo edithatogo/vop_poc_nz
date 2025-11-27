@@ -7,9 +7,19 @@ This module provides functions to generate comprehensive reports in Markdown for
 import copy
 from typing import Dict
 
+import pandas as pd
+
 from .cea_model_core import run_cea
 from .dcea_equity_analysis import run_dcea
 from .discordance_analysis import calculate_decision_discordance
+
+try:  # optional dependency for publication-quality tables
+    from great_tables import GT
+
+    GREAT_TABLES_AVAILABLE = True
+except Exception:  # pragma: no cover - optional path
+    GT = None
+    GREAT_TABLES_AVAILABLE = False
 
 
 def generate_comprehensive_report(
@@ -75,8 +85,13 @@ This report presents a comprehensive cost-effectiveness analysis of {interventio
 
 ### Decision Discordance
 - **Discordant**: {"Yes" if discordance["discordant"] else "No"}
-- **Loss from Discordance**: ${discordance["loss_from_discordance"]:,.0f}
-- **Loss in QALYs**: {discordance["loss_qaly"]:.2f}
+- **Preferred Perspective**: {discordance["preferred_perspective"].replace("_", " ").title()}
+- **Opportunity Loss (NMB)**: ${discordance["loss_from_discordance"]:,.0f}
+- **Opportunity Loss (QALYs)**: {discordance["loss_qaly"]:.2f}
+
+## Impact Inventory (CHEERS 2022)
+
+{generate_impact_inventory_table(params)}
 
 {dcea_table}
 
@@ -106,36 +121,102 @@ def generate_dcea_results_table(dcea_results: Dict) -> str:
     if not dcea_results:
         return "DCEA results are not available.\n"
 
-    # Distribution of Net Health Benefits
+    rows = []
+
     nhb_distribution = dcea_results.get("distribution_of_net_health_benefits", {})
-    if nhb_distribution:
-        nhb_table = "| Subgroup | Net Health Benefit (NMB) |\n| --- | --- |\n"
-        for subgroup, nmb in nhb_distribution.items():
-            nhb_table += f"| {subgroup} | ${nmb:,.0f} |\n"
-    else:  # pragma: no cover - guard path when no subgroup values
-        nhb_table = "No distribution of net health benefits available.\n"
+    for subgroup, nmb in nhb_distribution.items():
+        rows.append(
+            {
+                "Subgroup": subgroup,
+                "Net Health Benefit (NMB)": nmb,
+                "Type": "Distribution",
+            }
+        )
 
-    # Equity Impact Summary
     equity_impact = dcea_results
-    total_health_gain = equity_impact.get("total_health_gain", "N/A")
-    if isinstance(total_health_gain, float):
-        total_health_gain = f"${total_health_gain:,.0f}"
+    rows.append(
+        {
+            "Subgroup": "Overall",
+            "Net Health Benefit (NMB)": equity_impact.get("total_health_gain", 0.0),
+            "Type": "Total Health Gain",
+        }
+    )
+    rows.append(
+        {
+            "Subgroup": "Overall",
+            "Net Health Benefit (NMB)": equity_impact.get(
+                "variance_of_net_health_benefits", 0.0
+            ),
+            "Type": "Variance of Net Health Benefits",
+        }
+    )
+    rows.append(
+        {
+            "Subgroup": "Overall",
+            "Net Health Benefit (NMB)": equity_impact.get("gini_coefficient", 0.0),
+            "Type": "Gini Coefficient",
+        }
+    )
 
-    variance = equity_impact.get("variance_of_net_health_benefits", "N/A")
-    if isinstance(variance, float):
-        variance = f"{variance:,.2f}"
+    df = pd.DataFrame(rows)
+    return _render_table(df)
 
-    equity_summary = f"""
-### Equity Impact Summary
-- **Total Health Gain (Efficiency)**: {total_health_gain}
-- **Variance of Net Health Benefits (Equity)**: {variance}
-"""
 
-    report = f"""
-## Distributional Cost-Effectiveness Analysis (DCEA) Results
+def generate_impact_inventory_table(params: Dict) -> str:
+    """
+    Generate a CHEERS-style impact inventory indicating which cost components
+    are included under each perspective.
+    """
+    rows = []
+    categories = [
+        ("Direct medical (health system)", "health_system"),
+        ("Direct non-medical / societal", "societal"),
+        ("Productivity (human capital)", "productivity_hc"),
+        ("Productivity (friction cost)", "productivity_fc"),
+    ]
 
-### Distribution of Net Health Benefits
-{nhb_table}
-{equity_summary}
-"""
-    return report
+    costs = params.get("costs", {})
+    productivity = params.get("productivity_costs", {})
+
+    hs_costs = costs.get("health_system", {})
+    soc_costs = costs.get("societal", {})
+    hc_costs = productivity.get("human_capital", {})
+
+    for label, key in categories:
+        if key == "health_system":
+            hs_included = bool(hs_costs)
+            soc_included = False
+        elif key == "societal":
+            hs_included = False
+            soc_included = bool(soc_costs)
+        elif key == "productivity_hc":
+            hs_included = False
+            soc_included = bool(hc_costs)
+        else:
+            # friction cost method is available if friction parameters are defined
+            hs_included = False
+            soc_included = bool(params.get("friction_cost_params"))
+
+        rows.append(
+            {
+                "Category": label,
+                "Health System Included": "Yes" if hs_included else "No",
+                "Societal Included": "Yes" if soc_included else "No",
+            }
+        )
+
+    df = pd.DataFrame(rows)
+    return _render_table(df)
+
+
+def _render_table(df: pd.DataFrame) -> str:
+    """Render a table using great_tables when available, else markdown."""
+    if (
+        GREAT_TABLES_AVAILABLE and GT is not None
+    ):  # pragma: no cover - optional dependency
+        try:
+            return GT(df).to_html()
+        except Exception:
+            # Fall back silently to markdown if rendering fails
+            pass
+    return df.to_markdown(index=False)

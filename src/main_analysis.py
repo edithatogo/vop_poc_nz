@@ -14,7 +14,7 @@ import copy
 import json
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -35,9 +35,12 @@ from .dcea_analysis import (
     integrate_dce_with_cea,
 )
 from .dcea_equity_analysis import (  # Import DCEA functions
+    generate_dcea_results_table,
     plot_equity_impact_plane,
     plot_lorenz_curve,
+    run_dcea,
 )
+from .policy_brief_generator import generate_policy_brief
 from .discordance_analysis import calculate_decision_discordance
 from .dsa_analysis import (
     compose_dsa_dashboard,
@@ -62,11 +65,13 @@ from .visualizations import (
     plot_ceaf,
     plot_cost_effectiveness_plane,
     plot_decision_tree,
+    plot_discordance_loss,
     plot_evpi,
     plot_evppi,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,
+    plot_annual_cash_flow,
 )
 
 # Empirical DCE configuration
@@ -96,7 +101,9 @@ def load_parameters(filepath: str = "src/parameters.yaml") -> Dict:
         return yaml.safe_load(f)
 
 
-def get_childhood_obesity_prevention_parameters() -> Dict:  # pragma: no cover - demo parameters
+def get_childhood_obesity_prevention_parameters() -> (
+    Dict
+):  # pragma: no cover - demo parameters
     """
     Placeholder for parameters for a Childhood Obesity Prevention Program.
     In a real scenario, these would come from a literature review or data.
@@ -299,6 +306,29 @@ def run_corrected_analysis():  # noqa: C901  # pragma: no cover - demonstration 
         print(f"  Health System ICER: ${hs_results['icer']:,.2f}/QALY")
         for method, res in all_results[name]["societal"].items():
             print(f"  Societal ICER ({method}): ${res['icer']:,.2f}/QALY")
+
+            # Perform Distributional Cost-Effectiveness Analysis (DCEA) if subgroups exist
+            if res.get("subgroup_results"):
+                print(f"  Performing DCEA for {name} ({method})...")
+                # Define equity weights (Scenario: High Deprivation valued 1.5x)
+                # In a real analysis, these would be defined in parameters or derived
+                equity_weights = {
+                    "Low_SES": 1.5,
+                    "High_SES": 1.0,
+                    "Māori": 1.5,
+                    "Non-Māori": 1.0,
+                }
+                
+                dcea_res = run_dcea(
+                    res["subgroup_results"], 
+                    epsilon=0.5, 
+                    equity_weights=equity_weights
+                )
+                all_results[name]["societal"][method]["dcea_equity_analysis"] = dcea_res
+                
+                # Generate DCEA table
+                dcea_table = generate_dcea_results_table(dcea_res, f"{name} ({method})")
+                print(f"  Equity-Weighted Net Benefit: ${dcea_res.get('weighted_total_health_gain', 0):,.0f}")
 
     full_comparison = pd.concat(comparison_tables, ignore_index=True)
     full_parameters = pd.concat(parameters_tables, ignore_index=True)
@@ -561,7 +591,9 @@ def perform_voi_analysis(hpv_params: Dict) -> Dict:
     return voi_report
 
 
-def run_empirical_dcea_if_available() -> dict:  # pragma: no cover - optional file-based flow
+def run_empirical_dcea_if_available() -> (
+    dict
+):  # pragma: no cover - optional file-based flow
     """Run an empirical DCEA using conditional logit if a DCE CSV is available.
 
     Returns a dictionary of DCE results. If the file is missing or invalid,
@@ -1056,6 +1088,18 @@ def main():  # pragma: no cover - CLI entry point for full demo run
             equity_interventions.append(name)
     if equity_interventions:
         compose_equity_dashboard(equity_interventions, output_dir="output/figures/")
+
+    # Plot Discordance Loss
+    discordance_data = []
+    for name, res in results["intervention_results"].items():
+        if "discordance" in res:
+            discordance_data.append(res["discordance"])
+    if discordance_data:
+        plot_discordance_loss(discordance_data, output_dir="output/figures/")
+
+    # Generate Policy Brief
+    print("\nGenerating Policy Brief...")
+    generate_policy_brief(results["intervention_results"], output_dir="output/reports/")
 
     # Print summary
     print("\n" + "=" * 70)

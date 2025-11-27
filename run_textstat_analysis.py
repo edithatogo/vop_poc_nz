@@ -15,7 +15,7 @@ import textstat
 def analyze_file(filepath: str) -> Dict:
     """Analyze a single file with textstat metrics."""
     try:
-        with open(filepath, encoding='utf-8', errors='ignore') as f:
+        with open(filepath, encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
         if not content.strip():
@@ -23,20 +23,24 @@ def analyze_file(filepath: str) -> Dict:
 
         # Calculate text statistics
         stats = {
-            'filename': filepath,
-            'character_count': len(content),
-            'syllable_count': textstat.syllable_count(content),
-            'lexicon_count': textstat.lexicon_count(content),
-            'sentence_count': textstat.sentence_count(content),
-            'flesch_reading_ease': textstat.flesch_reading_ease(content),
-            'flesch_kincaid_grade': textstat.flesch_kincaid_grade(content),
-            'smog_index': textstat.smog_index(content),
-            'coleman_liau_index': textstat.coleman_liau_index(content),
-            'automated_readability_index': textstat.automated_readability_index(content),
-            'dale_chall_readability_score': textstat.dale_chall_readability_score(content),
-            'difficult_words': textstat.difficult_words(content),
-            'linsear_write_formula': textstat.linsear_write_formula(content),
-            'gunning_fog': textstat.gunning_fog(content)
+            "filename": filepath,
+            "character_count": len(content),
+            "syllable_count": textstat.syllable_count(content),
+            "lexicon_count": textstat.lexicon_count(content),
+            "sentence_count": textstat.sentence_count(content),
+            "flesch_reading_ease": textstat.flesch_reading_ease(content),
+            "flesch_kincaid_grade": textstat.flesch_kincaid_grade(content),
+            "smog_index": textstat.smog_index(content),
+            "coleman_liau_index": textstat.coleman_liau_index(content),
+            "automated_readability_index": textstat.automated_readability_index(
+                content
+            ),
+            "dale_chall_readability_score": textstat.dale_chall_readability_score(
+                content
+            ),
+            "difficult_words": textstat.difficult_words(content),
+            "linsear_write_formula": textstat.linsear_write_formula(content),
+            "gunning_fog": textstat.gunning_fog(content),
         }
 
         return stats
@@ -51,13 +55,15 @@ def print_summary(stats: Dict):
         print("No file analyzed.")
         return
 
-    print("\n" + "="*80)
-    print(f"TEXTSTAT ANALYSIS SUMMARY FOR: {os.path.basename(stats.get('filename', 'unknown'))}")
-    print("="*80)
+    print("\n" + "=" * 80)
+    print(
+        f"TEXTSTAT ANALYSIS SUMMARY FOR: {os.path.basename(stats.get('filename', 'unknown'))}"
+    )
+    print("=" * 80)
 
-    flesch = stats.get('flesch_reading_ease', 0)
-    grade = stats.get('flesch_kincaid_grade', 0)
-    gunning = stats.get('gunning_fog', 0)
+    flesch = stats.get("flesch_reading_ease", 0)
+    grade = stats.get("flesch_kincaid_grade", 0)
+    gunning = stats.get("gunning_fog", 0)
 
     print(f"Flesch Reading Ease: {flesch:.2f}")
     print(f"Flesch-Kincaid Grade Level: {grade:.2f}")
@@ -101,5 +107,5 @@ def main():
     print_summary(stats)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

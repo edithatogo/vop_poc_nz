@@ -64,7 +64,14 @@ def test_markov_and_validation_errors():
         _validate_model_parameters({})
     with pytest.raises(ValueError):
         _validate_model_parameters(
-            {"states": [], "transition_matrices": {}, "cycles": 1, "initial_population": [], "costs": {}, "qalys": {}}
+            {
+                "states": [],
+                "transition_matrices": {},
+                "cycles": 1,
+                "initial_population": [],
+                "costs": {},
+                "qalys": {},
+            }
         )
     with pytest.raises(ValueError):
         _validate_model_parameters(
@@ -81,14 +88,26 @@ def test_markov_and_validation_errors():
 
 def test_cluster_branches_cover():
     rng = np.random.default_rng(1)
-    results = {"HPV Vaccination": {"inc_cost": rng.normal(0, 1, size=30), "inc_qaly": rng.normal(0.1, 0.02, size=30)}}
+    results = {
+        "HPV Vaccination": {
+            "inc_cost": rng.normal(0, 1, size=30),
+            "inc_qaly": rng.normal(0.1, 0.02, size=30),
+        }
+    }
     analyzer = ClusterAnalysis(results, ["HPV Vaccination"])
     res = analyzer.prepare_clustering_data("HPV Vaccination", n_simulations=10)
     assert res.shape[0] == 10
 
-    smoking_results = {"Smoking Cessation": {"inc_cost": rng.normal(0, 1, size=20), "inc_qaly": rng.normal(0.1, 0.02, size=20)}}
+    smoking_results = {
+        "Smoking Cessation": {
+            "inc_cost": rng.normal(0, 1, size=20),
+            "inc_qaly": rng.normal(0.1, 0.02, size=20),
+        }
+    }
     smoking_analyzer = ClusterAnalysis(smoking_results, ["Smoking Cessation"])
-    res_smoking = smoking_analyzer.prepare_clustering_data("Smoking Cessation", n_simulations=5)
+    res_smoking = smoking_analyzer.prepare_clustering_data(
+        "Smoking Cessation", n_simulations=5
+    )
     assert res_smoking.shape[0] == 5
 
 
@@ -101,7 +120,9 @@ def test_dsa_branch_variants():
         "Obesity Program": base,
         "Housing Upgrade": base,
     }
-    two_way = perform_comprehensive_two_way_dsa(interventions, wtp_threshold=10000, n_points=1)
+    two_way = perform_comprehensive_two_way_dsa(
+        interventions, wtp_threshold=10000, n_points=1
+    )
     assert two_way
     three_way = perform_three_way_dsa(interventions, wtp_threshold=10000, n_points=1)
     assert three_way
@@ -127,7 +148,9 @@ def test_value_of_information_ceac():
     )
     psa = ProbabilisticSensitivityAnalysis(
         model_func=lambda params, intervention_type=None: (0, 0),
-        parameters={"dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}},
+        parameters={
+            "dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}
+        },
         wtp_threshold=20000,
     )
     ceac = psa.calculate_ceac(psa_results, wtp_values=[10000, 20000])
@@ -136,7 +159,9 @@ def test_value_of_information_ceac():
     with pytest.raises(ValueError):
         psa.parameters = {"bad": {"distribution": "unknown", "params": {}}}
         psa.sample_parameters(n_samples=1)
-    psa.parameters = {"dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}}
+    psa.parameters = {
+        "dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}
+    }
 
     from src.value_of_information import (
         calculate_evppi,
@@ -153,10 +178,14 @@ def test_value_of_information_ceac():
     )
     assert all(v == 0.0 for v in evppi_missing)
 
-    explanation = explain_value_of_information_benefits(base_icer=60000, wtp_threshold=50000)
+    explanation = explain_value_of_information_benefits(
+        base_icer=60000, wtp_threshold=50000
+    )
     assert explanation["value_of_information_justification"]
 
-    voi = generate_voi_report(psa_results, wtp_thresholds=None, target_population=1000, parameter_names=None)
+    voi = generate_voi_report(
+        psa_results, wtp_thresholds=None, target_population=1000, parameter_names=None
+    )
     assert "value_of_information" in voi
 
 

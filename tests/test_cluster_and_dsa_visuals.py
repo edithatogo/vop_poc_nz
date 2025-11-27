@@ -66,7 +66,9 @@ def test_cluster_analysis_and_plots(tmp_path):
     fig_dir = tmp_path / "cluster_figs"
     fig_dir.mkdir()
     plot_cluster_analysis({"Demo": cluster_res}, output_dir=str(fig_dir))
-    plot_comparative_clusters({"A": cluster_res, "B": cluster_res}, output_dir=str(fig_dir))
+    plot_comparative_clusters(
+        {"A": cluster_res, "B": cluster_res}, output_dir=str(fig_dir)
+    )
     assert any(fig_dir.iterdir())
 
 
@@ -118,7 +120,9 @@ def test_dsa_workflow_and_dashboard(tmp_path, base_params):
     one_way = perform_one_way_dsa(interventions, wtp_threshold=20000, n_points=3)
     plot_one_way_dsa_tornado(one_way, output_dir=str(figs))
 
-    two_way = perform_comprehensive_two_way_dsa(interventions, wtp_threshold=20000, n_points=3)
+    two_way = perform_comprehensive_two_way_dsa(
+        interventions, wtp_threshold=20000, n_points=3
+    )
     plot_two_way_dsa_heatmaps(two_way, output_dir=str(figs))
 
     three_way = perform_three_way_dsa(interventions, wtp_threshold=20000, n_points=3)
@@ -135,10 +139,14 @@ def test_additional_visuals_and_dashboards(tmp_path):
     plot_survival_gof(
         km_time=[0, 1, 2],
         km_survival=[1.0, 0.9, 0.8],
-        fitted_models={"Weibull": {"time": [0, 1, 2], "survival": [1.0, 0.85, 0.7], "aic": 10.0}},
+        fitted_models={
+            "Weibull": {"time": [0, 1, 2], "survival": [1.0, 0.85, 0.7], "aic": 10.0}
+        },
         output_dir=str(fig_dir),
     )
-    plot_societal_drivers("Demo", {"Productivity": 100, "Carer Time": 50}, output_dir=str(fig_dir))
+    plot_societal_drivers(
+        "Demo", {"Productivity": 100, "Carer Time": 50}, output_dir=str(fig_dir)
+    )
     plot_evp_curve(
         [10000, 20000],
         hs_nmb={"A": [1.0, 2.0], "B": [0.5, 1.5]},

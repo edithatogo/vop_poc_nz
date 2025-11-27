@@ -20,17 +20,20 @@ This implementation addresses all the issues identified by reviewers:
 ```
 canonical_code/
 ├── src/                    # Source code
+│   ├── pipeline/           # Analysis and Reporting pipelines
+│   │   ├── analysis.py     # Core logic (CEA, DCEA, VOI, DSA)
+│   │   └── reporting.py    # Figure generation and Policy Brief
 │   ├── cea_model_core.py   # Corrected CEA model with validation
-│   ├── dcea_analysis.py    # Full DCEA implementation 
+│   ├── dce_models.py       # Discrete Choice Experiment models
 │   ├── value_of_information.py  # Proper VOI analysis
 │   ├── parameters.yaml     # Model parameters
-│   └── main_analysis.py    # Full integrated analysis
+│   └── main.py             # Entry point script
 ├── data/                   # Data files (if any)
 ├── docs/                   # Documentation
 ├── tests/                  # Unit tests
-├── notebooks/              # Jupyter notebooks for analysis
 ├── output/                 # Output files (created during execution)
 ├── requirements.txt        # Python dependencies
+├── Snakefile               # Workflow definition
 └── README.md              # This file
 ```
 
@@ -73,8 +76,9 @@ canonical_code/
 ### 8. Bespoke Plotting Library
 - Generates publication-grade plots including CE planes with ellipses, CEAC, CEAF, EVPI, net benefit curves, and various DSA plots.
 
-### 9. Automated Reporting
-- Generates comprehensive Markdown reports for each intervention summarizing key findings.
+### 9. Automated Reporting & Policy Briefs
+- Generates comprehensive Markdown reports for each intervention.
+- **NEW:** Auto-generates a 1-page **Policy Brief** synthesizing Efficiency, Equity, and Fiscal Impact for decision-makers.
 
 ### 10. Transparency and Documentation
 - Comprehensive parameters/assumptions/sources table
@@ -108,11 +112,14 @@ The `parameters.yaml` file is ignored by git, so your local changes will not be 
 
 ## Usage
 
-Run the comprehensive analysis with:
+Run the comprehensive analysis using **Snakemake**:
 
 ```bash
-cd canonical_code/src
-python main_analysis.py
+# Run the full pipeline (Analysis -> Figures -> Policy Brief)
+snakemake -c1
+
+# Run with a specific output directory (e.g., for versioning)
+snakemake -c1 --config output_dir=output/v1.0
 ```
 
 This will:
@@ -121,16 +128,17 @@ This will:
 - Create parameters documentation
 - Run value of information analysis
 - Perform DCEA (with synthetic data for demonstration)
-- Generate all required outputs
+- Generate all required outputs including the **Policy Brief**
 
 ## Key Outputs
 
 The analysis generates several important outputs in the `output/` directory:
 
-1. `comparative_icer_table.csv` - Side-by-side comparison of health system vs societal perspectives
-2. `parameters_assumptions_sources_table.csv` - Full documentation of all parameters
-3. `voi_analysis_summary.json` - Value of information analysis results
-4. `complete_analysis_results.json` - Complete results including all corrections
+1. `reports/policy_brief.md` - **Executive Summary** for decision-makers
+2. `comparative_icer_table.csv` - Side-by-side comparison of health system vs societal perspectives
+3. `parameters_assumptions_sources_table.csv` - Full documentation of all parameters
+4. `voi_analysis_summary.json` - Value of information analysis results
+5. `complete_analysis_results.json` - Complete results including all corrections
 
 ## Addressing Reviewer Feedback
 
@@ -152,10 +160,12 @@ The analysis generates several important outputs in the `output/` directory:
 
 ## Files Description
 
-- `cea_model_core.py`: Core corrected CEA model with proper mathematical calculations
-- `dcea_analysis.py`: Full Discrete Choice Experiment Analysis implementation
-- `value_of_information.py`: Proper EVPI/EVPPI calculations with methodology justification
-- `main_analysis.py`: Integrated analysis combining all improvements
+- `src/pipeline/analysis.py`: Core logic for CEA, DCEA, VOI, and DSA
+- `src/pipeline/reporting.py`: Figure generation and Policy Brief creation
+- `src/dce_models.py`: Discrete Choice Experiment models
+- `src/cea_model_core.py`: Core corrected CEA model with proper mathematical calculations
+- `src/value_of_information.py`: Proper EVPI/EVPPI calculations with methodology justification
+- `src/main.py`: Entry point script orchestrating the pipeline
 
 ## Reproducibility
 

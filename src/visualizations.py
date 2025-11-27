@@ -19,7 +19,6 @@ from .value_of_information import ProbabilisticSensitivityAnalysis, calculate_ev
 try:
     from plotnine import (
         aes,
-        element_blank,
         geom_bar,
         geom_errorbar,
         geom_line,
@@ -192,6 +191,83 @@ def plot_cost_effectiveness_plane(
     )
 
 
+def plot_comparative_ce_plane(
+    all_results, output_dir="output/figures/"
+):
+    """
+    Create side-by-side cost-effectiveness plane plots (Health System vs Societal).
+    """
+    apply_default_style()
+
+    fig, axes = plt.subplots(1, 2, figsize=(18, 8), dpi=300)
+    fig.suptitle(
+        "Cost-Effectiveness Plane: Perspective Comparison\n(WTP = $50,000/QALY)",
+        fontsize=16,
+        fontweight="bold",
+    )
+
+    perspectives = ["health_system", "societal"]
+    titles = ["Health System Perspective", "Societal Perspective"]
+
+    for i, perspective in enumerate(perspectives):
+        ax = axes[i]
+        
+        # Iterate over all interventions
+        for model_name, results in all_results.items():
+            # Extract data for this perspective
+            # Note: The structure of all_results differs slightly based on how it was constructed
+            # In analysis.py: all_results[name] = {"health_system": hs_results, "societal": {method: s_results}}
+            # We need to handle this structure carefully.
+            
+            data = None
+            if perspective == "health_system":
+                if "health_system" in results:
+                    data = results["health_system"]
+            else: # societal
+                # Default to human_capital for the main plot if multiple exist
+                if "societal" in results:
+                    soc_res = results["societal"]
+                    if "human_capital" in soc_res:
+                        data = soc_res["human_capital"]
+                    elif "friction_cost" in soc_res:
+                        data = soc_res["friction_cost"]
+            
+            if data:
+                # Check if we have bootstrap results (scatter) or just point estimates
+                if "inc_cost" in data and isinstance(data["inc_cost"], (list, np.ndarray)):
+                     ax.scatter(
+                        data["inc_cost"], 
+                        data["inc_qaly"], 
+                        alpha=0.4, 
+                        s=15, 
+                        label=model_name
+                    )
+                else:
+                    # Point estimate
+                    ax.scatter(
+                        data.get("incremental_cost", 0), 
+                        data.get("incremental_qalys", 0), 
+                        s=100, 
+                        marker="D",
+                        label=model_name
+                    )
+
+        ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.set_xlabel("Incremental Costs ($)", fontsize=12)
+        ax.set_ylabel("Incremental QALYs", fontsize=12)
+        ax.set_title(titles[i], fontsize=14)
+        ax.legend(fontsize=10)
+        ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    save_figure(
+        fig,
+        output_dir,
+        "cost_effectiveness_plane_comparative",
+    )
+
+
 def plot_ceac(
     all_results,
     wtp_thresholds,
@@ -222,7 +298,9 @@ def plot_ceac(
         # Calculate CEAC for the societal perspective (as psa_run_cea_wrapper is currently set to societal)
         psa_calculator = ProbabilisticSensitivityAnalysis(
             model_func=lambda params, intervention_type=None: (0, 0),
-            parameters={"dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}},
+            parameters={
+                "dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}
+            },
             wtp_threshold=50000,
         )
         ceac_df = psa_calculator.calculate_ceac(psa_results, wtp_values=wtp_thresholds)
@@ -277,7 +355,9 @@ def plot_ceaf(
         psa_results = all_results[model_name]
         psa_calculator = ProbabilisticSensitivityAnalysis(
             model_func=lambda params, intervention_type=None: (0, 0),
-            parameters={"dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}},
+            parameters={
+                "dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}
+            },
             wtp_threshold=50000,
         )
         ceac_df = psa_calculator.calculate_ceac(psa_results, wtp_values=wtp_thresholds)
@@ -716,8 +796,8 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         n_clusters = results["n_clusters"]
         cluster_analysis = results["cluster_analysis"]
 
-        # Create figure with subplots
-        fig, axes = plt.subplots(2, 2, figsize=(16, 12), dpi=300)
+        # Create figure with subplots (1 row, 2 columns)
+        fig, axes = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
         fig.suptitle(
             f"Cluster Analysis Results: {intervention_name}\n({n_clusters} Clusters, Silhouette Score: {results['silhouette_score']:.3f})",
             fontsize=16,
@@ -725,7 +805,7 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         )
 
         # 1. PCA scatter plot
-        ax = axes[0, 0]
+        ax = axes[0]
         colors = ["blue", "red", "green", "orange", "purple"][:n_clusters]
         for cluster_id in range(n_clusters):
             cluster_mask = cluster_labels == cluster_id
@@ -764,7 +844,7 @@ def plot_cluster_analysis(cluster_results, output_dir="output/figures/"):
         ax.grid(True, alpha=0.3)
 
         # 2. Cluster characteristics comparison
-        ax = axes[0, 1]
+        ax = axes[1]
         feature_names = [
             "Inc Cost",
             "Inc QALYs",
@@ -1149,7 +1229,9 @@ def plot_density_ce_plane(
         print("No incremental cost/QALY data provided for density CE plane.")
         return
 
-    if use_plotnine and not PLOTNINE_AVAILABLE:  # pragma: no cover - optional dependency
+    if (
+        use_plotnine and not PLOTNINE_AVAILABLE
+    ):  # pragma: no cover - optional dependency
         print("plotnine not available; falling back to matplotlib.")
         use_plotnine = False
 
@@ -1240,7 +1322,9 @@ def plot_subgroup_forest(
         print("No subgroup results provided for forest plot.")
         return
 
-    if use_plotnine and not PLOTNINE_AVAILABLE:  # pragma: no cover - optional dependency
+    if (
+        use_plotnine and not PLOTNINE_AVAILABLE
+    ):  # pragma: no cover - optional dependency
         print("plotnine not available; falling back to matplotlib.")
         use_plotnine = False
 
@@ -1323,7 +1407,9 @@ def plot_annual_cash_flow(
     years = bia_results.get("years")
     investment = bia_results.get("investment_costs")
     offsets = bia_results.get("cost_offsets")
-    if years is None or investment is None or offsets is None:  # pragma: no cover - guard
+    if (
+        years is None or investment is None or offsets is None
+    ):  # pragma: no cover - guard
         print("Incomplete BIA inputs for annual cash flow plot.")
         return
 
@@ -1423,7 +1509,12 @@ def plot_cumulative_nmb(
         cycles, 0, cumulative, where=(cumulative < 0).tolist(), color="red", alpha=0.1
     )
     ax.fill_between(
-        cycles, 0, cumulative, where=(cumulative >= 0).tolist(), color="green", alpha=0.1
+        cycles,
+        0,
+        cumulative,
+        where=(cumulative >= 0).tolist(),
+        color="green",
+        alpha=0.1,
     )
     ax.set_xlabel("Cycle")
     ax.set_ylabel(f"Cumulative NMB ({wtp_label})")
@@ -1509,11 +1600,15 @@ def plot_model_calibration(
     """
     Calibration plot comparing observed vs model-predicted outcomes over time.
     """
-    if years is None or observed_mean is None or predicted_mean is None:  # pragma: no cover - guard
+    if (
+        years is None or observed_mean is None or predicted_mean is None
+    ):  # pragma: no cover - guard
         print("Incomplete inputs for calibration plot.")
         return
 
-    if use_plotnine and not PLOTNINE_AVAILABLE:  # pragma: no cover - optional dependency
+    if (
+        use_plotnine and not PLOTNINE_AVAILABLE
+    ):  # pragma: no cover - optional dependency
         print("plotnine not available; falling back to matplotlib.")
         use_plotnine = False
 
@@ -1592,7 +1687,9 @@ def plot_rankogram(
     }
     rank_df = pd.DataFrame(prob, index=[f"Rank {i}" for i in range(1, n_strat + 1)])
 
-    if use_plotnine and not PLOTNINE_AVAILABLE:  # pragma: no cover - optional dependency
+    if (
+        use_plotnine and not PLOTNINE_AVAILABLE
+    ):  # pragma: no cover - optional dependency
         print("plotnine not available; falling back to matplotlib.")
         use_plotnine = False
 
@@ -1658,7 +1755,9 @@ def plot_resource_constraint(
     """
     Resource capacity constraint plot showing demand vs capacity.
     """
-    if annual_resource_use is None or capacity_limit is None:  # pragma: no cover - guard
+    if (
+        annual_resource_use is None or capacity_limit is None
+    ):  # pragma: no cover - guard
         print("Incomplete inputs for resource constraint plot.")
         return
 
@@ -1728,7 +1827,9 @@ def plot_ly_vs_qaly(
     """
     Stacked bar chart decomposing QALY gains into life-years and utility components.
     """
-    if not strategies or ly_gains is None or utility_gains is None:  # pragma: no cover - guard
+    if (
+        not strategies or ly_gains is None or utility_gains is None
+    ):  # pragma: no cover - guard
         print("Incomplete inputs for LY vs QALY plot.")
         return
 
@@ -1755,7 +1856,9 @@ def plot_decision_reversal_matrix(
     """
     Concordance plot showing decision reversals between health system and societal perspectives.
     """
-    if hs_nmb is None or soc_nmb is None or strategy_names is None:  # pragma: no cover - guard
+    if (
+        hs_nmb is None or soc_nmb is None or strategy_names is None
+    ):  # pragma: no cover - guard
         print("Incomplete inputs for decision reversal matrix.")
         return
 
@@ -2020,7 +2123,9 @@ def plot_equity_efficiency_plane(
     output_dir: str = "output/figures/",
 ):
     """Equity-Efficiency impact plane."""
-    if not strategies or efficiency_gains is None or equity_gains is None:  # pragma: no cover - guard
+    if (
+        not strategies or efficiency_gains is None or equity_gains is None
+    ):  # pragma: no cover - guard
         print("Inputs missing for equity-efficiency plane.")
         return
     apply_default_style()
@@ -2087,7 +2192,9 @@ def plot_affordability_ribbon(
     perspective: Optional[str] = None,
 ):
     """Affordability ribbon for BIA sensitivity."""
-    if years is None or mean is None or lower is None or upper is None:  # pragma: no cover - guard
+    if (
+        years is None or mean is None or lower is None or upper is None
+    ):  # pragma: no cover - guard
         print("Inputs missing for affordability ribbon.")
         return
     apply_default_style()
@@ -2182,11 +2289,15 @@ def plot_net_cash_flow_waterfall(
     perspective: Optional[str] = None,
 ):
     """Waterfall showing yearly net cash flows."""
-    if years is None or investment_costs is None or cost_offsets is None:  # pragma: no cover - guard
+    if (
+        years is None or investment_costs is None or cost_offsets is None
+    ):  # pragma: no cover - guard
         print("Inputs missing for net cash flow waterfall.")
         return
     apply_default_style()
-    net: List[float] = [float(i) - float(o) for i, o in zip(investment_costs, cost_offsets)]
+    net: List[float] = [
+        float(i) - float(o) for i, o in zip(investment_costs, cost_offsets)
+    ]
     labels = [f"Year {y}" for y in years]
     fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
     running: float = 0.0
@@ -2204,6 +2315,89 @@ def plot_net_cash_flow_waterfall(
         fig,
         output_dir,
         build_filename_base("net_cash_flow_waterfall", intervention, perspective),
+    )
+
+
+def plot_annual_cash_flow(
+    years: List[int],
+    gross_costs: List[float],
+    net_costs: List[float],
+    output_dir: str = "output/figures/",
+    intervention: Optional[str] = None,
+    perspective: Optional[str] = None,
+):
+    """
+    Plot annual cash flows (Gross vs Net) for Budget Impact Analysis.
+    """
+    if years is None or gross_costs is None or net_costs is None:
+        print("Inputs missing for annual cash flow plot.")
+        return
+
+    apply_default_style()
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+    
+    width = 0.35
+    x = np.arange(len(years))
+    
+    ax.bar(x - width/2, gross_costs, width, label='Gross Cost', color='firebrick', alpha=0.8)
+    ax.bar(x + width/2, net_costs, width, label='Net Cost', color='navy', alpha=0.8)
+    
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Cost ($)")
+    ax.set_title(f"Annual Budget Impact: {intervention}")
+    ax.set_xticks(x)
+    ax.set_xticklabels(years)
+    ax.legend()
+    ax.grid(alpha=0.3, axis="y")
+    
+    plt.tight_layout()
+    save_figure(
+        fig,
+        output_dir,
+        build_filename_base("annual_cash_flow", intervention, perspective),
+    )
+
+
+def plot_discordance_loss(
+    discordance_results: List[Dict],
+    output_dir: str = "output/figures/",
+):
+    """
+    Plot the Opportunity Cost (Loss) from Discordance across interventions.
+    """
+    if not discordance_results:
+        print("No discordance results to plot.")
+        return
+
+    apply_default_style()
+    
+    names = [r["intervention"] for r in discordance_results]
+    losses = [r["loss_from_discordance"] for r in discordance_results]
+    
+    # Filter out zero losses if desired, or keep to show alignment
+    # For impact, we highlight the non-zero ones
+    
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+    
+    bars = ax.bar(names, losses, color='darkred', alpha=0.7)
+    
+    ax.set_ylabel("Opportunity Cost ($)")
+    ax.set_title("Value of Perspective: Cost of Decision Discordance")
+    ax.grid(alpha=0.3, axis="y")
+    
+    # Add value labels
+    for bar in bars:
+        height = bar.get_height()
+        if height > 0:
+            ax.text(bar.get_x() + bar.get_width()/2., height,
+                    f'${height:,.0f}',
+                    ha='center', va='bottom', rotation=0)
+    
+    plt.tight_layout()
+    save_figure(
+        fig,
+        output_dir,
+        build_filename_base("discordance_loss"),
     )
 
 

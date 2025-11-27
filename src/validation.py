@@ -2,15 +2,16 @@
 Validation utilities using pandera and pydantic for health economic analyses.
 """
 
-from typing import Any, List, Optional
-
 import os
+import warnings
+from typing import Dict, List, Optional
+
+import numpy as np
+import pandas as pd
+from pandera import Column, DataFrameSchema
+from pydantic import BaseModel, Field
 
 os.environ.setdefault("DISABLE_PANDERA_IMPORT_WARNING", "true")
-
-from pandera import Column, DataFrameSchema
-import pandas as pd
-from pydantic import BaseModel, Field
 
 PSAResultsSchema = DataFrameSchema(
     {
@@ -44,8 +45,47 @@ class ParametersModel(BaseModel):
     productivity_loss_states: Optional[dict] = None
 
 
+def validate_transition_matrices(params: Dict) -> None:
+    """Validate transition matrices for shape, non-negativity, and row sums."""
+    states = params.get("states", [])
+    tm = params.get("transition_matrices", {})
+    for name in ("standard_care", "new_treatment"):
+        matrix = np.array(tm.get(name, []), dtype=float)
+        if matrix.shape != (len(states), len(states)):
+            raise ValueError(
+                f"Transition matrix '{name}' must be square with size len(states)={len(states)}"
+            )
+        if np.any(matrix < 0):
+            raise ValueError(f"Transition matrix '{name}' contains negative entries")
+        row_sums = np.sum(matrix, axis=1)
+        if not np.allclose(row_sums, 1.0, atol=1e-6):
+            raise ValueError(
+                f"Transition matrix '{name}' rows must sum to 1.0; got {row_sums}"
+            )
+
+
+def validate_costs_and_qalys(params: Dict) -> None:
+    """Ensure cost and QALY arrays are present and non-negative."""
+    for perspective in ("health_system", "societal"):
+        costs = params.get("costs", {}).get(perspective, {})
+        for arm in ("standard_care", "new_treatment"):
+            arr = np.array(costs.get(arm, []), dtype=float)
+            if np.any(arr < 0):
+                warnings.warn(
+                    f"Costs for {perspective}/{arm} contain negative values (interpreted as savings).",
+                    UserWarning,
+                    stacklevel=2,
+                )
+    for arm in ("standard_care", "new_treatment"):
+        qalys = np.array(params.get("qalys", {}).get(arm, []), dtype=float)
+        if np.any(qalys < 0):
+            raise ValueError(f"QALYs for {arm} contain negative values")
+
+
 __all__ = [
     "PSAResultsSchema",
     "ParametersModel",
+    "validate_costs_and_qalys",
     "validate_psa_results",
+    "validate_transition_matrices",
 ]

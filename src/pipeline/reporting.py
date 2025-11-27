@@ -1,0 +1,137 @@
+"""
+Reporting Pipeline Module.
+
+This module handles the generation of all figures, dashboards, and reports
+based on the results from the analysis pipeline.
+"""
+
+import os
+import numpy as np
+
+from ..bia_model import bia_to_markdown_table
+from ..dcea_equity_analysis import (
+    plot_equity_impact_plane,
+    plot_lorenz_curve,
+)
+from ..dsa_analysis import (
+    compose_dsa_dashboard,
+    plot_one_way_dsa_tornado,
+    plot_three_way_dsa_3d,
+    plot_two_way_dsa_heatmaps,
+)
+from ..policy_brief_generator import generate_policy_brief
+from ..visualizations import (
+    compose_bia_dashboard,
+    compose_dashboard,
+    compose_equity_dashboard,
+    plot_ceac,
+    plot_ceaf,
+    plot_comparative_ce_plane,
+    plot_cost_effectiveness_plane,
+    plot_decision_tree,
+    plot_discordance_loss,
+    plot_evpi,
+    plot_evppi,
+    plot_net_benefit_curves,
+    plot_pop_evpi,
+    plot_value_of_perspective,
+    plot_annual_cash_flow,
+)
+
+def run_reporting_pipeline(results: dict, output_dir: str = "output"):
+    """
+    Run the complete reporting pipeline.
+    Generates all figures, dashboards, and the policy brief.
+    """
+    print("=" * 70)
+    print("RUNNING REPORTING PIPELINE")
+    print("=" * 70)
+
+    os.makedirs(output_dir, exist_ok=True)
+    figures_dir = os.path.join(output_dir, "figures")
+    reports_dir = os.path.join(output_dir, "reports")
+    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(reports_dir, exist_ok=True)
+
+    # 1. Write Text Reports
+    print("\nWriting results to output files...")
+    for name, report in results["reports"].items():
+        with open(os.path.join(output_dir, f"{name}_report.md"), "w") as f:
+            f.write(report)
+            
+    # 2. Generate Plots
+    print("\nGenerating all plots...")
+    wtp_thresholds = np.linspace(0, 100000, 21)
+    
+    # CE Plane & Curves
+    plot_cost_effectiveness_plane(results["probabilistic_results"], perspective="societal", output_dir=figures_dir)
+    plot_comparative_ce_plane(results["intervention_results"], output_dir=figures_dir)
+    plot_ceac(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_ceaf(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_evpi(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_net_benefit_curves(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_value_of_perspective(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_pop_evpi(results["probabilistic_results"], wtp_thresholds, perspective="societal", output_dir=figures_dir)
+    plot_evppi(results["voi_analysis"], output_dir=figures_dir)
+
+    # Decision Trees
+    for name, params in results["selected_interventions"].items():
+        plot_decision_tree(name, params, output_dir=figures_dir)
+
+    # DSA Plots
+    plot_one_way_dsa_tornado(results["dsa_analysis"]["1_way"], output_dir=figures_dir)
+    plot_two_way_dsa_heatmaps(results["dsa_analysis"]["2_way"], output_dir=figures_dir)
+    plot_three_way_dsa_3d(results["dsa_analysis"]["3_way"], output_dir=figures_dir)
+    compose_dsa_dashboard(output_dir=figures_dir)
+
+    # BIA Plots
+    for name, bia_df in results["bia_results"].items():
+        plot_annual_cash_flow(
+            years=bia_df["year"].tolist(),
+            gross_costs=bia_df["gross_cost"].tolist(),
+            net_costs=bia_df["net_cost"].tolist(),
+            output_dir=figures_dir,
+            intervention=name
+        )
+    compose_bia_dashboard(output_dir=figures_dir)
+
+    # Equity Plots
+    equity_interventions = []
+    for name, dcea_res in results.get("dcea_equity_analysis", {}).items():
+        if dcea_res:
+            plot_equity_impact_plane(dcea_res, name, output_dir=figures_dir)
+            plot_lorenz_curve(dcea_res, name, output_dir=figures_dir)
+            equity_interventions.append(name)
+    if equity_interventions:
+        compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
+
+    # Discordance Loss Plot
+    discordance_data = []
+    for name, res in results["intervention_results"].items():
+        if "discordance" in res:
+            discordance_data.append(res["discordance"])
+    if discordance_data:
+        plot_discordance_loss(discordance_data, output_dir=figures_dir)
+
+    # 3. Dashboards
+    dashboard_images = [
+        os.path.join(figures_dir, "cost_effectiveness_plane_societal.png"),
+        os.path.join(figures_dir, "cost_effectiveness_acceptability_curve_societal.png"),
+        os.path.join(figures_dir, "cost_effectiveness_acceptability_frontier_societal.png"),
+        os.path.join(figures_dir, "expected_value_perfect_information_societal.png"),
+        os.path.join(figures_dir, "net_benefit_curves_societal.png"),
+        os.path.join(figures_dir, "value_of_perspective_societal.png"),
+        os.path.join(figures_dir, "population_evpi_societal.png"),
+        os.path.join(figures_dir, "expected_value_partial_perfect_information_societal.png"),
+    ]
+    compose_dashboard(
+        dashboard_images,
+        output_dir=figures_dir,
+        filename_base="dashboard_ce_voi_societal",
+    )
+
+    # 4. Policy Brief
+    print("\nGenerating Policy Brief...")
+    generate_policy_brief(results["intervention_results"], output_dir=reports_dir)
+    
+    print(f"\nReporting complete. Outputs saved to {output_dir}/")

@@ -54,9 +54,7 @@ def test_reporting_and_voi_smoke(tmp_path):
     intervention_results = {
         "TestIntervention": {
             "health_system": {"icer": 10000.0, "incremental_nmb": 5000.0},
-            "societal": {
-                "human_capital": {"icer": 8000.0, "incremental_nmb": 7000.0}
-            },
+            "societal": {"human_capital": {"icer": 8000.0, "incremental_nmb": 7000.0}},
         }
     }
     report = generate_policy_implications_report(intervention_results)
