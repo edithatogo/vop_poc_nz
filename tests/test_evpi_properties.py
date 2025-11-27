@@ -26,3 +26,15 @@ def test_evpi_non_negative(qaly_sc, qaly_nt, cost_sc, cost_nt, wtp):
     )
     evpi = calculate_evpi(df, wtp_threshold=wtp)
     assert evpi >= 0 or np.isclose(evpi, 0)
+
+
+def test_evpi_dominance():
+    """Test EVPI when one option clearly dominates."""
+    wtp = 50000
+    # If one option is always better, EVPI should be 0
+    psa_df_dominant = pd.DataFrame(
+        {"cost_sc": [1000], "qaly_sc": [5], "cost_nt": [900], "qaly_nt": [6]}
+    )
+    evpi_dominant = calculate_evpi(psa_df_dominant, wtp)
+    assert evpi_dominant == 0, f"EVPI should be 0 if one option dominates, got {evpi_dominant}"
+

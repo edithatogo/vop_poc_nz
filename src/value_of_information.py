@@ -238,21 +238,21 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
     max_nmb_per_sim = np.max(nmb_matrix, axis=1)
 
     # Find the expected NMB with current information (current optimal strategy)
-    current_optimal_nmb = np.mean(
-        np.max(
-            [
-                np.mean(nmb_sc),  # Expected NMB of standard care
-                np.mean(nmb_nt),  # Expected NMB of new treatment
-            ]
-        )
-    )
+    # Use Python's max for scalars to avoid ambiguity
+    expected_nmb_sc = np.mean(nmb_sc)
+    expected_nmb_nt = np.mean(nmb_nt)
+    current_optimal_nmb = max(expected_nmb_sc, expected_nmb_nt)
 
     # EVPI = Expected value with perfect information - Expected value with current info
     expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
     evpi = expected_nmb_with_perfect_info - current_optimal_nmb
 
+    # Handle floating point noise
+    if np.isclose(evpi, 0, atol=1e-5):
+        return 0.0
+
     # EVPI should always be non-negative
-    return max(0.0, evpi)
+    return max(0.0, float(evpi))
 
 
 def calculate_evppi(
