@@ -12,7 +12,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from graphviz import Digraph
+try:
+    from graphviz import Digraph
+    GRAPHVIZ_AVAILABLE = True
+except ImportError:
+    GRAPHVIZ_AVAILABLE = False
+
 
 from .value_of_information import ProbabilisticSensitivityAnalysis, calculate_evpi
 
@@ -107,6 +112,10 @@ def plot_decision_tree(  # pragma: no cover - requires graphviz rendering
     Generates a decision tree diagram for a given intervention.
     """
     os.makedirs(output_dir, exist_ok=True)
+
+    if not GRAPHVIZ_AVAILABLE:
+        print("Graphviz not available. Skipping decision tree plot.")
+        return
 
     dot = Digraph(comment=f"Decision Tree for {model_name}")
 
