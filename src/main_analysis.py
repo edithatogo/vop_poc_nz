@@ -18,6 +18,32 @@ import numpy as np
 import pandas as pd
 
 # Import our corrected modules (assumes running as installed package or with src on PYTHONPATH)
+from .dcea_equity_analysis import plot_equity_impact_plane, plot_lorenz_curve
+from .discordance_analysis import plot_discordance_loss
+from .dsa_analysis import (
+    compose_dsa_dashboard,
+    perform_comprehensive_two_way_dsa,
+    perform_one_way_dsa,
+    perform_three_way_dsa,
+    plot_one_way_dsa_tornado,
+    plot_three_way_dsa_3d,
+    plot_two_way_dsa_heatmaps,
+)
+from .pipeline.analysis import run_analysis_pipeline
+from .policy_brief_generator import generate_policy_brief
+from .visualizations import (
+    compose_bia_dashboard,
+    compose_dashboard,
+    compose_equity_dashboard,
+    plot_ceac,
+    plot_ceaf,
+    plot_cost_effectiveness_plane,
+    plot_evpi,
+    plot_evppi,
+    plot_net_benefit_curves,
+    plot_pop_evpi,
+    plot_value_of_perspective,
+)
 
 
 def generate_cheers_report() -> Dict:
@@ -333,7 +359,7 @@ def main():  # pragma: no cover - CLI entry point for full demo run
     Main function to run the comprehensive analysis addressing all reviewer feedback.
     """
     print("Running comprehensive analysis with all corrections...")
-    results = run_corrected_analysis()
+    results = run_analysis_pipeline()
 
     # Generate policy implications report
     print("\nGenerating policy implications report...")
