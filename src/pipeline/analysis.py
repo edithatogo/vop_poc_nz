@@ -22,16 +22,10 @@ from ..cea_model_core import (
 )
 from ..dcea_equity_analysis import run_dcea
 from ..discordance_analysis import calculate_decision_discordance
-from ..dsa_analysis import (
-    perform_comprehensive_two_way_dsa,
-    perform_one_way_dsa,
-    perform_three_way_dsa,
-)
 from ..reporting import generate_comprehensive_report
 from ..threshold_analysis import run_threshold_analysis
 from ..value_of_information import (
     ProbabilisticSensitivityAnalysis,
-    generate_voi_report,
 )
 
 
@@ -79,9 +73,9 @@ def generate_cheers_report() -> str:
 def run_analysis_pipeline() -> Dict:
     """
     Run the complete health economic analysis pipeline.
-    
+
     Performs CEA, DCEA, VOI, DSA, BIA for all selected interventions.
-    
+
     Returns:
         Dict with all analysis results
     """
@@ -201,18 +195,19 @@ def run_analysis_pipeline() -> Dict:
             },
         }
 
-        def psa_run_cea_wrapper(
-            sampled_params, intervention_type, base_params=params
-        ):
+        def psa_run_cea_wrapper(sampled_params, intervention_type, base_params=params):
             temp_params = copy.deepcopy(base_params)
-            temp_params["costs"]["health_system"]["new_treatment"][
-                0
-            ] *= sampled_params["cost_new_treatment_multiplier"]
+            temp_params["costs"]["health_system"]["new_treatment"][0] *= sampled_params[
+                "cost_new_treatment_multiplier"
+            ]
             temp_params["costs"]["societal"]["new_treatment"][0] *= sampled_params[
                 "cost_new_treatment_multiplier"
             ]
 
-            if "qalys" in temp_params and len(temp_params["qalys"]["new_treatment"]) > 1:
+            if (
+                "qalys" in temp_params
+                and len(temp_params["qalys"]["new_treatment"]) > 1
+            ):
                 temp_params["qalys"]["new_treatment"][1] *= sampled_params[
                     "qaly_new_treatment_multiplier"
                 ]
@@ -262,19 +257,23 @@ def run_analysis_pipeline() -> Dict:
         bia_pop = params.get("bia_population", {})
         total_pop = bia_pop.get("total_population", 100000)  # Fallback to 100k
         eligible_prop = bia_pop.get("eligible_proportion", 0.1)  # Fallback to 10%
-        
+
         bia_params = {
             "population_size": total_pop,
             "eligible_prop": eligible_prop,
             "uptake_by_year": [0.1, 0.2, 0.3, 0.4, 0.5],
             "cost_per_patient": params["costs"]["health_system"]["new_treatment"][0],
-            "offset_cost_per_patient": params["costs"]["health_system"]["standard_care"][
-                0
-            ],
-            "discount_rate": 0.03,  # Added discount rate
+            "offset_cost_per_patient": params["costs"]["health_system"][
+                "standard_care"
+            ][0],
+            "discount_rate": params.get(
+                "discount_rate", 0.03
+            ),  # Use parameter discount rate
         }
         bia_results[name] = project_bia(**bia_params)
-        print(f"  {name}: Population={total_pop:,}, Eligible={eligible_prop:.0%} ({total_pop *eligible_prop:,.0f} people)")
+        print(
+            f"  {name}: Population={total_pop:,}, Eligible={eligible_prop:.0%} ({total_pop *eligible_prop:,.0f} people)"
+        )
 
     # 10. Comprehensive Reports
     print("\nGenerating Comprehensive Reports...")

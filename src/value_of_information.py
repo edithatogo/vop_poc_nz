@@ -365,19 +365,19 @@ def calculate_value_of_perspective(
 ) -> Dict[str, float]:
     """
     Comprehensive Value of Perspective Analysis with multiple metrics.
-    
+
     Calculates four key perspective value metrics:
     1. Expected Value of Perspective (EVP) - Opportunity loss from choosing one perspective
     2. Perspective Premium - Incremental value of societal vs health system perspective
     3. Decision Discordance Cost - Cost when perspectives give conflicting recommendations
     4. Information Value - Value of knowing which perspective to use
-    
+
     Args:
         psa_results_hs: PSA results from health system perspective
         psa_results_soc: PSA results from societal perspective
         wtp_threshold: Willingness-to-pay threshold
         chosen_perspective: Perspective actually used for decision
-    
+
     Returns:
         Dict with all perspective value metrics
     """
@@ -393,96 +393,89 @@ def calculate_value_of_perspective(
 
     nmb_hs = _nmb(psa_results_hs)
     nmb_soc = _nmb(psa_results_soc)
-    
+
     # 1. EXPECTED VALUE OF PERSPECTIVE (EVP)
     # Opportunity loss from always using chosen perspective vs optimal per simulation
     optimal_nmb_per_sim = np.maximum(nmb_hs, nmb_soc)
     ev_optimal = float(np.mean(optimal_nmb_per_sim))
-    
+
     if chosen_perspective not in {"health_system", "societal"}:
         raise ValueError("chosen_perspective must be 'health_system' or 'societal'")
     chosen_series = nmb_hs if chosen_perspective == "health_system" else nmb_soc
     ev_chosen = float(np.mean(chosen_series))
-    
+
     evp = max(0.0, ev_optimal - ev_chosen)
-    
+
     # 2. PERSPECTIVE PREMIUM
     # Incremental value of societal vs health system perspective
     ev_societal = float(np.mean(nmb_soc))
     ev_health_system = float(np.mean(nmb_hs))
     perspective_premium = ev_societal - ev_health_system
-    
+
     # 3. DECISION DISCORDANCE COST
     # Cost when perspectives give different recommendations
     decision_hs = nmb_hs > 0  # Adopt under health system
     decision_soc = nmb_soc > 0  # Adopt under societal
-    
+
     discordant = decision_hs != decision_soc
     prop_discordant = float(np.mean(discordant))
-    
+
     # Cost of discordance = average difference in NMB when decisions differ
     if np.any(discordant):
         nmb_diff_when_discordant = np.abs(nmb_hs[discordant] - nmb_soc[discordant])
         avg_discordance_cost = float(np.mean(nmb_diff_when_discordant))
     else:
         avg_discordance_cost = 0.0
-    
+
     # Expected discordance cost = probability × average cost when discordant
     expected_discordance_cost = prop_discordant * avg_discordance_cost
-    
+
     # 4. INFORMATION VALUE OF PERSPECTIVE CHOICE
     # Similar to EVPI but for knowing which perspective is correct
     # Assumes we don't know ex-ante which perspective is "correct"
     # Value = E[max(NMB_hs, NMB_soc)] - max(E[NMB_hs], E[NMB_soc])
     information_value = ev_optimal - max(ev_health_system, ev_societal)
-    
+
     # 5. ADDITIONAL METRICS
     # Probability each perspective is optimal
     prob_hs_optimal = float(np.mean(nmb_hs > nmb_soc))
     prob_soc_optimal = float(np.mean(nmb_soc > nmb_hs))
     prob_equal = float(np.mean(nmb_hs == nmb_soc))
-    
+
     # Perspective variance (uncertainty within each perspective)
     var_hs = float(np.var(nmb_hs))
     var_soc = float(np.var(nmb_soc))
-    
+
     # Correlation between perspectives
     correlation = float(np.corrcoef(nmb_hs, nmb_soc)[0, 1])
-    
+
     return {
         # Main metrics
         "expected_value_of_perspective": evp,
         "perspective_premium": perspective_premium,
         "decision_discordance_cost": expected_discordance_cost,
         "information_value": information_value,
-        
         # Components for EVP
         "expected_value_optimal": ev_optimal,
         "expected_value_chosen": ev_chosen,
-        
         # Components for premium
         "expected_nmb_health_system": ev_health_system,
         "expected_nmb_societal": ev_societal,
-        
         # Components for discordance
         "proportion_discordant": prop_discordant,
         "average_discordance_cost": avg_discordance_cost,
-        
         # Probabilities
         "prob_health_system_optimal": prob_hs_optimal,
         "prob_societal_optimal": prob_soc_optimal,
         "prob_equal": prob_equal,
-        
         # Uncertainty metrics
         "variance_health_system": var_hs,
         "variance_societal": var_soc,
         "correlation_hs_soc": correlation,
-        
         # Chosen perspective info
         "chosen_perspective": chosen_perspective,
         "wtp_threshold": wtp_threshold,
     }
-
 
 
 def explain_value_of_information_benefits(

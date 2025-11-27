@@ -19,7 +19,7 @@ import pandas as pd
 
 # Import our corrected modules (assumes running as installed package or with src on PYTHONPATH)
 from .dcea_equity_analysis import plot_equity_impact_plane, plot_lorenz_curve
-from .discordance_analysis import plot_discordance_loss
+from .visualizations import plot_discordance_loss
 from .dsa_analysis import (
     compose_dsa_dashboard,
     perform_comprehensive_two_way_dsa,

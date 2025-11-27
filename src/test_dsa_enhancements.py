@@ -8,12 +8,20 @@ Runs on HPV vaccination intervention to verify:
 4. Outputs are generated
 """
 
-
-
-from .profiling import profile_function, profile_section, print_profiling_report, save_profiling_report, reset_profiler
-from .pipeline.analysis import load_parameters
-from .perspective_value_dsa import perform_perspective_value_dsa, plot_perspective_value_dsa, generate_perspective_value_dsa_table
 import os
+
+from .perspective_value_dsa import (
+    generate_perspective_value_dsa_table,
+    perform_perspective_value_dsa,
+    plot_perspective_value_dsa,
+)
+from .pipeline.analysis import load_parameters
+from .profiling import (
+    print_profiling_report,
+    profile_section,
+    reset_profiler,
+    save_profiling_report,
+)
 
 print("=" * 80)
 print("TESTING PROFILING MODULE AND PERSPECTIVE VALUE DSA")
@@ -24,10 +32,10 @@ reset_profiler()
 
 # Load parameters
 with profile_section("Load Parameters"):
-    params = load_parameters('src/parameters.yaml')
-    hpv_params = params['hpv_vaccination']
+    params = load_parameters("src/parameters.yaml")
+    hpv_params = params["hpv_vaccination"]
 
-print(f"\n✓ Loaded HPV vaccination parameters")
+print("\n✓ Loaded HPV vaccination parameters")
 
 # Run perspective value DSA (small sample for testing)
 print(f"\n{'=' * 80}")
@@ -43,7 +51,7 @@ with profile_section("Perspective Value DSA"):
         n_psa_samples=100,  # Reduced for testing
     )
 
-print(f"\n✓ Perspective Value DSA completed")
+print("\n✓ Perspective Value DSA completed")
 
 # Run General One-Way DSA (Test Mode)
 print(f"\n{'=' * 80}")
@@ -55,30 +63,32 @@ from .dsa_analysis import perform_one_way_dsa, plot_one_way_dsa_tornado
 with profile_section("General One-Way DSA"):
     # Create a wrapper dict as expected by perform_one_way_dsa
     models = {"HPV Vaccination": hpv_params}
-    
+
     # Run DSA with reduced points for testing
     general_dsa_results = perform_one_way_dsa(
-        models, 
-        wtp_threshold=50000, 
-        n_points=5  # Reduced for speed
+        models,
+        wtp_threshold=50000,
+        n_points=5,  # Reduced for speed
     )
 
-print(f"\n✓ General One-Way DSA completed")
-print(f"  Parameters analyzed: {list(general_dsa_results['HPV Vaccination']['dsa_results'].keys())}")
+print("\n✓ General One-Way DSA completed")
+print(
+    f"  Parameters analyzed: {list(general_dsa_results['HPV Vaccination']['dsa_results'].keys())}"
+)
 
 # Generate outputs
-os.makedirs('output/test_dsa', exist_ok=True)
+os.makedirs("output/test_dsa", exist_ok=True)
 
-print(f"\nGenerating visualization...")
+print("\nGenerating visualization...")
 with profile_section("Plot Generation"):
-    plot_perspective_value_dsa(dsa_results, output_dir='output/test_dsa/')
-    plot_one_way_dsa_tornado(general_dsa_results, output_dir='output/test_dsa/')
+    plot_perspective_value_dsa(dsa_results, output_dir="output/test_dsa/")
+    plot_one_way_dsa_tornado(general_dsa_results, output_dir="output/test_dsa/")
 
-print(f"✓ Plots saved to: output/test_dsa/")
+print("✓ Plots saved to: output/test_dsa/")
 
-print(f"\nGenerating summary table...")
+print("\nGenerating summary table...")
 table = generate_perspective_value_dsa_table(dsa_results)
-table_path = 'output/test_dsa/perspective_value_dsa_table.csv'
+table_path = "output/test_dsa/perspective_value_dsa_table.csv"
 table.to_csv(table_path, index=False)
 print(f"✓ Table saved to: {table_path}")
 
@@ -86,8 +96,8 @@ print(f"✓ Table saved to: {table_path}")
 print(f"\n{'=' * 80}")
 print("SAMPLE RESULTS")
 print(f"{'=' * 80}")
-print(f"\nPerspective Value Metrics at WTP=$50,000:")
-mid_idx = len(dsa_results['wtp_thresholds']) // 2
+print("\nPerspective Value Metrics at WTP=$50,000:")
+mid_idx = len(dsa_results["wtp_thresholds"]) // 2
 print(f"  EVP: ${dsa_results['evp'][mid_idx]:,.0f}")
 print(f"  Perspective Premium: ${dsa_results['perspective_premium'][mid_idx]:,.0f}")
 print(f"  Discordance Cost: ${dsa_results['discordance_cost'][mid_idx]:,.0f}")
@@ -101,13 +111,13 @@ print(f"{'=' * 80}")
 print_profiling_report()
 
 # Save profiling report
-prof_path = 'output/test_dsa/profiling_report.txt'
+prof_path = "output/test_dsa/profiling_report.txt"
 save_profiling_report(prof_path)
 
 print(f"\n{'=' * 80}")
 print("✓ ALL TESTS COMPLETED SUCCESSFULLY")
 print(f"{'=' * 80}")
-print(f"\nOutputs saved to: output/test_dsa/")
-print(f"  - perspective_value_dsa_HPV Vaccination.png")
-print(f"  - perspective_value_dsa_table.csv")
-print(f"  - profiling_report.txt")
+print("\nOutputs saved to: output/test_dsa/")
+print("  - perspective_value_dsa_HPV Vaccination.png")
+print("  - perspective_value_dsa_table.csv")
+print("  - profiling_report.txt")

@@ -35,7 +35,7 @@ def test_ce_and_voi_plots(tmp_path):
     plot_evpi(all_results, wtp_thresholds, output_dir=str(out_dir))
     plot_net_benefit_curves(all_results, wtp_thresholds, output_dir=str(out_dir))
     plot_value_of_perspective(all_results, wtp_thresholds, output_dir=str(out_dir))
-    plot_pop_evpi(all_results, wtp_thresholds, output_dir=str(out_dir))
+    plot_pop_evpi(all_results, wtp_thresholds, population_sizes={"ModelA": 1000}, output_dir=str(out_dir))
 
     voi_report = {
         "value_of_information": {
