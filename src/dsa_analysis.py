@@ -18,13 +18,24 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
     for model_name, model_params in models.items():
         print(f"Performing one-way DSA for {model_name}...")
 
-        # Define parameter ranges
-        param_ranges = {
-            "cost_multiplier": np.linspace(0.5, 2.0, n_points),
-            "qaly_multiplier": np.linspace(0.5, 1.5, n_points),
-            "discount_rate": np.linspace(0.0, 0.10, n_points),
-            "wtp_threshold": np.linspace(25000, 75000, n_points),  # NZ-appropriate WTP range
-        }
+        # Get parameter ranges from YAML or use defaults
+        yaml_ranges = model_params.get("dsa_parameter_ranges", {})
+        param_ranges = {}
+        
+        if yaml_ranges:
+            # Use ranges from YAML
+            for param, data in yaml_ranges.items():
+                # Create range from min/max with n_points
+                min_val, max_val = data["range"]
+                param_ranges[param] = np.linspace(min_val, max_val, n_points)
+        else:
+            # Fallback defaults
+            param_ranges = {
+                "cost_multiplier": np.linspace(0.5, 2.0, n_points),
+                "qaly_multiplier": np.linspace(0.5, 1.5, n_points),
+                "discount_rate": np.linspace(0.0, 0.10, n_points),
+                "wtp_threshold": np.linspace(25000, 75000, n_points),
+            }
 
         dsa_results = {}
 
@@ -50,17 +61,62 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
                 temp_params = copy.deepcopy(model_params)
                 current_wtp = wtp_threshold  # Default WTP
 
-                if param_name == "cost_multiplier":
-                    temp_params["costs"]["health_system"]["new_treatment"][0] *= (
-                        param_value
-                    )
+                # Apply parameter change
+                if param_name == "wtp_threshold":
+                    current_wtp = param_value
+                elif param_name == "cost_multiplier":
+                    temp_params["costs"]["health_system"]["new_treatment"][0] *= param_value
                     temp_params["costs"]["societal"]["new_treatment"][0] *= param_value
                 elif param_name == "qaly_multiplier":
-                    temp_params["qalys"]["new_treatment"][1] *= param_value
+                    if "qalys" in temp_params and len(temp_params["qalys"]["new_treatment"]) > 1:
+                        temp_params["qalys"]["new_treatment"][1] *= param_value
                 elif param_name == "discount_rate":
                     temp_params["discount_rate"] = param_value
-                elif param_name == "wtp_threshold":
-                    current_wtp = param_value  # Vary WTP instead of params
+                
+                # Extended parameters
+                elif param_name == "transition_healthy_to_sick":
+                    # Update [0][1] and adjust [0][0] to maintain sum=1
+                    for arm in ["standard_care", "new_treatment"]:
+                        if arm in temp_params["transition_matrices"]:
+                            matrix = temp_params["transition_matrices"][arm]
+                            diff = param_value - matrix[0][1]
+                            matrix[0][1] = param_value
+                            matrix[0][0] -= diff # Adjust healthy->healthy
+                
+                elif param_name == "transition_sick_to_dead":
+                    # Update [1][2] and adjust [1][1]
+                    for arm in ["standard_care", "new_treatment"]:
+                        if arm in temp_params["transition_matrices"]:
+                            matrix = temp_params["transition_matrices"][arm]
+                            diff = param_value - matrix[1][2]
+                            matrix[1][2] = param_value
+                            matrix[1][1] -= diff # Adjust sick->sick
+
+                elif param_name == "cost_sick_hs":
+                    # Update cost index 1 (Sick)
+                    for arm in ["standard_care", "new_treatment"]:
+                        if arm in temp_params["costs"]["health_system"]:
+                            temp_params["costs"]["health_system"][arm][1] = param_value
+
+                elif param_name == "cost_sick_societal":
+                    for arm in ["standard_care", "new_treatment"]:
+                        if arm in temp_params["costs"]["societal"]:
+                            temp_params["costs"]["societal"][arm][1] = param_value
+
+                elif param_name == "qaly_sick":
+                    for arm in ["standard_care", "new_treatment"]:
+                        if arm in temp_params["qalys"]:
+                            temp_params["qalys"][arm][1] = param_value
+
+                elif param_name == "productivity_cost_sick":
+                    if "productivity_costs" in temp_params and "human_capital" in temp_params["productivity_costs"]:
+                        for arm in ["standard_care", "new_treatment"]:
+                            if arm in temp_params["productivity_costs"]["human_capital"]:
+                                temp_params["productivity_costs"]["human_capital"][arm][1] = param_value
+
+                elif param_name == "friction_period_days":
+                    if "friction_cost_params" in temp_params:
+                        temp_params["friction_cost_params"]["friction_period_days"] = param_value
 
                 # Health system perspective
                 hs_results = run_cea(

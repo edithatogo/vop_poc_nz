@@ -8,12 +8,11 @@ Runs on HPV vaccination intervention to verify:
 4. Outputs are generated
 """
 
-import sys
-sys.path.insert(0, 'src')
 
-from profiling import profile_function, profile_section, print_profiling_report, save_profiling_report, reset_profiler
-from pipeline.analysis import load_parameters
-from perspective_value_dsa import perform_perspective_value_dsa, plot_perspective_value_dsa, generate_perspective_value_dsa_table
+
+from .profiling import profile_function, profile_section, print_profiling_report, save_profiling_report, reset_profiler
+from .pipeline.analysis import load_parameters
+from .perspective_value_dsa import perform_perspective_value_dsa, plot_perspective_value_dsa, generate_perspective_value_dsa_table
 import os
 
 print("=" * 80)
@@ -46,14 +45,36 @@ with profile_section("Perspective Value DSA"):
 
 print(f"\n✓ Perspective Value DSA completed")
 
+# Run General One-Way DSA (Test Mode)
+print(f"\n{'=' * 80}")
+print("Running General One-Way DSA (Test Mode)")
+print(f"{'=' * 80}")
+
+from .dsa_analysis import perform_one_way_dsa, plot_one_way_dsa_tornado
+
+with profile_section("General One-Way DSA"):
+    # Create a wrapper dict as expected by perform_one_way_dsa
+    models = {"HPV Vaccination": hpv_params}
+    
+    # Run DSA with reduced points for testing
+    general_dsa_results = perform_one_way_dsa(
+        models, 
+        wtp_threshold=50000, 
+        n_points=5  # Reduced for speed
+    )
+
+print(f"\n✓ General One-Way DSA completed")
+print(f"  Parameters analyzed: {list(general_dsa_results['HPV Vaccination']['dsa_results'].keys())}")
+
 # Generate outputs
 os.makedirs('output/test_dsa', exist_ok=True)
 
 print(f"\nGenerating visualization...")
 with profile_section("Plot Generation"):
     plot_perspective_value_dsa(dsa_results, output_dir='output/test_dsa/')
+    plot_one_way_dsa_tornado(general_dsa_results, output_dir='output/test_dsa/')
 
-print(f"✓ Plot saved to: output/test_dsa/")
+print(f"✓ Plots saved to: output/test_dsa/")
 
 print(f"\nGenerating summary table...")
 table = generate_perspective_value_dsa_table(dsa_results)
