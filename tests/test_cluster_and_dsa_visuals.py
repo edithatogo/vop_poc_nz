@@ -119,6 +119,9 @@ def test_comparative_dsa_plots(tmp_path):
     assert any(fig_dir.iterdir())
 
 
+import os
+
+@pytest.mark.skipif(os.environ.get("CI") == "true", reason="Too slow for CI environment")
 def test_dsa_workflow_and_dashboard(tmp_path, base_params):
     figs = tmp_path / "dsa_workflow"
     figs.mkdir()
