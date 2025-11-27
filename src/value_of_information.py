@@ -231,21 +231,36 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
     nmb_sc = (psa_results["qaly_sc"] * wtp_threshold) - psa_results["cost_sc"]
     nmb_nt = (psa_results["qaly_nt"] * wtp_threshold) - psa_results["cost_nt"]
 
+    # DEBUG PRINTS
+    print(f"\nDEBUG: WTP={wtp_threshold}")
+    print(f"DEBUG: SC Cost={psa_results['cost_sc'].values}, QALY={psa_results['qaly_sc'].values}")
+    print(f"DEBUG: NT Cost={psa_results['cost_nt'].values}, QALY={psa_results['qaly_nt'].values}")
+    print(f"DEBUG: NMB SC={nmb_sc.values}")
+    print(f"DEBUG: NMB NT={nmb_nt.values}")
+
     # Stack NMBs for each strategy to find the optimal for each simulation
     nmb_matrix = np.column_stack([nmb_sc, nmb_nt])
 
     # Find maximum NMB across all strategies for each simulation (perfect info scenario)
     max_nmb_per_sim = np.max(nmb_matrix, axis=1)
+    print(f"DEBUG: Max NMB per sim={max_nmb_per_sim}")
 
     # Find the expected NMB with current information (current optimal strategy)
     # Use Python's max for scalars to avoid ambiguity
     expected_nmb_sc = np.mean(nmb_sc)
     expected_nmb_nt = np.mean(nmb_nt)
     current_optimal_nmb = max(expected_nmb_sc, expected_nmb_nt)
+    
+    print(f"DEBUG: Expected NMB SC={expected_nmb_sc}")
+    print(f"DEBUG: Expected NMB NT={expected_nmb_nt}")
+    print(f"DEBUG: Current Optimal={current_optimal_nmb}")
 
     # EVPI = Expected value with perfect information - Expected value with current info
     expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
+    print(f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}")
+    
     evpi = expected_nmb_with_perfect_info - current_optimal_nmb
+    print(f"DEBUG: Raw EVPI={evpi}")
 
     # Handle floating point noise
     if np.isclose(evpi, 0, atol=1e-5):
