@@ -50,8 +50,14 @@ class TestCEAModelCore(unittest.TestCase):
             "cycles": 10,
             "discount_rate": 0.03,
             "productivity_costs": {
-                "standard_care": [10, 20, 0],
-                "new_treatment": [10, 20, 0]
+                "human_capital": {
+                    "standard_care": [10, 20, 0],
+                    "new_treatment": [10, 20, 0]
+                },
+                "friction_cost": {
+                    "standard_care": [5, 10, 0],
+                    "new_treatment": [5, 10, 0]
+                }
             }
         }
 
