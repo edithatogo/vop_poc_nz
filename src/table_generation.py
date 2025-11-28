@@ -524,10 +524,10 @@ def generate_voi_tables(results, output_dir):
 
             for param, val_list in evppi_data.items():
                 val = 0.0
-                if idx_50k != -1 and len(val_list) > idx_50k:
-                    val = val_list[idx_50k]
-                elif isinstance(val_list, (int, float)):
+                if isinstance(val_list, (int, float)):
                      val = val_list
+                elif idx_50k != -1 and len(val_list) > idx_50k:
+                    val = val_list[idx_50k]
 
                 evppi_rows.append({
                     "Intervention": name.replace('_', ' ').title(),

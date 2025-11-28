@@ -59,6 +59,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     Generates all figures, dashboards, and the policy brief.
     """
     logger.info("=" * 70)
+    print("DEBUG: run_reporting_pipeline EXECUTED")
     logger.info("RUNNING REPORTING PIPELINE")
     logger.info("=" * 70)
 

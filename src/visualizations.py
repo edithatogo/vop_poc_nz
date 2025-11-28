@@ -3387,7 +3387,14 @@ def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, inte
 
         # Plot each state
         # Assuming columns are state names
-        df.plot(ax=ax, linewidth=2)
+        
+        # Check if data needs normalization (if max > 1.05, it's likely counts not probabilities)
+        if df.max().max() > 1.05:
+            # Normalize by row sum to get proportions
+            df_normalized = df.div(df.sum(axis=1), axis=0)
+            df_normalized.plot(ax=ax, linewidth=2)
+        else:
+            df.plot(ax=ax, linewidth=2)
 
         ax.set_title(f"Markov Trace: {intervention_name.replace('_', ' ').title()} ({arm.replace('_', ' ').title()})")
         ax.set_xlabel("Cycle (Year)")

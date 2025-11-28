@@ -1,0 +1,85 @@
+Loading results...
+
+--- Inspecting Markov Traces ---
+
+Intervention: HPV Vaccination
+  Standard Care Trace MISSING
+  New Treatment Trace MISSING
+
+Intervention: Smoking Cessation
+  Standard Care Trace MISSING
+  New Treatment Trace MISSING
+
+Intervention: Hepatitis C Therapy
+  Standard Care Trace MISSING
+  New Treatment Trace MISSING
+
+Intervention: Childhood Obesity Prevention
+  Standard Care Trace MISSING
+  New Treatment Trace MISSING
+
+Intervention: Housing Insulation
+  Standard Care Trace MISSING
+  New Treatment Trace MISSING
+
+--- Inspecting EVPI Data ---
+
+Intervention: HPV Vaccination
+  PSA Results Columns: ['iteration', 'cost_sc_hs', 'qaly_sc_hs', 'cost_nt_hs', 'qaly_nt_hs', 'inc_cost_hs', 'inc_qaly_hs', 'nmb_sc_hs', 'nmb_nt_hs', 'inc_nmb_hs', 'cost_sc_soc', 'qaly_sc_soc', 'cost_nt_soc', 'qaly_nt_soc', 'inc_cost_soc', 'inc_qaly_soc', 'nmb_sc_soc', 'nmb_nt_soc', 'inc_nmb_soc', 'cost_effective', 'cost_hs_sc_multiplier', 'cost_hs_nt_multiplier', 'cost_soc_sc_multiplier', 'cost_soc_nt_multiplier', 'qaly_sc_multiplier', 'qaly_nt_multiplier', 'cost_hs_sc_multiplier_High_SES', 'cost_hs_nt_multiplier_High_SES', 'cost_soc_sc_multiplier_High_SES', 'cost_soc_nt_multiplier_High_SES', 'qaly_sc_multiplier_High_SES', 'qaly_nt_multiplier_High_SES', 'cost_hs_sc_multiplier_Low_SES', 'cost_hs_nt_multiplier_Low_SES', 'cost_soc_sc_multiplier_Low_SES', 'cost_soc_nt_multiplier_Low_SES', 'qaly_sc_multiplier_Low_SES', 'qaly_nt_multiplier_Low_SES', 'sc_cost_High_SES_hs', 'sc_qaly_High_SES_hs', 'sc_cost_Low_SES_hs', 'sc_qaly_Low_SES_hs', 'sc_cost_High_SES_soc', 'sc_qaly_High_SES_soc', 'sc_cost_Low_SES_soc', 'sc_qaly_Low_SES_soc', 'nt_cost_High_SES_hs', 'nt_qaly_High_SES_hs', 'nt_cost_Low_SES_hs', 'nt_qaly_Low_SES_hs', 'nt_cost_High_SES_soc', 'nt_qaly_High_SES_soc', 'nt_cost_Low_SES_soc', 'nt_qaly_Low_SES_soc', 'cost_sc', 'qaly_sc', 'cost_nt', 'qaly_nt', 'inc_cost', 'inc_qaly', 'nmb_sc', 'nmb_nt', 'inc_nmb', 'equity_weighted_nmb_hs', 'equity_weighted_nmb_soc']
+  PSA Results Head:
+   iteration    cost_sc_hs  ...  equity_weighted_nmb_hs  equity_weighted_nmb_soc
+0          0  1.568727e+08  ...            7.022818e+08             7.483725e+08
+1          1  1.266183e+08  ...            4.473918e+08             4.947881e+08
+2          2  1.436879e+08  ...            6.486785e+08             7.183298e+08
+3          3  1.333215e+08  ...            4.747961e+08             5.302910e+08
+4          4  1.467777e+08  ...            5.084102e+08             5.603195e+08
+
+[5 rows x 65 columns]
+
+Intervention: Smoking Cessation
+  PSA Results Columns: ['iteration', 'cost_sc_hs', 'qaly_sc_hs', 'cost_nt_hs', 'qaly_nt_hs', 'inc_cost_hs', 'inc_qaly_hs', 'nmb_sc_hs', 'nmb_nt_hs', 'inc_nmb_hs', 'cost_sc_soc', 'qaly_sc_soc', 'cost_nt_soc', 'qaly_nt_soc', 'inc_cost_soc', 'inc_qaly_soc', 'nmb_sc_soc', 'nmb_nt_soc', 'inc_nmb_soc', 'cost_effective', 'cost_hs_sc_multiplier', 'cost_hs_nt_multiplier', 'cost_soc_sc_multiplier', 'cost_soc_nt_multiplier', 'qaly_sc_multiplier', 'qaly_nt_multiplier', 'cost_hs_sc_multiplier_High_SES', 'cost_hs_nt_multiplier_High_SES', 'cost_soc_sc_multiplier_High_SES', 'cost_soc_nt_multiplier_High_SES', 'qaly_sc_multiplier_High_SES', 'qaly_nt_multiplier_High_SES', 'cost_hs_sc_multiplier_Low_SES', 'cost_hs_nt_multiplier_Low_SES', 'cost_soc_sc_multiplier_Low_SES', 'cost_soc_nt_multiplier_Low_SES', 'qaly_sc_multiplier_Low_SES', 'qaly_nt_multiplier_Low_SES', 'sc_cost_High_SES_hs', 'sc_qaly_High_SES_hs', 'sc_cost_Low_SES_hs', 'sc_qaly_Low_SES_hs', 'sc_cost_High_SES_soc', 'sc_qaly_High_SES_soc', 'sc_cost_Low_SES_soc', 'sc_qaly_Low_SES_soc', 'nt_cost_High_SES_hs', 'nt_qaly_High_SES_hs', 'nt_cost_Low_SES_hs', 'nt_qaly_Low_SES_hs', 'nt_cost_High_SES_soc', 'nt_qaly_High_SES_soc', 'nt_cost_Low_SES_soc', 'nt_qaly_Low_SES_soc', 'cost_sc', 'qaly_sc', 'cost_nt', 'qaly_nt', 'inc_cost', 'inc_qaly', 'nmb_sc', 'nmb_nt', 'inc_nmb', 'equity_weighted_nmb_hs', 'equity_weighted_nmb_soc']
+  PSA Results Head:
+   iteration    cost_sc_hs  ...  equity_weighted_nmb_hs  equity_weighted_nmb_soc
+0          0  5.902250e+07  ...            1.574163e+08             5.322136e+08
+1          1  4.394263e+07  ...           -2.318753e+07             2.956214e+08
+2          2  4.910191e+07  ...            2.040249e+07             3.718973e+08
+3          3  4.440618e+07  ...            7.569428e+07             4.407580e+08
+4          4  4.663840e+07  ...            1.753119e+08             4.910738e+08
+
+[5 rows x 65 columns]
+
+Intervention: Hepatitis C Therapy
+  PSA Results Columns: ['iteration', 'cost_sc_hs', 'qaly_sc_hs', 'cost_nt_hs', 'qaly_nt_hs', 'inc_cost_hs', 'inc_qaly_hs', 'nmb_sc_hs', 'nmb_nt_hs', 'inc_nmb_hs', 'cost_sc_soc', 'qaly_sc_soc', 'cost_nt_soc', 'qaly_nt_soc', 'inc_cost_soc', 'inc_qaly_soc', 'nmb_sc_soc', 'nmb_nt_soc', 'inc_nmb_soc', 'cost_effective', 'cost_hs_sc_multiplier', 'cost_hs_nt_multiplier', 'cost_soc_sc_multiplier', 'cost_soc_nt_multiplier', 'qaly_sc_multiplier', 'qaly_nt_multiplier', 'cost_hs_sc_multiplier_High_SES', 'cost_hs_nt_multiplier_High_SES', 'cost_soc_sc_multiplier_High_SES', 'cost_soc_nt_multiplier_High_SES', 'qaly_sc_multiplier_High_SES', 'qaly_nt_multiplier_High_SES', 'cost_hs_sc_multiplier_Low_SES', 'cost_hs_nt_multiplier_Low_SES', 'cost_soc_sc_multiplier_Low_SES', 'cost_soc_nt_multiplier_Low_SES', 'qaly_sc_multiplier_Low_SES', 'qaly_nt_multiplier_Low_SES', 'sc_cost_High_SES_hs', 'sc_qaly_High_SES_hs', 'sc_cost_Low_SES_hs', 'sc_qaly_Low_SES_hs', 'sc_cost_High_SES_soc', 'sc_qaly_High_SES_soc', 'sc_cost_Low_SES_soc', 'sc_qaly_Low_SES_soc', 'nt_cost_High_SES_hs', 'nt_qaly_High_SES_hs', 'nt_cost_Low_SES_hs', 'nt_qaly_Low_SES_hs', 'nt_cost_High_SES_soc', 'nt_qaly_High_SES_soc', 'nt_cost_Low_SES_soc', 'nt_qaly_Low_SES_soc', 'cost_sc', 'qaly_sc', 'cost_nt', 'qaly_nt', 'inc_cost', 'inc_qaly', 'nmb_sc', 'nmb_nt', 'inc_nmb', 'equity_weighted_nmb_hs', 'equity_weighted_nmb_soc']
+  PSA Results Head:
+   iteration    cost_sc_hs  ...  equity_weighted_nmb_hs  equity_weighted_nmb_soc
+0          0  4.691088e+07  ...            9.205939e+08             1.068958e+09
+1          1  4.530966e+07  ...            8.094163e+08             9.745594e+08
+2          2  3.989452e+07  ...            7.465633e+08             8.992467e+08
+3          3  4.772452e+07  ...            8.583212e+08             1.010301e+09
+4          4  4.017326e+07  ...            8.829672e+08             1.044024e+09
+
+[5 rows x 65 columns]
+
+Intervention: Childhood Obesity Prevention
+  PSA Results Columns: ['iteration', 'cost_sc_hs', 'qaly_sc_hs', 'cost_nt_hs', 'qaly_nt_hs', 'inc_cost_hs', 'inc_qaly_hs', 'nmb_sc_hs', 'nmb_nt_hs', 'inc_nmb_hs', 'cost_sc_soc', 'qaly_sc_soc', 'cost_nt_soc', 'qaly_nt_soc', 'inc_cost_soc', 'inc_qaly_soc', 'nmb_sc_soc', 'nmb_nt_soc', 'inc_nmb_soc', 'cost_effective', 'cost_hs_sc_multiplier', 'cost_hs_nt_multiplier', 'cost_soc_sc_multiplier', 'cost_soc_nt_multiplier', 'qaly_sc_multiplier', 'qaly_nt_multiplier', 'cost_hs_sc_multiplier_High_SES', 'cost_hs_nt_multiplier_High_SES', 'cost_soc_sc_multiplier_High_SES', 'cost_soc_nt_multiplier_High_SES', 'qaly_sc_multiplier_High_SES', 'qaly_nt_multiplier_High_SES', 'cost_hs_sc_multiplier_Low_SES', 'cost_hs_nt_multiplier_Low_SES', 'cost_soc_sc_multiplier_Low_SES', 'cost_soc_nt_multiplier_Low_SES', 'qaly_sc_multiplier_Low_SES', 'qaly_nt_multiplier_Low_SES', 'sc_cost_High_SES_hs', 'sc_qaly_High_SES_hs', 'sc_cost_Low_SES_hs', 'sc_qaly_Low_SES_hs', 'sc_cost_High_SES_soc', 'sc_qaly_High_SES_soc', 'sc_cost_Low_SES_soc', 'sc_qaly_Low_SES_soc', 'nt_cost_High_SES_hs', 'nt_qaly_High_SES_hs', 'nt_cost_Low_SES_hs', 'nt_qaly_Low_SES_hs', 'nt_cost_High_SES_soc', 'nt_qaly_High_SES_soc', 'nt_cost_Low_SES_soc', 'nt_qaly_Low_SES_soc', 'cost_sc', 'qaly_sc', 'cost_nt', 'qaly_nt', 'inc_cost', 'inc_qaly', 'nmb_sc', 'nmb_nt', 'inc_nmb', 'equity_weighted_nmb_hs', 'equity_weighted_nmb_soc']
+  PSA Results Head:
+   iteration    cost_sc_hs  ...  equity_weighted_nmb_hs  equity_weighted_nmb_soc
+0          0  4.709001e+07  ...            2.885740e+08             4.865790e+08
+1          1  5.402224e+07  ...            2.779011e+08             5.103167e+08
+2          2  4.289053e+07  ...            3.049662e+08             5.815167e+08
+3          3  4.839645e+07  ...            3.475866e+08             6.102007e+08
+4          4  5.749134e+07  ...            2.845204e+08             4.919858e+08
+
+[5 rows x 65 columns]
+
+Intervention: Housing Insulation
+  PSA Results Columns: ['iteration', 'cost_sc_hs', 'qaly_sc_hs', 'cost_nt_hs', 'qaly_nt_hs', 'inc_cost_hs', 'inc_qaly_hs', 'nmb_sc_hs', 'nmb_nt_hs', 'inc_nmb_hs', 'cost_sc_soc', 'qaly_sc_soc', 'cost_nt_soc', 'qaly_nt_soc', 'inc_cost_soc', 'inc_qaly_soc', 'nmb_sc_soc', 'nmb_nt_soc', 'inc_nmb_soc', 'cost_effective', 'cost_hs_sc_multiplier', 'cost_hs_nt_multiplier', 'cost_soc_sc_multiplier', 'cost_soc_nt_multiplier', 'qaly_sc_multiplier', 'qaly_nt_multiplier', 'cost_hs_sc_multiplier_High_SES', 'cost_hs_nt_multiplier_High_SES', 'cost_soc_sc_multiplier_High_SES', 'cost_soc_nt_multiplier_High_SES', 'qaly_sc_multiplier_High_SES', 'qaly_nt_multiplier_High_SES', 'cost_hs_sc_multiplier_Low_SES', 'cost_hs_nt_multiplier_Low_SES', 'cost_soc_sc_multiplier_Low_SES', 'cost_soc_nt_multiplier_Low_SES', 'qaly_sc_multiplier_Low_SES', 'qaly_nt_multiplier_Low_SES', 'sc_cost_High_SES_hs', 'sc_qaly_High_SES_hs', 'sc_cost_Low_SES_hs', 'sc_qaly_Low_SES_hs', 'sc_cost_High_SES_soc', 'sc_qaly_High_SES_soc', 'sc_cost_Low_SES_soc', 'sc_qaly_Low_SES_soc', 'nt_cost_High_SES_hs', 'nt_qaly_High_SES_hs', 'nt_cost_Low_SES_hs', 'nt_qaly_Low_SES_hs', 'nt_cost_High_SES_soc', 'nt_qaly_High_SES_soc', 'nt_cost_Low_SES_soc', 'nt_qaly_Low_SES_soc', 'cost_sc', 'qaly_sc', 'cost_nt', 'qaly_nt', 'inc_cost', 'inc_qaly', 'nmb_sc', 'nmb_nt', 'inc_nmb', 'equity_weighted_nmb_hs', 'equity_weighted_nmb_soc']
+  PSA Results Head:
+   iteration    cost_sc_hs  ...  equity_weighted_nmb_hs  equity_weighted_nmb_soc
+0          0  1.645848e+07  ...           -7.303752e+07             1.761944e+06
+1          1  2.191251e+07  ...           -2.323567e+06             8.310835e+07
+2          2  1.946152e+07  ...           -3.360087e+07             5.005664e+07
+3          3  1.761087e+07  ...            3.648619e+06             8.525370e+07
+4          4  1.714892e+07  ...           -6.297832e+07             2.396307e+07
+
+[5 rows x 65 columns]

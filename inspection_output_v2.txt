@@ -1,0 +1,6 @@
+Loading results...
+
+--- Inspecting Markov Traces ---
+
+Intervention: HPV Vaccination
+  Standard Care Trace Shape: (99, 3)
