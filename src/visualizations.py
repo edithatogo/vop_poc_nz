@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from pathlib import Path
 try:
     from graphviz import Digraph
     GRAPHVIZ_AVAILABLE = True
@@ -200,7 +201,9 @@ def plot_cost_effectiveness_plane(
     )
 
 
-def plot_comparative_ce_plane(all_results, output_dir="output/figures/"):
+def plot_comparative_ce_plane(
+    all_results, output_dir="output/figures/", psa_results: Optional[Dict] = None
+):
     """
     Create side-by-side cost-effectiveness plane plots (Health System vs Societal).
     """
@@ -222,44 +225,66 @@ def plot_comparative_ce_plane(all_results, output_dir="output/figures/"):
         # Iterate over all interventions
         for model_name, results in all_results.items():
             # Extract data for this perspective
-            # Note: The structure of all_results differs slightly based on how it was constructed
-            # In analysis.py: all_results[name] = {"health_system": hs_results, "societal": {method: s_results}}
-            # We need to handle this structure carefully.
-
+            # Extract data for this perspective
             data = None
+            scatter_data = None
+            
             if perspective == "health_system":
-                if "health_system" in results:
+                # Check for PSA results first (for scatter plot)
+                if psa_results and model_name in psa_results:
+                    psa_df = psa_results[model_name]
+                    if "inc_cost_hs" in psa_df.columns:
+                        scatter_data = {
+                            "inc_cost": psa_df["inc_cost_hs"],
+                            "inc_qaly": psa_df["inc_qaly_hs"]
+                        }
+                
+                # Fallback to deterministic
+                if scatter_data is None and "health_system" in results:
                     data = results["health_system"]
+                    
             else:  # societal
-                # Default to human_capital for the main plot if multiple exist
-                if "societal" in results:
+                # Check for PSA results first (for scatter plot)
+                if psa_results and model_name in psa_results:
+                    psa_df = psa_results[model_name]
+                    if "inc_cost_soc" in psa_df.columns:
+                        scatter_data = {
+                            "inc_cost": psa_df["inc_cost_soc"],
+                            "inc_qaly": psa_df["inc_qaly_soc"]
+                        }
+                    # Backward compatibility if _soc columns missing but inc_cost exists (legacy)
+                    elif "inc_cost" in psa_df.columns:
+                         scatter_data = {
+                            "inc_cost": psa_df["inc_cost"],
+                            "inc_qaly": psa_df["inc_qaly"]
+                        }
+                
+                # Fallback to deterministic
+                if scatter_data is None and "societal" in results:
                     soc_res = results["societal"]
                     if "human_capital" in soc_res:
                         data = soc_res["human_capital"]
                     elif "friction_cost" in soc_res:
                         data = soc_res["friction_cost"]
 
-            if data:
-                # Check if we have bootstrap results (scatter) or just point estimates
-                if "inc_cost" in data and isinstance(
-                    data["inc_cost"], (list, np.ndarray)
-                ):
-                    ax.scatter(
-                        data["inc_cost"],
-                        data["inc_qaly"],
-                        alpha=0.4,
-                        s=15,
-                        label=model_name,
-                    )
-                else:
-                    # Point estimate
-                    ax.scatter(
-                        data.get("incremental_cost", 0),
-                        data.get("incremental_qalys", 0),
-                        s=100,
-                        marker="D",
-                        label=model_name,
-                    )
+            # Plot Scatter (PSA)
+            if scatter_data is not None:
+                ax.scatter(
+                    scatter_data["inc_cost"],
+                    scatter_data["inc_qaly"],
+                    alpha=0.4,
+                    s=15,
+                    label=model_name,
+                )
+            # Plot Point (Deterministic)
+            elif data is not None:
+                ax.scatter(
+                    data.get("incremental_cost", 0),
+                    data.get("incremental_qalys", 0),
+                    s=100,
+                    marker="D",
+                    label=model_name,
+                )
 
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
@@ -275,6 +300,101 @@ def plot_comparative_ce_plane(all_results, output_dir="output/figures/"):
         output_dir,
         "cost_effectiveness_plane_comparative",
     )
+
+
+def plot_comparative_ceac(
+    psa_results: Dict[str, pd.DataFrame], output_dir: Path
+) -> None:
+    """
+    Plot Comparative Cost-Effectiveness Acceptability Curves (CEAC).
+    
+    Shows both Health System and Societal perspectives side-by-side.
+    """
+    output_dir = Path(output_dir)
+    wtp_values = np.arange(0, 100001, 1000)
+    
+    # Create figure with two subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7), sharey=True)
+    
+    # Define styles for distinct lines to handle overlaps
+    # Strategy: Vary width and style so underlying lines are visible
+    styles = {
+        "HPV Vaccination": {"color": "#1f77b4", "linestyle": "-", "linewidth": 4, "alpha": 0.4, "label": "HPV Vaccination"},
+        "Smoking Cessation": {"color": "#ff7f0e", "linestyle": "--", "linewidth": 2.5, "alpha": 0.9, "label": "Smoking Cessation"},
+        "Hepatitis C Therapy": {"color": "#2ca02c", "linestyle": "-.", "linewidth": 2.5, "alpha": 0.9, "label": "Hepatitis C Therapy"},
+        "Childhood Obesity Prevention": {"color": "#d62728", "linestyle": ":", "linewidth": 2.5, "alpha": 0.9, "label": "Childhood Obesity"},
+        "Housing Insulation": {"color": "#9467bd", "linestyle": "-", "linewidth": 1.5, "marker": "o", "markevery": 10, "markersize": 5, "alpha": 0.9, "label": "Housing Insulation"},
+    }
+    # Fallback style for others
+    default_style = {"linestyle": "-", "linewidth": 1, "alpha": 0.7}
+    
+    # Helper to calculate and plot CEAC for a perspective
+    def plot_perspective(ax, perspective_suffix, title):
+        print(f"Plotting {title}...")
+        for model_name, df in psa_results.items():
+            style = styles.get(model_name, default_style.copy())
+            if model_name not in styles:
+                style["label"] = model_name
+            
+            # Determine correct columns based on suffix
+            if perspective_suffix == "_hs":
+                cols = {"q_nt": "qaly_nt_hs", "q_sc": "qaly_sc_hs", "c_nt": "cost_nt_hs", "c_sc": "cost_sc_hs"}
+            else: # _soc
+                cols = {"q_nt": "qaly_nt_soc", "q_sc": "qaly_sc_soc", "c_nt": "cost_nt_soc", "c_sc": "cost_sc_soc"}
+                
+            # Check if columns exist (fallback to legacy if needed)
+            if cols["q_nt"] not in df.columns:
+                if perspective_suffix == "_soc" and "qaly_nt" in df.columns:
+                    # Legacy fallback for societal
+                    cols = {"q_nt": "qaly_nt", "q_sc": "qaly_sc", "c_nt": "cost_nt", "c_sc": "cost_sc"}
+                else:
+                    print(f"Skipping {model_name} for {title} (missing columns)")
+                    continue
+
+            # Calculate probabilities
+            probs = []
+            inc_q = df[cols["q_nt"]] - df[cols["q_sc"]]
+            inc_c = df[cols["c_nt"]] - df[cols["c_sc"]]
+            
+            for wtp in wtp_values:
+                nmb = inc_q * wtp - inc_c
+                prob = np.mean(nmb > 0)
+                probs.append(prob)
+            
+            print(f"  {model_name}: Max Prob = {max(probs):.2%}")
+            
+            ax.plot(
+                wtp_values, 
+                probs, 
+                **style
+            )
+        
+        ax.set_title(title, fontsize=14, fontweight="bold", pad=15)
+        ax.set_xlabel("Willingness-to-Pay Threshold ($/QALY)", fontsize=12)
+        ax.set_ylim(0, 1.05)
+        ax.grid(True, linestyle="--", alpha=0.3)
+        
+        # Add 50k line
+        ax.axvline(50000, color="gray", linestyle=":", alpha=0.5)
+        ax.text(51000, 0.05, "NZ Threshold ($50k)", fontsize=8, color="gray", rotation=90)
+
+    # Plot Health System Perspective
+    plot_perspective(ax1, "_hs", "Health System Perspective")
+    ax1.set_ylabel("Probability Cost-Effective", fontsize=12)
+    
+    # Plot Societal Perspective
+    plot_perspective(ax2, "_soc", "Societal Perspective")
+    
+    # Add single legend
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, fontsize=12)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.15) # Make room for legend
+    
+    save_path = output_dir / "ceac_comparative.png"
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
 
 
 def plot_ceac(
@@ -454,6 +574,91 @@ def plot_evpi(
         build_filename_base(
             "expected_value_perfect_information", perspective=perspective
         ),
+    )
+
+
+def plot_comparative_evpi(
+    all_results,
+    wtp_thresholds,
+    output_dir="output/figures/",
+):
+    """
+    Create side-by-side Expected Value of Perfect Information (EVPI) plots.
+    """
+    apply_default_style()
+
+    fig, axes = plt.subplots(1, 2, figsize=(18, 8), dpi=300)
+    fig.suptitle(
+        "Expected Value of Perfect Information: Perspective Comparison\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+
+    perspectives = ["health_system", "societal"]
+    titles = ["Health System Perspective", "Societal Perspective"]
+
+    for i, perspective in enumerate(perspectives):
+        ax = axes[i]
+        
+        # Iterate over all interventions
+        for model_name, psa_results in all_results.items():
+            # Prepare DataFrame with correct columns for calculate_evpi
+            df_calc = psa_results.copy()
+            
+            if perspective == "health_system":
+                if "qaly_sc_hs" in df_calc.columns:
+                    df_calc["qaly_sc"] = df_calc["qaly_sc_hs"]
+                    df_calc["cost_sc"] = df_calc["cost_sc_hs"]
+                    df_calc["qaly_nt"] = df_calc["qaly_nt_hs"]
+                    df_calc["cost_nt"] = df_calc["cost_nt_hs"]
+                else:
+                    print(f"Skipping {model_name} for HS EVPI (missing columns)")
+                    continue
+            else: # societal
+                if "qaly_sc_soc" in df_calc.columns:
+                    df_calc["qaly_sc"] = df_calc["qaly_sc_soc"]
+                    df_calc["cost_sc"] = df_calc["cost_sc_soc"]
+                    df_calc["qaly_nt"] = df_calc["qaly_nt_soc"]
+                    df_calc["cost_nt"] = df_calc["cost_nt_soc"]
+                # Else rely on default aliasing in psa_results if _soc columns missing
+            
+            # Calculate EVPI for each WTP threshold
+            evpi_values = [
+                calculate_evpi(df_calc, wtp_threshold=wtp) for wtp in wtp_thresholds
+            ]
+            
+            # Check if all zero
+            if all(v == 0 for v in evpi_values):
+                print(f"  {model_name} ({perspective}): EVPI is all zero.")
+            
+            ax.plot(
+                wtp_thresholds,
+                evpi_values,
+                label=model_name,
+                linewidth=2,
+                alpha=0.8
+            )
+
+        ax.set_xlabel("Willingness-To-Pay Threshold ($/QALY)", fontsize=12)
+        ax.set_ylabel("Expected Value of Perfect Information ($)", fontsize=12)
+        ax.set_title(titles[i], fontsize=14)
+        ax.grid(True, alpha=0.3)
+        
+        # Add legend to first plot only or both? Both is safer if interventions differ
+        # But let's put a single legend at bottom
+        # ax.legend(fontsize=10)
+
+    # Add single legend
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, fontsize=12)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.15) # Make room for legend
+
+    save_figure(
+        fig,
+        output_dir,
+        "expected_value_perfect_information_comparative",
     )
 
 
@@ -669,6 +874,290 @@ def plot_evppi(voi_report, output_dir="output/figures/"):
         build_filename_base(
             "expected_value_partial_perfect_information", perspective="societal"
         ),
+    )
+
+
+def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
+    """
+    Plot Comparative Expected Value of Partial Perfect Information (EVPPI).
+    
+    Creates a side-by-side comparison of EVPPI for Health System and Societal perspectives.
+    Plots all interventions on each subplot.
+    """
+    apply_default_style()
+    
+    if not voi_results:
+        print("No VOI results to plot.")
+        return
+
+    # Collect all data into a long-form DataFrame for plotting
+    data_rows = []
+    
+    for model_name, report in voi_results.items():
+        evppi_data = report["value_of_information"]["evppi_by_parameter_group"]
+        wtp_thresholds = report["value_of_information"]["wtp_thresholds"]
+        
+        for key, values in evppi_data.items():
+            # Key format: EVPPI_{GroupName}_{Suffix}
+            # Suffix is _HS or _Soc
+            if key.endswith("_HS"):
+                perspective = "Health System"
+                group_name = key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+            elif key.endswith("_Soc"):
+                perspective = "Societal"
+                group_name = key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+            else:
+                # Fallback for old keys or generic ones
+                perspective = "Societal"
+                group_name = key.replace("EVPPI_", "").replace("_", " ")
+
+            # Filter for key groups to avoid clutter
+            # We want to show "Cost Parameters" and "QALY Parameters" mainly
+            # Or specific ones like "Health System Costs"
+            
+            # Let's simplify: Show "Cost Parameters" and "QALY Parameters" for each intervention
+            if "Cost Parameters" not in group_name and "QALY Parameters" not in group_name:
+                continue
+
+            for wtp, val in zip(wtp_thresholds, values):
+                data_rows.append({
+                    "Intervention": model_name,
+                    "Perspective": perspective,
+                    "Parameter Group": group_name,
+                    "WTP": wtp,
+                    "EVPPI": val
+                })
+                
+    if not data_rows:
+        print("No EVPPI data rows extracted.")
+        return
+        
+    df = pd.DataFrame(data_rows)
+    
+    # Plotting: 2 Subplots (Health System, Societal)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), dpi=300, sharey=True)
+    
+    fig.suptitle(
+        "Comparative Expected Value of Partial Perfect Information (EVPPI)\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    perspectives = ["Health System", "Societal"]
+    axes = [ax1, ax2]
+    
+    # Define line styles for parameter groups
+    # Solid for Cost, Dashed for QALY
+    linestyles = {"Cost Parameters": "-", "QALY Parameters": "--"}
+    
+    # Define colors for interventions (consistent with other plots if possible)
+    # We'll use the default color cycle
+    interventions = df["Intervention"].unique()
+    colors = plt.cm.tab10(np.linspace(0, 1, len(interventions)))
+    color_map = dict(zip(interventions, colors))
+    
+    for ax, perspective in zip(axes, perspectives):
+        subset = df[df["Perspective"] == perspective]
+        
+        if subset.empty:
+            ax.text(0.5, 0.5, "No Data", ha='center', va='center')
+            ax.set_title(f"{perspective} Perspective")
+            continue
+            
+        for intervention in interventions:
+            int_data = subset[subset["Intervention"] == intervention]
+            if int_data.empty:
+                continue
+                
+            c = color_map[intervention]
+            
+            for group in ["Cost Parameters", "QALY Parameters"]:
+                group_data = int_data[int_data["Parameter Group"] == group]
+                if not group_data.empty:
+                    ax.plot(
+                        group_data["WTP"], 
+                        group_data["EVPPI"], 
+                        label=f"{intervention} ({group})", 
+                        color=c,
+                        linestyle=linestyles.get(group, "-"),
+                        linewidth=2
+                    )
+        
+        ax.set_title(f"{perspective} Perspective", fontsize=14, fontweight="bold")
+        ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
+        ax.grid(True, alpha=0.3)
+        
+        # Format axis labels
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        
+    ax1.set_ylabel("EVPPI ($)", fontsize=12)
+    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
+    
+    # Create a custom legend
+    # We want to separate Intervention (Color) and Parameter Group (Line Style)
+    from matplotlib.lines import Line2D
+    import matplotlib.patches as mpatches
+    
+    legend_elements = []
+    # Interventions
+    # Use an invisible patch for the title
+    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Interventions:}$'))
+    for intervention in interventions:
+        legend_elements.append(Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention))
+    
+    # Spacing
+    legend_elements.append(mpatches.Patch(color='none', label=' '))
+    
+    # Parameter Groups
+    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Parameters:}$'))
+    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cost Parameters'))
+    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='--', label='QALY Parameters'))
+    
+    # Place legend below the plots
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust for suptitle and legend
+    save_figure(
+        fig,
+        output_dir,
+        "expected_value_partial_perfect_information_comparative",
+    )
+
+
+def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures/"):
+    """
+    Create comparative Cost-Effectiveness Plane with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    apply_default_style()
+
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Cost-Effectiveness Plane with Perspective Delta\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    
+    # Define colors for interventions
+    model_names = list(all_results.keys())
+    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    color_map = dict(zip(model_names, colors))
+
+    for model_name in model_names:
+        psa_results = all_results[model_name]
+        c = color_map[model_name]
+        
+        # Extract data
+        # Health System
+        inc_cost_hs = psa_results["inc_cost_hs"]
+        inc_qaly_hs = psa_results["inc_qaly_hs"]
+        
+        # Societal
+        inc_cost_soc = psa_results["inc_cost_soc"]
+        inc_qaly_soc = psa_results["inc_qaly_soc"]
+        
+        # Delta
+        delta_cost = inc_cost_soc - inc_cost_hs
+        delta_qaly = inc_qaly_soc - inc_qaly_hs
+        
+        # Plot Health System
+        axes[0].scatter(
+            inc_qaly_hs,
+            inc_cost_hs,
+            label=model_name,
+            color=c,
+            alpha=0.15,
+            s=10,
+            edgecolors="none"
+        )
+        # Plot Mean Point
+        axes[0].scatter(
+            np.mean(inc_qaly_hs),
+            np.mean(inc_cost_hs),
+            color=c,
+            s=100,
+            edgecolors="black",
+            marker="o"
+        )
+
+        # Plot Societal
+        axes[1].scatter(
+            inc_qaly_soc,
+            inc_cost_soc,
+            label=model_name,
+            color=c,
+            alpha=0.15,
+            s=10,
+            edgecolors="none"
+        )
+        axes[1].scatter(
+            np.mean(inc_qaly_soc),
+            np.mean(inc_cost_soc),
+            color=c,
+            s=100,
+            edgecolors="black",
+            marker="o"
+        )
+        
+        # Plot Delta
+        axes[2].scatter(
+            delta_qaly,
+            delta_cost,
+            label=model_name,
+            color=c,
+            alpha=0.15,
+            s=10,
+            edgecolors="none"
+        )
+        axes[2].scatter(
+            np.mean(delta_qaly),
+            np.mean(delta_cost),
+            color=c,
+            s=100,
+            edgecolors="black",
+            marker="o"
+        )
+
+    # Formatting
+    for i, ax in enumerate(axes):
+        ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
+        ax.set_xlabel("Incremental QALYs", fontsize=12)
+        ax.set_ylabel("Incremental Cost ($)", fontsize=12)
+        ax.grid(True, alpha=0.3)
+        ax.axhline(0, color='black', linewidth=0.8, linestyle='-')
+        ax.axvline(0, color='black', linewidth=0.8, linestyle='-')
+        
+        # WTP Threshold line (50k)
+        # y = 50000 * x
+        xlim = ax.get_xlim()
+        x_vals = np.array(xlim)
+        y_vals = 50000 * x_vals
+        ax.plot(x_vals, y_vals, 'k--', alpha=0.5, label="WTP $50k/QALY")
+        ax.set_xlim(xlim) # Restore limits
+        
+        # Format y-axis
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:,.0f}k"))
+
+    # Legend
+    handles, labels = axes[0].get_legend_handles_labels()
+    # Filter for unique labels (interventions + WTP)
+    by_label = dict(zip(labels, handles))
+    # We only want intervention labels, WTP is common
+    
+    # Create custom legend for interventions
+    from matplotlib.lines import Line2D
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label=name, markerfacecolor=color_map[name], markersize=10) for name in model_names]
+    legend_elements.append(Line2D([0], [0], color='k', linestyle='--', label='WTP $50k/QALY'))
+    
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names)+1, frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
+    save_figure(
+        fig,
+        output_dir,
+        "cost_effectiveness_plane_comparative_with_delta",
     )
 
 
@@ -2466,4 +2955,469 @@ def plot_inequality_aversion_sensitivity(
         fig,
         output_dir,
         build_filename_base("inequality_sensitivity", intervention_name),
+    )
+
+
+def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures/"):
+    """
+    Create comparative Cost-Effectiveness Plane with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    apply_default_style()
+
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Cost-Effectiveness Plane with Perspective Delta\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    
+    # Define colors for interventions
+    model_names = list(all_results.keys())
+    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    color_map = dict(zip(model_names, colors))
+
+    # Collect Delta Data for Violin Plot
+    delta_costs_data = []
+    delta_costs_labels = []
+    
+    for model_name in model_names:
+        psa_results = all_results[model_name]
+        c = color_map[model_name]
+        
+        # Extract data
+        # Health System
+        inc_cost_hs = psa_results["inc_cost_hs"]
+        inc_qaly_hs = psa_results["inc_qaly_hs"]
+        
+        # Societal
+        inc_cost_soc = psa_results["inc_cost_soc"]
+        inc_qaly_soc = psa_results["inc_qaly_soc"]
+        
+        # Delta
+        delta_cost = inc_cost_soc - inc_cost_hs
+        delta_qaly = inc_qaly_soc - inc_qaly_hs
+        
+        # Store for Violin
+        delta_costs_data.append(delta_cost)
+        delta_costs_labels.append(model_name)
+        
+        # Plot Health System
+        axes[0].scatter(
+            inc_qaly_hs,
+            inc_cost_hs,
+            label=model_name,
+            color=c,
+            alpha=0.15,
+            s=10,
+            edgecolors="none"
+        )
+        # Plot Mean Point
+        axes[0].scatter(
+            np.mean(inc_qaly_hs),
+            np.mean(inc_cost_hs),
+            color=c,
+            s=100,
+            edgecolors="black",
+            marker="o"
+        )
+
+        # Plot Societal
+        axes[1].scatter(
+            inc_qaly_soc,
+            inc_cost_soc,
+            label=model_name,
+            color=c,
+            alpha=0.15,
+            s=10,
+            edgecolors="none"
+        )
+        axes[1].scatter(
+            np.mean(inc_qaly_soc),
+            np.mean(inc_cost_soc),
+            color=c,
+            s=100,
+            edgecolors="black",
+            marker="o"
+        )
+        
+    # Plot Delta (Violin)
+    # axes[2] is now a Violin Plot of Delta Costs
+    parts = axes[2].violinplot(
+        delta_costs_data,
+        showmeans=True,
+        showextrema=False,
+        showmedians=False
+    )
+    
+    # Color the violins
+    for i, pc in enumerate(parts['bodies']):
+        pc.set_facecolor(colors[i])
+        pc.set_edgecolor('black')
+        pc.set_alpha(0.7)
+        
+    # Fix means color
+    parts['cmeans'].set_color('black')
+
+    # Formatting
+    for i, ax in enumerate(axes):
+        ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
+        ax.grid(True, alpha=0.3)
+        
+        if i < 2:
+            ax.set_xlabel("Incremental QALYs", fontsize=12)
+            ax.set_ylabel("Incremental Cost ($)", fontsize=12)
+            ax.axhline(0, color='black', linewidth=0.8, linestyle='-')
+            ax.axvline(0, color='black', linewidth=0.8, linestyle='-')
+            
+            # WTP Threshold line (50k)
+            xlim = ax.get_xlim()
+            x_vals = np.array(xlim)
+            y_vals = 50000 * x_vals
+            ax.plot(x_vals, y_vals, 'k--', alpha=0.5, label="WTP $50k/QALY")
+            ax.set_xlim(xlim) # Restore limits
+            
+            # Format y-axis
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:,.0f}k"))
+        else:
+            # Delta Plot Formatting
+            ax.set_ylabel("Delta Cost (Societal - HS)", fontsize=12)
+            ax.set_xticks(np.arange(1, len(model_names) + 1))
+            ax.set_xticklabels(model_names, rotation=45, ha="right")
+            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:,.0f}k"))
+
+    # Legend
+    handles, labels = axes[0].get_legend_handles_labels()
+    # Filter for unique labels (interventions + WTP)
+    by_label = dict(zip(labels, handles))
+    # We only want intervention labels, WTP is common
+    
+    # Create custom legend for interventions
+    from matplotlib.lines import Line2D
+    legend_elements = [Line2D([0], [0], marker='o', color='w', label=name, markerfacecolor=color_map[name], markersize=10) for name in model_names]
+    legend_elements.append(Line2D([0], [0], color='k', linestyle='--', label='WTP $50k/QALY'))
+    
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names)+1, frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
+    save_figure(
+        fig,
+        output_dir,
+        "cost_effectiveness_plane_comparative_with_delta",
+    )
+
+
+def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="output/figures/"):
+    """
+    Create comparative CEAC with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    apply_default_style()
+    
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Cost-Effectiveness Acceptability Curves with Perspective Delta\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    model_names = list(all_results.keys())
+    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    color_map = dict(zip(model_names, colors))
+    
+    for model_name in model_names:
+        psa_results = all_results[model_name]
+        c = color_map[model_name]
+        
+        # Calculate CEAC for Health System
+        # We need to manually calculate probabilities because ProbabilisticSensitivityAnalysis.calculate_ceac 
+        # uses specific columns. We can reuse the logic.
+        
+        prob_ce_hs = []
+        prob_ce_soc = []
+        
+        for wtp in wtp_thresholds:
+            # HS
+            nmb_hs = (psa_results["inc_qaly_hs"] * wtp) - psa_results["inc_cost_hs"]
+            prob_hs = np.mean(nmb_hs > 0)
+            prob_ce_hs.append(prob_hs)
+            
+            # Societal
+            nmb_soc = (psa_results["inc_qaly_soc"] * wtp) - psa_results["inc_cost_soc"]
+            prob_soc = np.mean(nmb_soc > 0)
+            prob_ce_soc.append(prob_soc)
+            
+        prob_ce_hs = np.array(prob_ce_hs)
+        prob_ce_soc = np.array(prob_ce_soc)
+        delta_prob = prob_ce_soc - prob_ce_hs
+        
+        # Plot HS
+        axes[0].plot(wtp_thresholds, prob_ce_hs, label=model_name, color=c, linewidth=2)
+        
+        # Plot Societal
+        axes[1].plot(wtp_thresholds, prob_ce_soc, label=model_name, color=c, linewidth=2)
+        
+        # Plot Delta
+        axes[2].plot(wtp_thresholds, delta_prob, label=model_name, color=c, linewidth=2)
+        
+    # Formatting
+    for i, ax in enumerate(axes):
+        ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
+        ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
+        ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        
+        if i < 2:
+            ax.set_ylabel("Probability Cost-Effective", fontsize=12)
+            ax.set_ylim(-0.05, 1.05)
+        else:
+            ax.set_ylabel("Delta Probability (Soc - HS)", fontsize=12)
+            # Delta can be negative or positive, generally between -1 and 1
+            ax.set_ylim(-1.05, 1.05)
+            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+
+    # Legend
+    from matplotlib.lines import Line2D
+    legend_elements = [Line2D([0], [0], color=color_map[name], lw=2, label=name) for name in model_names]
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names), frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
+    save_figure(
+        fig,
+        output_dir,
+        "ceac_comparative_with_delta",
+    )
+
+
+def plot_comparative_evpi_with_delta(all_results, wtp_thresholds, output_dir="output/figures/"):
+    """
+    Create comparative EVPI plot with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    apply_default_style()
+    
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Expected Value of Perfect Information (EVPI) with Perspective Delta\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    model_names = list(all_results.keys())
+    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    color_map = dict(zip(model_names, colors))
+    
+    for model_name in model_names:
+        psa_results = all_results[model_name]
+        c = color_map[model_name]
+        
+        # Calculate EVPI for both perspectives
+        # We need to temporarily modify calculate_evpi or manually calculate
+        # calculate_evpi takes psa_results and uses "qaly_sc", "cost_sc" etc.
+        # We need to map columns.
+        
+        evpi_hs = []
+        evpi_soc = []
+        
+        # Helper to calculate EVPI given columns
+        def calc_evpi_vals(df, col_c_sc, col_q_sc, col_c_nt, col_q_nt, wtp_list):
+            vals = []
+            for wtp in wtp_list:
+                nmb_sc = (df[col_q_sc] * wtp) - df[col_c_sc]
+                nmb_nt = (df[col_q_nt] * wtp) - df[col_c_nt]
+                nmb_matrix = np.column_stack([nmb_sc, nmb_nt])
+                max_nmb_per_sim = np.max(nmb_matrix, axis=1)
+                expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
+                current_optimal_nmb = max(np.mean(nmb_sc), np.mean(nmb_nt))
+                evpi = max(0.0, expected_nmb_with_perfect_info - current_optimal_nmb)
+                vals.append(evpi)
+            return np.array(vals)
+
+        # Health System Columns
+        evpi_hs = calc_evpi_vals(
+            psa_results, 
+            "cost_sc_hs", "qaly_sc_hs", "cost_nt_hs", "qaly_nt_hs", 
+            wtp_thresholds
+        )
+        
+        # Societal Columns
+        evpi_soc = calc_evpi_vals(
+            psa_results, 
+            "cost_sc_soc", "qaly_sc_soc", "cost_nt_soc", "qaly_nt_soc", 
+            wtp_thresholds
+        )
+        
+        delta_evpi = evpi_soc - evpi_hs
+        
+        # Plot HS
+        axes[0].plot(wtp_thresholds, evpi_hs, label=model_name, color=c, linewidth=2)
+        
+        # Plot Societal
+        axes[1].plot(wtp_thresholds, evpi_soc, label=model_name, color=c, linewidth=2)
+        
+        # Plot Delta
+        axes[2].plot(wtp_thresholds, delta_evpi, label=model_name, color=c, linewidth=2)
+        
+    # Formatting
+    for i, ax in enumerate(axes):
+        ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
+        ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
+        ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        
+        if i < 2:
+            ax.set_ylabel("EVPI ($)", fontsize=12)
+        else:
+            ax.set_ylabel("Delta EVPI (Soc - HS)", fontsize=12)
+            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+            
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
+
+    # Legend
+    from matplotlib.lines import Line2D
+    legend_elements = [Line2D([0], [0], color=color_map[name], lw=2, label=name) for name in model_names]
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names), frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
+    save_figure(
+        fig,
+        output_dir,
+        "expected_value_perfect_information_comparative_with_delta",
+    )
+
+
+def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/"):
+    """
+    Create comparative EVPPI plot with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    apply_default_style()
+    
+    if not voi_results:
+        return
+
+    # Collect data
+    data_rows = []
+    
+    for model_name, report in voi_results.items():
+        evppi_data = report["value_of_information"]["evppi_by_parameter_group"]
+        wtp_thresholds = report["value_of_information"]["wtp_thresholds"]
+        
+        for key, values in evppi_data.items():
+            if key.endswith("_HS"):
+                perspective = "Health System"
+                group_name = key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+            elif key.endswith("_Soc"):
+                perspective = "Societal"
+                group_name = key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+            else:
+                continue # Skip generic
+
+            if "Cost Parameters" not in group_name and "QALY Parameters" not in group_name:
+                continue
+
+            for i, wtp in enumerate(wtp_thresholds):
+                data_rows.append({
+                    "Intervention": model_name,
+                    "Perspective": perspective,
+                    "Parameter Group": group_name,
+                    "WTP": wtp,
+                    "EVPPI": values[i],
+                    "Index": i # Keep index to match for delta
+                })
+                
+    if not data_rows:
+        return
+        
+    df = pd.DataFrame(data_rows)
+    
+    # Calculate Delta
+    # Pivot to get HS and Soc side by side
+    df_pivot = df.pivot_table(
+        index=["Intervention", "Parameter Group", "WTP", "Index"], 
+        columns="Perspective", 
+        values="EVPPI"
+    ).reset_index()
+    
+    df_pivot["Delta"] = df_pivot["Societal"] - df_pivot["Health System"]
+    
+    # Plotting
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300, sharey=False)
+    fig.suptitle(
+        "Comparative Expected Value of Partial Perfect Information (EVPPI) with Perspective Delta\n(2024 NZD equivalent)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    
+    linestyles = {"Cost Parameters": "-", "QALY Parameters": "--"}
+    interventions = df["Intervention"].unique()
+    colors = plt.cm.tab10(np.linspace(0, 1, len(interventions)))
+    color_map = dict(zip(interventions, colors))
+    
+    # Plot HS and Soc
+    for i, perspective in enumerate(["Health System", "Societal"]):
+        ax = axes[i]
+        subset = df[df["Perspective"] == perspective]
+        
+        for intervention in interventions:
+            int_data = subset[subset["Intervention"] == intervention]
+            c = color_map[intervention]
+            for group in ["Cost Parameters", "QALY Parameters"]:
+                group_data = int_data[int_data["Parameter Group"] == group]
+                if not group_data.empty:
+                    ax.plot(group_data["WTP"], group_data["EVPPI"], color=c, linestyle=linestyles[group], linewidth=2)
+                    
+    # Plot Delta
+    ax = axes[2]
+    for intervention in interventions:
+        int_data = df_pivot[df_pivot["Intervention"] == intervention]
+        c = color_map[intervention]
+        for group in ["Cost Parameters", "QALY Parameters"]:
+            group_data = int_data[int_data["Parameter Group"] == group]
+            if not group_data.empty:
+                ax.plot(group_data["WTP"], group_data["Delta"], color=c, linestyle=linestyles[group], linewidth=2)
+                
+    # Formatting
+    for i, ax in enumerate(axes):
+        ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
+        ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
+        ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        
+        if i < 2:
+            ax.set_ylabel("EVPPI ($)", fontsize=12)
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
+        else:
+            ax.set_ylabel("Delta EVPPI ($)", fontsize=12)
+            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
+            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+
+    # Legend
+    import matplotlib.patches as mpatches
+    from matplotlib.lines import Line2D
+    
+    legend_elements = []
+    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Interventions:}$'))
+    for intervention in interventions:
+        legend_elements.append(Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention))
+    
+    legend_elements.append(mpatches.Patch(color='none', label=' '))
+    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Parameters:}$'))
+    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cost Parameters'))
+    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='--', label='QALY Parameters'))
+    
+    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+    
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
+    save_figure(
+        fig,
+        output_dir,
+        "expected_value_partial_perfect_information_comparative_with_delta",
     )

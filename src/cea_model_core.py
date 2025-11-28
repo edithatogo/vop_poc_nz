@@ -7,6 +7,7 @@ with proper mathematical calculations and comprehensive documentation.
 
 import collections.abc
 import copy
+import logging
 import warnings
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -15,6 +16,8 @@ import pandas as pd
 
 # Import our corrected modules
 from .validation import validate_costs_and_qalys, validate_transition_matrices
+
+logger = logging.getLogger(__name__)
 
 
 class MarkovModel:
@@ -176,7 +179,7 @@ def run_cea(
             if "subgroups" in subgroup_model_params:
                 del subgroup_model_params["subgroups"]
 
-            print(  # pragma: no cover - debug tracing
+            logger.debug(  # pragma: no cover - debug tracing
                 f"DEBUG: Running subgroup {subgroup_name} with params: {subgroup_model_params.keys()}"
             )
             sub_results = run_cea(

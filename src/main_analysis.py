@@ -12,7 +12,10 @@ This module combines:
 
 import json
 import os
+import logging
 from typing import Any, Dict
+
+from .logging_config import setup_logging
 
 import numpy as np
 import pandas as pd
@@ -40,6 +43,7 @@ from .visualizations import (
     plot_cost_effectiveness_plane,
     plot_evpi,
     plot_evppi,
+    plot_comparative_evppi,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,
@@ -278,19 +282,9 @@ def write_results_to_files(results: Dict, output_dir: str = "output"):
         f"{output_dir}/parameters_assumptions_sources_table.csv", index=False
     )
     with open(f"{output_dir}/voi_analysis_summary.json", "w") as f:
-        json.dump(
-            {
-                "summary_statistics": results["voi_analysis"]["summary_statistics"],
-                "evpi_per_person": results["voi_analysis"]["value_of_information"][
-                    "evpi_per_person"
-                ],
-                "methodology_explanation": results["voi_analysis"][
-                    "methodology_explanation"
-                ],
-            },
-            f,
-            indent=2,
-        )
+        # voi_analysis is a dict of {intervention_name: report}
+        # We simply dump the whole thing
+        json.dump(results["voi_analysis"], f, indent=2)
 
     # Literature-informed DCEA table
     lit_dcea_df = generate_literature_informed_dcea_view(
@@ -303,7 +297,7 @@ def write_results_to_files(results: Dict, output_dir: str = "output"):
         serializable_results = convert_numpy_types(results)
         json.dump(serializable_results, f, indent=2, default=str)
 
-    print(f"\nResults written to {output_dir}/ directory")
+    logging.info(f"\nResults written to {output_dir}/ directory")
 
 
 def convert_numpy_types(obj):
@@ -335,7 +329,7 @@ def convert_numpy_types(obj):
 
 def perform_dsa_analysis(interventions):
     """Perform deterministic sensitivity analysis."""
-    print("\nPerforming Deterministic Sensitivity Analysis (DSA)...")
+    logging.info("\nPerforming Deterministic Sensitivity Analysis (DSA)...")
     dsa_results_1_way = perform_one_way_dsa(interventions, wtp_threshold=50000)
     plot_one_way_dsa_tornado(dsa_results_1_way)
     dsa_results_2_way = perform_comprehensive_two_way_dsa(
@@ -358,19 +352,20 @@ def main():  # pragma: no cover - CLI entry point for full demo run
     """
     Main function to run the comprehensive analysis addressing all reviewer feedback.
     """
-    print("Running comprehensive analysis with all corrections...")
+    setup_logging(output_dir="output")
+    logging.info("Running comprehensive analysis with all corrections...")
     results = run_analysis_pipeline()
 
     # Generate policy implications report
-    print("\nGenerating policy implications report...")
+    logging.info("\nGenerating policy implications report...")
     generate_policy_implications_report(results["intervention_results"])
 
     # Write all results to files
-    print("\nWriting results to output files...")
+    logging.info("\nWriting results to output files...")
     write_results_to_files(results, "output")
 
     # Generate all plots
-    print("\nGenerating all plots...")
+    logging.info("\nGenerating all plots...")
     wtp_thresholds = np.linspace(0, 100000, 21)
     plot_cost_effectiveness_plane(
         results["probabilistic_results"], perspective="societal"
@@ -384,10 +379,27 @@ def main():  # pragma: no cover - CLI entry point for full demo run
     plot_value_of_perspective(
         results["probabilistic_results"], wtp_thresholds, perspective="societal"
     )
+    # Extract population sizes from VOI analysis results
+    population_sizes = {}
+    if "voi_analysis" in results:
+        for name, report in results["voi_analysis"].items():
+            try:
+                pop_size = report["value_of_information"]["target_population_size"]
+                population_sizes[name] = pop_size
+            except KeyError:
+                population_sizes[name] = 100000  # Default
+    else:
+        # Fallback
+        for name in results["probabilistic_results"].keys():
+            population_sizes[name] = 100000
+
     plot_pop_evpi(
-        results["probabilistic_results"], wtp_thresholds, perspective="societal"
+        results["probabilistic_results"],
+        wtp_thresholds,
+        population_sizes=population_sizes,
+        perspective="societal",
     )
-    plot_evppi(results["voi_analysis"], output_dir="output/figures/")
+    plot_comparative_evppi(results["voi_analysis"], output_dir="output/figures/")
     # Compose a quick CE/VOI dashboard of the societal-perspective plots
     dashboard_images = [
         "output/figures/cost_effectiveness_plane_societal.png",
@@ -426,7 +438,7 @@ def main():  # pragma: no cover - CLI entry point for full demo run
         plot_discordance_loss(discordance_data, output_dir="output/figures/")
 
     # Generate Policy Brief
-    print("\nGenerating Policy Brief...")
+    logging.info("\nGenerating Policy Brief...")
     generate_policy_brief(results["intervention_results"], output_dir="output/reports/")
 
     # Print summary

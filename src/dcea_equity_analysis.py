@@ -250,6 +250,14 @@ def plot_lorenz_curve(
     """
     os.makedirs(output_dir, exist_ok=True)
 
+    # Extract Societal results (default for Lorenz)
+    if "societal" in dcea_results:
+        dcea_results = dcea_results["societal"]
+    
+    if not dcea_results:
+        print(f"No societal DCEA results for {intervention_name}")
+        return
+
     nhb_list = sorted(dcea_results["distribution_of_net_health_benefits"].values())
     n = len(nhb_list)
     if n == 0:  # pragma: no cover - guard
@@ -299,83 +307,394 @@ def plot_lorenz_curve(
 
 
 def plot_equity_impact_plane(
-    dcea_results: Dict, intervention_name: str, output_dir: str = "output/figures/"
+    dcea_results_dict: Dict, intervention_name: str, output_dir: str = "output/figures/"
 ):
     """
-    Generates an equity impact plane plot.
-
-    This plot shows the trade-off between total health gains (efficiency) and
-    the distribution of those gains (equity).
+    Generates a comparative equity impact plane plot (Health System vs Societal).
 
     Args:
-        dcea_results: The results from the DCEA analysis.
+        dcea_results_dict: Dictionary containing 'health_system' and 'societal' DCEA results.
         intervention_name: The name of the intervention.
         output_dir: The directory to save the plot.
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    total_gain = dcea_results["total_health_gain"]
-    # Using Weighted Net Health Benefit as the equity metric (as requested)
-    # If weights are not present, this falls back to total gain (neutral)
-    equity_metric = dcea_results.get("weighted_total_health_gain", total_gain)
-
-    fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7), dpi=300)
     fig.suptitle(
-        f"Equity-Efficiency Trade-off: {intervention_name}\n(Societal Perspective, WTP = $50,000/QALY)",
-        fontsize=14,
+        f"Equity-Efficiency Trade-off: {intervention_name}",
+        fontsize=16,
         fontweight="bold",
     )
 
-    ax.scatter(total_gain, equity_metric, s=200, c="blue", alpha=0.7)
-
-    ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
-    ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
-
-    # Add 45-degree line to show where Weighted = Unweighted (Neutrality)
-    lims = [
-        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
-        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+    perspectives = [
+        ("Health System", dcea_results_dict.get("health_system"), ax1),
+        ("Societal", dcea_results_dict.get("societal"), ax2),
     ]
-    ax.plot(lims, lims, "k-", alpha=0.5, zorder=0, label="Equity Neutrality")
 
-    ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
-    ax.set_ylabel("Equity (Weighted Net Health Benefit)", fontsize=12)
-    ax.set_title("Efficiency vs. Equity Trade-off")
-    ax.grid(True, alpha=0.3)
+    for title, results, ax in perspectives:
+        if not results:
+            ax.text(0.5, 0.5, "No Data Available", ha="center", va="center")
+            ax.set_title(f"{title} Perspective")
+            continue
 
-    # Annotate quadrants
-    # Annotate quadrants relative to the 45-degree line (Neutrality)
-    # Points above line = Pro-Equity (Weighted > Unweighted)
-    # Points below line = Anti-Equity (Weighted < Unweighted)
+        total_gain = results["total_health_gain"]
+        equity_metric = results.get("weighted_total_health_gain", total_gain)
 
-    ax.text(
-        0.05,
-        0.95,
-        "Pro-Equity\n(Weighted > Unweighted)",
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=12,
-        color="green",
-    )
-    ax.text(
-        0.95,
-        0.05,
-        "Anti-Equity\n(Weighted < Unweighted)",
-        transform=ax.transAxes,
-        ha="right",
-        va="bottom",
-        fontsize=12,
-        color="red",
-    )
+        ax.scatter(total_gain, equity_metric, s=200, c="blue", alpha=0.7)
+
+        ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
+
+        # Add 45-degree line
+        lims = [
+            np.min([ax.get_xlim(), ax.get_ylim()]),
+            np.max([ax.get_xlim(), ax.get_ylim()]),
+        ]
+        # Ensure limits include 0
+        lims[0] = min(lims[0], -1000)
+        lims[1] = max(lims[1], 1000)
+        
+        ax.plot(lims, lims, "k-", alpha=0.5, zorder=0, label="Equity Neutrality")
+
+        ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
+        ax.set_ylabel("Equity (Weighted Net Health Benefit)", fontsize=12)
+        ax.set_title(f"{title} Perspective", fontsize=14)
+        ax.grid(True, alpha=0.3)
+
+        # Annotate quadrants
+        ax.text(
+            0.05, 0.95, "Pro-Equity\n(Weighted > Unweighted)",
+            transform=ax.transAxes, ha="left", va="top", fontsize=10, color="green",
+        )
+        ax.text(
+            0.95, 0.05, "Anti-Equity\n(Weighted < Unweighted)",
+            transform=ax.transAxes, ha="right", va="bottom", fontsize=10, color="red",
+        )
 
     plt.tight_layout()
-    plt.savefig(
-        f"{output_dir}/equity_impact_plane_{intervention_name.lower().replace(' ', '_')}.png",
-        bbox_inches="tight",
+    plt.subplots_adjust(top=0.85) # Make room for suptitle
+    
+    filename = f"equity_impact_plane_{intervention_name.lower().replace(' ', '_')}"
+    plt.savefig(f"{output_dir}/{filename}.png", bbox_inches="tight")
+    plt.savefig(f"{output_dir}/{filename}.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_comparative_equity_impact_plane(
+    all_dcea_results: Dict, output_dir: str = "output/figures/"
+):
+    """
+    Generates a single comparative equity impact plane for ALL interventions.
+    
+    Two subplots: Health System vs Societal.
+    Each intervention is a distinct point/marker.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Equity-Efficiency Trade-offs",
+        fontsize=16,
+        fontweight="bold",
     )
-    plt.savefig(
-        f"{output_dir}/equity_impact_plane_{intervention_name.lower().replace(' ', '_')}.pdf",
-        bbox_inches="tight",
+    
+    # Define styles for interventions
+    markers = ['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h']
+    colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    
+    # Helper to plot a perspective
+    def plot_perspective(ax, perspective_key, title):
+        # Add quadrants and lines first
+        ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
+        
+        # 45-degree line placeholder (will update limits later)
+        ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+        
+        # Plot points
+        texts = []
+        max_val = 0
+        min_val = 0
+        
+        for i, (name, results_dict) in enumerate(all_dcea_results.items()):
+            res = results_dict.get(perspective_key)
+            if not res:
+                continue
+                
+            total_gain = res["total_health_gain"]
+            equity_metric = res.get("weighted_total_health_gain", total_gain)
+            
+            # Update range tracking
+            max_val = max(max_val, abs(total_gain), abs(equity_metric))
+            
+            ax.scatter(
+                total_gain, 
+                equity_metric, 
+                s=150, 
+                label=name,
+                marker=markers[i % len(markers)],
+                color=colors[i % len(colors)],
+                edgecolor='white',
+                linewidth=1.5,
+                alpha=0.9,
+                zorder=10
+            )
+            
+        # Set limits symmetric and large enough
+        limit = max_val * 1.2 if max_val > 0 else 1000
+        ax.set_xlim(-limit, limit)
+        ax.set_ylim(-limit, limit)
+        
+        ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
+        ax.set_ylabel("Equity (Weighted Net Health Benefit)", fontsize=12)
+        ax.set_title(f"{title} Perspective", fontsize=14)
+        ax.grid(True, alpha=0.3)
+        
+        # Annotate quadrants
+        ax.text(0.05, 0.95, "Pro-Equity\n(Weighted > Unweighted)", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
+        ax.text(0.95, 0.05, "Anti-Equity\n(Weighted < Unweighted)", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+
+    plot_perspective(ax1, "health_system", "Health System")
+    plot_perspective(ax2, "societal", "Societal")
+    
+    # Legend
+    handles, labels = ax1.get_legend_handles_labels()
+    # Filter out the 'Equity Neutrality' line from legend if desired, or keep it
+    # Let's keep distinct intervention labels
+    by_label = dict(zip(labels, handles))
+    if "Equity Neutrality" in by_label:
+        del by_label["Equity Neutrality"] # Remove line from legend to focus on interventions
+        
+    fig.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9, bottom=0.15)
+    
+    plt.savefig(f"{output_dir}/equity_impact_plane_comparative.png", bbox_inches="tight")
+    plt.savefig(f"{output_dir}/equity_impact_plane_comparative.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_probabilistic_equity_impact_plane(
+    probabilistic_results: Dict[str, pd.DataFrame], output_dir: str = "output/figures/"
+):
+    """
+    Generates a probabilistic equity impact plane (Scatter Plot of PSA results).
+    
+    Plots the cloud of (Efficiency, Equity) points for each intervention.
+    Efficiency = Total Net Health Benefit (Unweighted)
+    Equity = Equity-Weighted Net Health Benefit
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), dpi=300)
+    fig.suptitle(
+        "Probabilistic Equity Impact Plane (PSA Scatter)",
+        fontsize=16,
+        fontweight="bold",
     )
+    
+    colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    
+    def plot_perspective(ax, perspective_suffix, title):
+        ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+        
+        max_val = 0
+        
+        for i, (name, df) in enumerate(probabilistic_results.items()):
+            eff_col = f"inc_nmb_{perspective_suffix}"
+            eq_col = f"equity_weighted_nmb_{perspective_suffix}"
+            
+            if eff_col not in df.columns or eq_col not in df.columns:
+                continue
+                
+            efficiency = df[eff_col]
+            equity = df[eq_col]
+            
+            # Update range
+            max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
+            
+            # Plot scatter cloud
+            ax.scatter(
+                efficiency, 
+                equity, 
+                s=10, 
+                alpha=0.1, 
+                color=colors[i % len(colors)],
+                label=name if i < 10 else None # Avoid legend clutter if too many
+            )
+            
+            # Plot centroid
+            ax.scatter(
+                efficiency.mean(), 
+                equity.mean(), 
+                s=100, 
+                marker='X',
+                edgecolor='white',
+                linewidth=1.5,
+                color=colors[i % len(colors)],
+                zorder=10
+            )
+
+        limit = max_val * 1.1 if max_val > 0 else 1000
+        ax.set_xlim(-limit, limit)
+        ax.set_ylim(-limit, limit)
+        
+        ax.set_xlabel("Efficiency (Incremental Net Health Benefit)", fontsize=12)
+        ax.set_ylabel("Equity (Equity-Weighted Net Health Benefit)", fontsize=12)
+        ax.set_title(f"{title} Perspective", fontsize=14)
+        ax.grid(True, alpha=0.3)
+        
+        # Annotate
+        ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
+        ax.text(0.95, 0.05, "Anti-Equity", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+
+    plot_perspective(ax1, "hs", "Health System")
+    plot_perspective(ax2, "soc", "Societal")
+    
+    # Legend (using centroids proxy handles)
+    handles = []
+    labels = []
+    for i, name in enumerate(probabilistic_results.keys()):
+        h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
+        handles.append(h)
+        labels.append(name)
+        
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9, bottom=0.15)
+    
+    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.png", bbox_inches="tight")
+    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_probabilistic_equity_impact_plane_with_delta(
+    probabilistic_results: Dict[str, pd.DataFrame], output_dir: str = "output/figures/"
+):
+    """
+    Generates a probabilistic equity impact plane with Delta subplot.
+    3 Subplots: Health System, Societal, Delta (Societal - HS).
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Probabilistic Equity Impact Plane with Perspective Delta\n(PSA Scatter)",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
+    
+    # Helper to plot a perspective
+    def plot_perspective(ax, perspective_idx, title):
+        ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
+        ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
+        
+        # Only plot 45-degree line for HS and Soc, not necessarily for Delta (though maybe relevant)
+        if perspective_idx < 2:
+            ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+        
+        max_val = 0
+        
+        for i, (name, df) in enumerate(probabilistic_results.items()):
+            if perspective_idx == 0: # HS
+                eff_col = "inc_nmb_hs"
+                eq_col = "equity_weighted_nmb_hs"
+            elif perspective_idx == 1: # Soc
+                eff_col = "inc_nmb_soc"
+                eq_col = "equity_weighted_nmb_soc"
+            else: # Delta
+                # Calculate delta
+                eff_hs = df.get("inc_nmb_hs", pd.Series(0, index=df.index))
+                eq_hs = df.get("equity_weighted_nmb_hs", pd.Series(0, index=df.index))
+                eff_soc = df.get("inc_nmb_soc", pd.Series(0, index=df.index))
+                eq_soc = df.get("equity_weighted_nmb_soc", pd.Series(0, index=df.index))
+                
+                efficiency = eff_soc - eff_hs
+                equity = eq_soc - eq_hs
+                
+                # Skip check below as we constructed series
+                # But check if original cols existed
+                if "inc_nmb_hs" not in df.columns: continue
+                
+                # Plot
+                max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
+                
+                ax.scatter(efficiency, equity, s=10, alpha=0.1, color=colors[i % len(colors)])
+                ax.scatter(efficiency.mean(), equity.mean(), s=100, marker='X', edgecolor='white', linewidth=1.5, color=colors[i % len(colors)], zorder=10)
+                continue
+
+            if eff_col not in df.columns or eq_col not in df.columns:
+                continue
+                
+            efficiency = df[eff_col]
+            equity = df[eq_col]
+            
+            # Update range
+            max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
+            
+            # Plot scatter cloud
+            ax.scatter(
+                efficiency, 
+                equity, 
+                s=10, 
+                alpha=0.1, 
+                color=colors[i % len(colors)],
+            )
+            
+            # Plot centroid
+            ax.scatter(
+                efficiency.mean(), 
+                equity.mean(), 
+                s=100, 
+                marker='X',
+                edgecolor='white',
+                linewidth=1.5,
+                color=colors[i % len(colors)],
+                zorder=10
+            )
+
+        limit = max_val * 1.1 if max_val > 0 else 1000
+        ax.set_xlim(-limit, limit)
+        ax.set_ylim(-limit, limit)
+        
+        if perspective_idx < 2:
+            ax.set_xlabel("Efficiency (Incremental Net Health Benefit)", fontsize=12)
+            ax.set_ylabel("Equity (Equity-Weighted Net Health Benefit)", fontsize=12)
+        else:
+            ax.set_xlabel("Delta Efficiency (Soc - HS)", fontsize=12)
+            ax.set_ylabel("Delta Equity (Soc - HS)", fontsize=12)
+            
+        ax.set_title(f"{title}", fontsize=14)
+        ax.grid(True, alpha=0.3)
+        
+        # Annotate
+        if perspective_idx < 2:
+            ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
+            ax.text(0.95, 0.05, "Anti-Equity", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+
+    plot_perspective(axes[0], 0, "Health System")
+    plot_perspective(axes[1], 1, "Societal")
+    plot_perspective(axes[2], 2, "Delta (Societal - HS)")
+    
+    # Legend (using centroids proxy handles)
+    handles = []
+    labels = []
+    for i, name in enumerate(probabilistic_results.keys()):
+        h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
+        handles.append(h)
+        labels.append(name)
+        
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(labels), fontsize=12)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9, bottom=0.15)
+    
+    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic_with_delta.png", bbox_inches="tight")
     plt.close()

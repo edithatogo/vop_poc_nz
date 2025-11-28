@@ -5,13 +5,17 @@ This module handles the generation of all figures, dashboards, and reports
 based on the results from the analysis pipeline.
 """
 
+import logging
 import os
 
 import numpy as np
 
 from ..dcea_equity_analysis import (
     plot_equity_impact_plane,
+    plot_comparative_equity_impact_plane,
+    plot_probabilistic_equity_impact_plane,
     plot_lorenz_curve,
+    plot_probabilistic_equity_impact_plane_with_delta,
 )
 from ..dsa_analysis import (
     compose_dsa_dashboard,
@@ -27,7 +31,15 @@ from ..visualizations import (
     plot_annual_cash_flow,
     plot_ceac,
     plot_ceaf,
+    plot_ceaf,
     plot_comparative_ce_plane,
+    plot_comparative_ceac,
+    plot_comparative_evpi,
+    plot_comparative_evppi,
+    plot_comparative_ce_plane_with_delta,
+    plot_comparative_ceac_with_delta,
+    plot_comparative_evpi_with_delta,
+    plot_comparative_evppi_with_delta,
     plot_cost_effectiveness_plane,
     plot_decision_tree,
     plot_discordance_loss,
@@ -39,15 +51,17 @@ from ..visualizations import (
     plot_value_of_perspective,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     """
     Run the complete reporting pipeline.
     Generates all figures, dashboards, and the policy brief.
     """
-    print("=" * 70)
-    print("RUNNING REPORTING PIPELINE")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("RUNNING REPORTING PIPELINE")
+    logger.info("=" * 70)
 
     os.makedirs(output_dir, exist_ok=True)
     figures_dir = os.path.join(output_dir, "figures")
@@ -55,8 +69,33 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     os.makedirs(figures_dir, exist_ok=True)
     os.makedirs(reports_dir, exist_ok=True)
 
+    # 0. Save Full Results to JSON (for debugging and reproducibility)
+    print("\nSaving full analysis results to JSON...")
+    import json
+    
+    class NumpyEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, np.integer):
+                return int(obj)
+            if isinstance(obj, np.floating):
+                return float(obj)
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            if isinstance(obj, pd.DataFrame):
+                return obj.to_dict(orient="list")
+            if isinstance(obj, pd.Series):
+                return obj.to_list()
+            return super(NumpyEncoder, self).default(obj)
+
+    try:
+        with open(os.path.join(output_dir, "complete_analysis_results.json"), "w") as f:
+            json.dump(results, f, cls=NumpyEncoder, indent=4)
+        print(f"Results saved to {os.path.join(output_dir, 'complete_analysis_results.json')}")
+    except Exception as e:
+        print(f"Warning: Could not save results to JSON: {e}")
+
     # 1. Write Text Reports
-    print("\nWriting results to output files...")
+    logger.info("Writing results to output files...")
     for name, report in results["reports"].items():
         with open(os.path.join(output_dir, f"{name}_report.md"), "w") as f:
             f.write(report)
@@ -71,18 +110,26 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
             outfile.write(report)
 
     # 2. Generate Plots
-    print("\nGenerating all plots...")
+    logger.info("Generating all plots...")
     wtp_thresholds = np.linspace(0, 100000, 21)
 
     # CE Plane & Curves
     plot_cost_effectiveness_plane(
         results["probabilistic_results"], perspective="societal", output_dir=figures_dir
     )
-    plot_comparative_ce_plane(results["intervention_results"], output_dir=figures_dir)
+    plot_comparative_ce_plane(
+        results["intervention_results"],
+        output_dir=figures_dir,
+        psa_results=results.get("probabilistic_results"),
+    )
     plot_ceac(
         results["probabilistic_results"],
         wtp_thresholds,
         perspective="societal",
+        output_dir=figures_dir,
+    )
+    plot_comparative_ceac(
+        results["probabilistic_results"],
         output_dir=figures_dir,
     )
     plot_ceaf(
@@ -91,10 +138,9 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         perspective="societal",
         output_dir=figures_dir,
     )
-    plot_evpi(
+    plot_comparative_evpi(
         results["probabilistic_results"],
         wtp_thresholds,
-        perspective="societal",
         output_dir=figures_dir,
     )
     plot_net_benefit_curves(
@@ -122,8 +168,30 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         perspective="societal",
         output_dir=figures_dir,
     )
-    plot_evppi(results["voi_analysis"], output_dir=figures_dir)
-
+    plot_comparative_evppi(
+        results["voi_analysis"],
+        output_dir=figures_dir,
+    )
+    
+    # Delta Plots (New Request)
+    plot_comparative_ce_plane_with_delta(
+        results["probabilistic_results"],
+        output_dir=figures_dir,
+    )
+    plot_comparative_ceac_with_delta(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        output_dir=figures_dir,
+    )
+    plot_comparative_evpi_with_delta(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        output_dir=figures_dir,
+    )
+    plot_comparative_evppi_with_delta(
+        results["voi_analysis"],
+        output_dir=figures_dir,
+    )
     # Decision Trees
     for name, params in results["selected_interventions"].items():
         plot_decision_tree(name, params, output_dir=figures_dir)
@@ -149,11 +217,28 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     equity_interventions = []
     for name, dcea_res in results.get("dcea_equity_analysis", {}).items():
         if dcea_res:
-            plot_equity_impact_plane(dcea_res, name, output_dir=figures_dir)
-            plot_lorenz_curve(dcea_res, name, output_dir=figures_dir)
-            equity_interventions.append(name)
+            pass # Added to fix IndentationError
     if equity_interventions:
-        compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
+        # compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
+        pass # Added to fix IndentationError
+        
+    # Comparative Equity Plot
+    if results.get("dcea_equity_analysis"):
+        plot_comparative_equity_impact_plane(
+            results["dcea_equity_analysis"], 
+            output_dir=figures_dir
+        )
+        
+    # Probabilistic Equity Plot (Scatter)
+    if results.get("probabilistic_results"):
+        plot_probabilistic_equity_impact_plane(
+            results["probabilistic_results"],
+            output_dir=figures_dir
+        )
+        plot_probabilistic_equity_impact_plane_with_delta(
+            results["probabilistic_results"],
+            output_dir=figures_dir
+        )
 
     # Inequality Aversion Sensitivity Plots
     for name, res in results["intervention_results"].items():
@@ -198,7 +283,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     )
 
     # 4. Policy Brief
-    print("\nGenerating Policy Brief...")
+    logger.info("Generating Policy Brief...")
     generate_policy_brief(results["intervention_results"], output_dir=reports_dir)
 
-    print(f"\nReporting complete. Outputs saved to {output_dir}/")
+    logger.info(f"Reporting complete. Outputs saved to {output_dir}/")

@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 
 from .pipeline.analysis import run_analysis_pipeline
 from .pipeline.reporting import run_reporting_pipeline
+from .logging_config import setup_logging
 
 
 def main():
@@ -25,7 +26,9 @@ def main():
     )
     args = parser.parse_args()
 
-    print(f"Starting analysis pipeline... Output directory: {args.output_dir}")
+    setup_logging(output_dir=args.output_dir)
+
+    logging.info(f"Starting analysis pipeline... Output directory: {args.output_dir}")
 
     # 1. Run Analysis
     results = run_analysis_pipeline()
@@ -33,7 +36,7 @@ def main():
     # 2. Run Reporting
     run_reporting_pipeline(results, output_dir=args.output_dir)
 
-    print("\nPipeline execution completed successfully.")
+    logging.info("\nPipeline execution completed successfully.")
 
 
 if __name__ == "__main__":

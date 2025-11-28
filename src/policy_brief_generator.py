@@ -7,10 +7,13 @@ This module generates a 1-page Executive Summary (Markdown) synthesizing:
 3. Fiscal Cost (5-year Budget Impact)
 """
 
+import logging
 import os
 from typing import Dict
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def generate_policy_brief(
@@ -102,7 +105,7 @@ def generate_policy_brief(
     with open(os.path.join(output_dir, filename), "w") as f:
         f.write("\n".join(lines))
 
-    print(f"Policy brief generated at {os.path.join(output_dir, filename)}")
+    logger.info(f"Policy brief generated at {os.path.join(output_dir, filename)}")
 
 
 if __name__ == "__main__":

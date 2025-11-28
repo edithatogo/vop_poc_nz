@@ -7,6 +7,7 @@ to address reviewer feedback about methodology justification.
 """
 
 import contextlib
+import logging
 import warnings
 from typing import Any, Callable, Dict, List, Optional
 
@@ -15,6 +16,8 @@ import pandas as pd
 from scipy.stats import beta, gamma, norm, uniform
 
 from .validation import validate_psa_results
+
+logger = logging.getLogger(__name__)
 
 
 class ProbabilisticSensitivityAnalysis:
@@ -90,60 +93,140 @@ class ProbabilisticSensitivityAnalysis:
         """
         parameter_samples = self.sample_parameters(n_samples)
 
+        # Initialize results dictionary with lists
         results: Dict[str, List[Any]] = {
             "iteration": [],
-            "cost_sc": [],
-            "qaly_sc": [],
-            "cost_nt": [],
-            "qaly_nt": [],
-            "inc_cost": [],
-            "inc_qaly": [],
-            "nmb_sc": [],
-            "nmb_nt": [],
-            "inc_nmb": [],
+            # Health System
+            "cost_sc_hs": [], "qaly_sc_hs": [],
+            "cost_nt_hs": [], "qaly_nt_hs": [],
+            "inc_cost_hs": [], "inc_qaly_hs": [],
+            "nmb_sc_hs": [], "nmb_nt_hs": [],
+            "inc_nmb_hs": [],
+            # Societal
+            "cost_sc_soc": [], "qaly_sc_soc": [],
+            "cost_nt_soc": [], "qaly_nt_soc": [],
+            "inc_cost_soc": [], "inc_qaly_soc": [],
+            "nmb_sc_soc": [], "nmb_nt_soc": [],
+            "inc_nmb_soc": [],
+            # Legacy/Default (aliased to Societal for backward compatibility if needed, or handled dynamically)
             "cost_effective": [],
         }
-        # Add keys for each parameter to store sampled values
+        
+        # Add keys for each parameter
         for param_name in self.parameters:
             results[param_name] = []
 
         for i, params in enumerate(parameter_samples):
             try:
                 # Run model for standard care
-                cost_sc, qaly_sc = self.model_func(
-                    params, intervention_type="standard_care"
-                )
-
+                res_sc = self.model_func(params, intervention_type="standard_care")
+                
                 # Run model for new treatment
-                cost_nt, qaly_nt = self.model_func(
-                    params, intervention_type="new_treatment"
-                )
+                res_nt = self.model_func(params, intervention_type="new_treatment")
 
-                # Calculate incremental values
-                inc_cost = cost_nt - cost_sc
-                inc_qaly = qaly_nt - qaly_sc
+                # Check if we have dual perspective (4 values) or single (2 values) or extended (5 values)
+                if len(res_sc) >= 4 and len(res_nt) >= 4:
+                    # Unpack: cost_hs, qaly_hs, cost_soc, qaly_soc, [extras]
+                    c_sc_hs, q_sc_hs, c_sc_soc, q_sc_soc = res_sc[:4]
+                    c_nt_hs, q_nt_hs, c_nt_soc, q_nt_soc = res_nt[:4]
+                    
+                    # Handle extras if present
+                    if len(res_sc) == 5:
+                        extras_sc = res_sc[4]
+                        for k, v in extras_sc.items():
+                            col_name = f"sc_{k}"
+                            if col_name not in results:
+                                results[col_name] = []
+                            results[col_name].append(v)
+                            
+                    if len(res_nt) == 5:
+                        extras_nt = res_nt[4]
+                        for k, v in extras_nt.items():
+                            col_name = f"nt_{k}"
+                            if col_name not in results:
+                                results[col_name] = []
+                            results[col_name].append(v)
+                    
+                    # Health System Calculations
+                    inc_c_hs = c_nt_hs - c_sc_hs
+                    inc_q_hs = q_nt_hs - q_sc_hs
+                    nmb_sc_hs = (q_sc_hs * self.wtp_threshold) - c_sc_hs
+                    nmb_nt_hs = (q_nt_hs * self.wtp_threshold) - c_nt_hs
+                    inc_nmb_hs = nmb_nt_hs - nmb_sc_hs
+                    
+                    # Societal Calculations
+                    inc_c_soc = c_nt_soc - c_sc_soc
+                    inc_q_soc = q_nt_soc - q_sc_soc
+                    nmb_sc_soc = (q_sc_soc * self.wtp_threshold) - c_sc_soc
+                    nmb_nt_soc = (q_nt_soc * self.wtp_threshold) - c_nt_soc
+                    inc_nmb_soc = nmb_nt_soc - nmb_sc_soc
+                    
+                    # Store Health System
+                    results["cost_sc_hs"].append(c_sc_hs)
+                    results["qaly_sc_hs"].append(q_sc_hs)
+                    results["cost_nt_hs"].append(c_nt_hs)
+                    results["qaly_nt_hs"].append(q_nt_hs)
+                    results["inc_cost_hs"].append(inc_c_hs)
+                    results["inc_qaly_hs"].append(inc_q_hs)
+                    results["nmb_sc_hs"].append(nmb_sc_hs)
+                    results["nmb_nt_hs"].append(nmb_nt_hs)
+                    results["inc_nmb_hs"].append(inc_nmb_hs)
+                    
+                    # Store Societal
+                    results["cost_sc_soc"].append(c_sc_soc)
+                    results["qaly_sc_soc"].append(q_sc_soc)
+                    results["cost_nt_soc"].append(c_nt_soc)
+                    results["qaly_nt_soc"].append(q_nt_soc)
+                    results["inc_cost_soc"].append(inc_c_soc)
+                    results["inc_qaly_soc"].append(inc_q_soc)
+                    results["nmb_sc_soc"].append(nmb_sc_soc)
+                    results["nmb_nt_soc"].append(nmb_nt_soc)
+                    results["inc_nmb_soc"].append(inc_nmb_soc)
+                    
+                    # Legacy/Default aliases (mapping Societal to standard names for existing plots)
+                    # Actually, better to just store them as is and update plots to look for _soc or _hs
+                    # But for backward compatibility with code expecting "inc_cost", let's alias Societal
+                    results["cost_effective"].append(inc_nmb_soc > 0)
 
-                # Calculate NMB for both interventions and incremental
-                nmb_sc = (qaly_sc * self.wtp_threshold) - cost_sc
-                nmb_nt = (qaly_nt * self.wtp_threshold) - cost_nt
-                inc_nmb = nmb_nt - nmb_sc
+                else:
+                    # Assume single perspective (2 values)
+                    c_sc, q_sc = res_sc[:2]
+                    c_nt, q_nt = res_nt[:2]
+                    
+                    # Calculate incremental
+                    inc_c = c_nt - c_sc
+                    inc_q = q_nt - q_sc
+                    nmb_sc = (q_sc * self.wtp_threshold) - c_sc
+                    nmb_nt = (q_nt * self.wtp_threshold) - c_nt
+                    inc_nmb = nmb_nt - nmb_sc
+                    
+                    # Store in Societal columns (defaulting to societal as that's the main focus)
+                    # Or maybe we should just use generic names?
+                    # Let's map to Societal to be safe as that was the previous behavior
+                    results["cost_sc_soc"].append(c_sc)
+                    results["qaly_sc_soc"].append(q_sc)
+                    results["cost_nt_soc"].append(c_nt)
+                    results["qaly_nt_soc"].append(q_nt)
+                    results["inc_cost_soc"].append(inc_c)
+                    results["inc_qaly_soc"].append(inc_q)
+                    results["nmb_sc_soc"].append(nmb_sc)
+                    results["nmb_nt_soc"].append(nmb_nt)
+                    results["inc_nmb_soc"].append(inc_nmb)
+                    results["cost_effective"].append(inc_nmb > 0)
+                    
+                    # Fill HS with NaNs
+                    results["cost_sc_hs"].append(np.nan)
+                    results["qaly_sc_hs"].append(np.nan)
+                    results["cost_nt_hs"].append(np.nan)
+                    results["qaly_nt_hs"].append(np.nan)
+                    results["inc_cost_hs"].append(np.nan)
+                    results["inc_qaly_hs"].append(np.nan)
+                    results["nmb_sc_hs"].append(np.nan)
+                    results["nmb_nt_hs"].append(np.nan)
+                    results["inc_nmb_hs"].append(np.nan)
 
-                # Determine cost-effectiveness at threshold
-                cost_effective = inc_nmb > 0
-
-                # Store results
                 results["iteration"].append(i)
-                results["cost_sc"].append(cost_sc)
-                results["qaly_sc"].append(qaly_sc)
-                results["cost_nt"].append(cost_nt)
-                results["qaly_nt"].append(qaly_nt)
-                results["inc_cost"].append(inc_cost)
-                results["inc_qaly"].append(inc_qaly)
-                results["nmb_sc"].append(nmb_sc)
-                results["nmb_nt"].append(nmb_nt)
-                results["inc_nmb"].append(inc_nmb)
-                results["cost_effective"].append(cost_effective)
-
+                
                 # Store sampled parameter values
                 for param_name, param_value in params.items():
                     results[param_name].append(param_value)
@@ -158,7 +241,22 @@ class ProbabilisticSensitivityAnalysis:
                         results[key].append(np.nan)
                 results["iteration"].append(i)
 
-        return pd.DataFrame(results)
+        # Create DataFrame
+        df = pd.DataFrame(results)
+        
+        # Add alias columns for backward compatibility (mapping Societal to generic)
+        # This ensures existing code using "inc_cost" etc. still works (defaulting to Societal)
+        df["cost_sc"] = df["cost_sc_soc"]
+        df["qaly_sc"] = df["qaly_sc_soc"]
+        df["cost_nt"] = df["cost_nt_soc"]
+        df["qaly_nt"] = df["qaly_nt_soc"]
+        df["inc_cost"] = df["inc_cost_soc"]
+        df["inc_qaly"] = df["inc_qaly_soc"]
+        df["nmb_sc"] = df["nmb_sc_soc"]
+        df["nmb_nt"] = df["nmb_nt_soc"]
+        df["inc_nmb"] = df["inc_nmb_soc"]
+        
+        return df
 
     def calculate_ceac(
         self, psa_results: pd.DataFrame, wtp_values: Optional[List[float]] = None
@@ -232,16 +330,16 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
     nmb_nt = (psa_results["qaly_nt"] * wtp_threshold) - psa_results["cost_nt"]
 
     # DEBUG PRINTS (Reduced)
-    print(f"\nDEBUG: WTP={wtp_threshold}")
-    print(f"DEBUG: NMB SC Mean={np.mean(nmb_sc)}")
-    print(f"DEBUG: NMB NT Mean={np.mean(nmb_nt)}")
+    logger.debug(f"DEBUG: WTP={wtp_threshold}")
+    logger.debug(f"DEBUG: NMB SC Mean={np.mean(nmb_sc)}")
+    logger.debug(f"DEBUG: NMB NT Mean={np.mean(nmb_nt)}")
 
     # Stack NMBs for each strategy to find the optimal for each simulation
     nmb_matrix = np.column_stack([nmb_sc, nmb_nt])
 
     # Find maximum NMB across all strategies for each simulation (perfect info scenario)
     max_nmb_per_sim = np.max(nmb_matrix, axis=1)
-    print(f"DEBUG: Max NMB per sim (mean)={np.mean(max_nmb_per_sim)}")
+    logger.debug(f"DEBUG: Max NMB per sim (mean)={np.mean(max_nmb_per_sim)}")
 
     # Find the expected NMB with current information (current optimal strategy)
     # Use Python's max for scalars to avoid ambiguity
@@ -251,10 +349,10 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
 
     # EVPI = Expected value with perfect information - Expected value with current info
     expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
-    print(f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}")
+    logger.debug(f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}")
 
     evpi = expected_nmb_with_perfect_info - current_optimal_nmb
-    print(f"DEBUG: Raw EVPI={evpi}")
+    logger.debug(f"DEBUG: Raw EVPI={evpi}")
 
     # Handle floating point noise
     if np.isclose(evpi, 0, atol=1e-5):
@@ -270,6 +368,7 @@ def calculate_evppi(
     all_params: List[str],
     wtp_thresholds: Optional[List[float]] = None,
     n_bootstrap: int = 100,
+    perspective: str = "societal",
 ) -> List[float]:
     """
     Calculate Expected Value of Partially Perfect Information (EVPPI) across WTP thresholds.
@@ -283,6 +382,7 @@ def calculate_evppi(
         all_params: List of all parameter names
         wtp_thresholds: List of willingness-to-pay thresholds
         n_bootstrap: Number of bootstrap samples for variance estimation
+        perspective: "societal" or "health_system" to select correct NMB columns
 
     Returns:
         A list of EVPPI values in monetary units, corresponding to each WTP threshold.
@@ -296,6 +396,19 @@ def calculate_evppi(
 
     evppi_values: List[float] = []
 
+    # Determine column suffixes based on perspective
+    # run_psa output has: cost_sc_hs, qaly_sc_hs, cost_sc_soc, qaly_sc_soc
+    # But it also has aliases: cost_sc, qaly_sc (defaulting to societal usually)
+    
+    # Check if explicit perspective columns exist
+    suffix = "_hs" if perspective == "health_system" else "_soc"
+    
+    # Fallback to standard names if specific ones don't exist
+    col_c_sc = f"cost_sc{suffix}" if f"cost_sc{suffix}" in psa_results.columns else "cost_sc"
+    col_q_sc = f"qaly_sc{suffix}" if f"qaly_sc{suffix}" in psa_results.columns else "qaly_sc"
+    col_c_nt = f"cost_nt{suffix}" if f"cost_nt{suffix}" in psa_results.columns else "cost_nt"
+    col_q_nt = f"qaly_nt{suffix}" if f"qaly_nt{suffix}" in psa_results.columns else "qaly_nt"
+
     for wtp in wtp_thresholds:
         # Create parameter matrix from PSA results
         param_cols = [col for col in psa_results.columns if col in all_params]
@@ -303,14 +416,14 @@ def calculate_evppi(
         if not param_cols:
             warnings.warn(
                 f"No parameter columns found matching: {parameter_group}",
-                stacklevel=2,
+                UserWarning,
             )
             evppi_values.append(0.0)
             continue
 
-        # Calculate NMB for each simulation
-        nmb_sc = (psa_results["qaly_sc"] * wtp) - psa_results["cost_sc"]
-        nmb_nt = (psa_results["qaly_nt"] * wtp) - psa_results["cost_nt"]
+        # Calculate NMB for each strategy at the given WTP threshold
+        nmb_sc = (psa_results[col_q_sc] * wtp) - psa_results[col_c_sc]
+        nmb_nt = (psa_results[col_q_nt] * wtp) - psa_results[col_c_nt]
 
         # Determine optimal strategy for each simulation
         nmb_diff = nmb_nt - nmb_sc  # Positive if new treatment is better
@@ -576,27 +689,41 @@ def generate_voi_report(
     # Calculate EVPPI curves if parameter names provided
     EVPPI_results = {}
     if parameter_names:
-        for param_group in [
-            ["base_cost", "cost_multiplier"],
-            ["base_qaly", "qaly_multiplier"],
-        ]:  # Example groupings
-            valid_params = [
-                p for p in param_group if any(p in col for col in psa_results.columns)
-            ]
-            if not valid_params:
-                continue
-            try:
-                evppi_vals = calculate_evppi(
-                    psa_results,
-                    valid_params,
-                    parameter_names,
-                    wtp_thresholds=wtp_thresholds,
-                )
-                EVPPI_results[f"EVPPI_{'_'.join(param_group)}"] = evppi_vals
-            except Exception:
-                EVPPI_results[f"EVPPI_{'_'.join(param_group)}"] = [0.0] * len(
-                    wtp_thresholds
-                )
+        # Define parameter groups dynamically based on available parameters
+        param_groups = {
+            "Cost_Parameters": [p for p in parameter_names if "cost" in p],
+            "QALY_Parameters": [p for p in parameter_names if "qaly" in p],
+            "Health_System_Costs": [p for p in parameter_names if "cost_hs" in p],
+            "Societal_Costs": [p for p in parameter_names if "cost_soc" in p],
+        }
+        
+        # Calculate for both perspectives
+        for perspective in ["health_system", "societal"]:
+            suffix = "_HS" if perspective == "health_system" else "_Soc"
+            
+            for group_name, group_params in param_groups.items():
+                if not group_params:
+                    continue
+                
+                # Skip irrelevant groups for the perspective to save time/clutter
+                if perspective == "health_system" and "Societal" in group_name:
+                    continue
+                if perspective == "societal" and "Health_System" in group_name:
+                    continue
+                    
+                try:
+                    evppi_vals = calculate_evppi(
+                        psa_results,
+                        group_params,
+                        parameter_names,
+                        wtp_thresholds=wtp_thresholds,
+                        perspective=perspective,
+                    )
+                    EVPPI_results[f"EVPPI_{group_name}{suffix}"] = evppi_vals
+                except Exception as e:
+                    logger.warning(f"Warning: EVPPI calculation failed for {group_name} ({perspective}): {e}")
+                    EVPPI_results[f"EVPPI_{group_name}{suffix}"] = [0.0] * len(wtp_thresholds)
+
 
     # Calculate basic statistics at WTP=50k
     mean_inc_cost = psa_results["inc_cost"].mean()

@@ -1,4 +1,5 @@
 import copy
+import logging
 import os
 
 import matplotlib.pyplot as plt
@@ -8,6 +9,8 @@ from scipy.interpolate import griddata
 from .cea_model_core import run_cea
 from .visualizations import apply_default_style, build_filename_base, save_figure
 
+logger = logging.getLogger(__name__)
+
 
 def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
     """
@@ -16,7 +19,7 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
     results = {}
 
     for model_name, model_params in models.items():
-        print(f"Performing one-way DSA for {model_name}...")
+        logger.info(f"Performing one-way DSA for {model_name}...")
 
         # Get parameter ranges from YAML or use defaults
         yaml_ranges = model_params.get("dsa_parameter_ranges", {})
@@ -175,7 +178,7 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     apply_default_style()
 
     if not dsa_results:
-        print("No one-way DSA results to plot.")
+        logger.warning("No one-way DSA results to plot.")
         return
 
     for model_name, results in dsa_results.items():
@@ -237,7 +240,7 @@ def perform_comprehensive_two_way_dsa(  # noqa: C901
     results = {}
 
     for model_name, model_params in models.items():
-        print(f"Performing two-way DSA for {model_name}...")
+        logger.info(f"Performing two-way DSA for {model_name}...")
 
         # Define parameter ranges based on intervention type
         if "HPV" in model_name:
@@ -348,7 +351,7 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
     model_names = list(dsa_results.keys())
     if not model_names:
-        print("No two-way DSA results to plot.")
+        logger.warning("No two-way DSA results to plot.")
         return
 
     n_models = len(model_names)
@@ -427,7 +430,7 @@ def perform_three_way_dsa(  # noqa: C901
     results = {}
 
     for model_name, model_params in models.items():
-        print(f"Performing three-way DSA for {model_name}...")
+        logger.info(f"Performing three-way DSA for {model_name}...")
 
         if "HPV" in model_name:
             param1_name = "Vaccine Cost Multiplier"
@@ -547,7 +550,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
 
     model_names = list(dsa_results.keys())
     if not model_names:
-        print("No three-way DSA results to plot.")
+        logger.warning("No three-way DSA results to plot.")
         return
 
     for model_name in model_names:
