@@ -7,6 +7,7 @@ This script orchestrates the full analysis workflow:
 """
 
 import argparse
+import logging
 
 import matplotlib
 

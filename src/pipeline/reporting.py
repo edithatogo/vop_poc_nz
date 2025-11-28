@@ -9,6 +9,7 @@ import logging
 import os
 
 import numpy as np
+import pandas as pd
 
 from ..dcea_equity_analysis import (
     plot_equity_impact_plane,
@@ -29,6 +30,7 @@ from ..visualizations import (
     compose_dashboard,
     compose_equity_dashboard,
     plot_annual_cash_flow,
+    plot_comparative_bia_line,
     plot_ceac,
     plot_ceaf,
     plot_ceaf,
@@ -211,7 +213,8 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
             output_dir=figures_dir,
             intervention=name,
         )
-    compose_bia_dashboard(output_dir=figures_dir)
+    # compose_bia_dashboard(output_dir=figures_dir)
+    plot_comparative_bia_line(results["bia_results"], output_dir=figures_dir)
 
     # Equity Plots
     equity_interventions = []

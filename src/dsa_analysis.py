@@ -173,7 +173,9 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
 
 def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/"):
     """
-    Create one-way DSA tornado plots.
+    Create a combined one-way DSA tornado plot (2 rows x N columns).
+    Row 1: Health System
+    Row 2: Societal
     """
     apply_default_style()
 
@@ -181,30 +183,50 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
         logger.warning("No one-way DSA results to plot.")
         return
 
-    for model_name, results in dsa_results.items():
-        for perspective in ["hs", "soc"]:
-            fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
+    model_names = list(dsa_results.keys())
+    n_models = len(model_names)
+    
+    # Create figure: 2 rows, n_models columns
+    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 12), dpi=300, sharey=False)
+    
+    # Ensure axes is always 2D array (2, n_models)
+    if n_models == 1:
+        axes = np.array([[axes[0]], [axes[1]]])
+    elif n_models > 1:
+        # axes is already (2, n_models)
+        pass
+    
+    perspectives = ["hs", "soc"]
+    perspective_titles = ["Health System", "Societal"]
+    
+    import matplotlib.ticker as mtick
 
+    for col, model_name in enumerate(model_names):
+        results = dsa_results[model_name]
+        
+        for row, perspective in enumerate(perspectives):
+            ax = axes[row, col]
+            
             base_nmb = results[f"base_nmb_{perspective}"]
-
+            
             param_names = []
             nmb_ranges = []
-
+            
             for param_name, param_results in results["dsa_results"].items():
                 param_names.append(param_name)
                 nmb_range = np.array(param_results[f"nmb_{perspective}"])
                 nmb_ranges.append(nmb_range)
-
-            # Sort by the range of the NMB
-            sorted_indices = np.argsort([np.max(r) - np.min(r) for r in nmb_ranges])[
-                ::-1
-            ]
-            param_names = [param_names[i] for i in sorted_indices]
-            nmb_ranges = [nmb_ranges[i] for i in sorted_indices]
-
-            y_pos = np.arange(len(param_names))
-
-            for i, nmb_range in enumerate(nmb_ranges):
+            
+            # Sort by range width
+            range_widths = [np.max(r) - np.min(r) for r in nmb_ranges]
+            sorted_indices = np.argsort(range_widths)[::-1]
+            
+            sorted_param_names = [param_names[i] for i in sorted_indices]
+            sorted_nmb_ranges = [nmb_ranges[i] for i in sorted_indices]
+            
+            y_pos = np.arange(len(sorted_param_names))
+            
+            for i, nmb_range in enumerate(sorted_nmb_ranges):
                 min_nmb = np.min(nmb_range)
                 max_nmb = np.max(nmb_range)
                 ax.barh(
@@ -213,22 +235,38 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
                     left=min_nmb,
                     color="skyblue",
                     alpha=0.7,
+                    edgecolor="black",
+                    linewidth=0.5
                 )
-
-            ax.axvline(base_nmb, color="black", linestyle="--")
+            
+            ax.axvline(base_nmb, color="black", linestyle="--", linewidth=1)
             ax.set_yticks(y_pos)
-            ax.set_yticklabels(param_names)
-            ax.set_xlabel("Net Monetary Benefit ($)")
-            ax.set_title(
-                f"One-Way DSA Tornado Plot: {model_name} ({perspective.upper()})"
-            )
+            ax.set_yticklabels(sorted_param_names, fontsize=8)
+            
+            # Only set ylabel for the first column
+            # if col == 0:
+            #     ax.set_ylabel("Parameter", fontsize=10)
+            
+            ax.set_xlabel("Net Monetary Benefit ($)", fontsize=10)
+            
+            # Title for each subplot
+            if row == 0:
+                ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=12, fontweight="bold")
+            else:
+                ax.set_title(f"({perspective_titles[row]})", fontsize=12)
+                
+            ax.grid(True, alpha=0.3)
+            
+            # Format x-axis as currency
+            ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+            plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
-            plt.tight_layout()
-            save_figure(
-                fig,
-                output_dir,
-                build_filename_base("one_way_dsa_tornado", model_name, perspective),
-            )
+    plt.tight_layout()
+    save_figure(
+        fig,
+        output_dir,
+        "comparative_one_way_dsa_tornado",
+    )
 
 
 def perform_comprehensive_two_way_dsa(  # noqa: C901
@@ -345,33 +383,39 @@ def perform_comprehensive_two_way_dsa(  # noqa: C901
 
 def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures/"):
     """
-    Create two-way DSA heatmaps comparing all interventions.
+    Create a combined two-way DSA heatmap plot (2 rows x N columns).
+    Row 1: Health System
+    Row 2: Societal
     """
     apply_default_style()
 
-    model_names = list(dsa_results.keys())
-    if not model_names:
+    if not dsa_results:
         logger.warning("No two-way DSA results to plot.")
         return
 
+    model_names = list(dsa_results.keys())
     n_models = len(model_names)
+    
+    # Create figure: 2 rows, n_models columns
+    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 10), dpi=300)
+    
+    # Ensure axes is always 2D array (2, n_models)
+    if n_models == 1:
+        axes = np.array([[axes[0]], [axes[1]]])
+    elif n_models > 1:
+        # axes is already (2, n_models)
+        pass
+        
+    perspectives = ["hs", "soc"]
+    perspective_titles = ["Health System", "Societal"]
 
-    for perspective in ["hs", "soc"]:
-        fig, axes = plt.subplots(1, n_models, figsize=(6 * n_models, 6), dpi=300)
-        if n_models == 1:
-            axes = [axes]
-        fig.suptitle(
-            f"Two-Way Deterministic Sensitivity Analysis: NMB at $50,000/QALY\n{'Health System' if perspective == 'hs' else 'Societal'} Perspective",
-            fontsize=14,
-            fontweight="bold",
-        )
-
-        for i, model_name in enumerate(model_names):
-            ax = axes[i]
-            data = dsa_results[model_name]
-
-            param1_range = data["param1_range"]
-            param2_range = data["param2_range"]
+    for col, model_name in enumerate(model_names):
+        data = dsa_results[model_name]
+        param1_range = np.array(data["param1_range"])
+        param2_range = np.array(data["param2_range"])
+        
+        for row, perspective in enumerate(perspectives):
+            ax = axes[row, col]
             grid_key = f"dsa_grid_{perspective}"
 
             # Create grid matrices
@@ -383,26 +427,40 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
             # Plot heatmap
             im = ax.imshow(nmb_grid, cmap="RdYlGn", origin="lower", aspect="auto")
-            ax.set_xlabel(data["param2_name"], fontsize=10)
-            ax.set_ylabel(data["param1_name"], fontsize=10)
-            ax.set_title(f"{model_name}", fontsize=12)
+            
+            # Axis labels
+            ax.set_xlabel(data["param2_name"], fontsize=9)
+            # Only set ylabel for the first column
+            if col == 0:
+                ax.set_ylabel(data["param1_name"], fontsize=9)
+            
+            # Title
+            if row == 0:
+                ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=11, fontweight="bold")
+            else:
+                ax.set_title(f"({perspective_titles[row]})", fontsize=11)
 
             # Add colorbar
             cbar = plt.colorbar(im, ax=ax, shrink=0.8)
-            cbar.set_label("Net Monetary Benefit ($)", fontsize=8)
+            cbar.set_label("NMB ($)", fontsize=8)
 
-            # Set tick labels
-            ax.set_xticks(np.arange(0, len(param2_range), 2))
-            ax.set_xticklabels([f"{x:.1f}" for x in param2_range[::2]], fontsize=8)
-            ax.set_yticks(np.arange(0, len(param1_range), 2))
-            ax.set_yticklabels([f"{x:.1f}" for x in param1_range[::2]], fontsize=8)
+            # Set tick labels (simplified for readability)
+            # X-axis
+            x_ticks = np.linspace(0, len(param2_range)-1, 5, dtype=int)
+            ax.set_xticks(x_ticks)
+            ax.set_xticklabels([f"{param2_range[i]:.1f}" for i in x_ticks], fontsize=8, rotation=45)
+            
+            # Y-axis
+            y_ticks = np.linspace(0, len(param1_range)-1, 5, dtype=int)
+            ax.set_yticks(y_ticks)
+            ax.set_yticklabels([f"{param1_range[i]:.1f}" for i in y_ticks], fontsize=8)
 
-        plt.tight_layout()
-        save_figure(
-            fig,
-            output_dir,
-            build_filename_base("two_way_dsa_heatmaps", perspective=perspective),
-        )
+    plt.tight_layout()
+    save_figure(
+        fig,
+        output_dir,
+        "comparative_two_way_dsa_heatmaps",
+    )
 
 
 def compose_dsa_dashboard(output_dir="data/data_outputs/figures/"):

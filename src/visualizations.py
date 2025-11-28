@@ -3421,3 +3421,81 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
         output_dir,
         "expected_value_partial_perfect_information_comparative_with_delta",
     )
+
+
+def plot_comparative_bia_line(
+    bia_results: Dict[str, pd.DataFrame],
+    output_dir: str = "output/figures/",
+):
+    """
+    Plot comparative Budget Impact Analysis (Gross, Net, and Offsets) for all interventions.
+    """
+    apply_default_style()
+    # 1 row, 3 columns, side-by-side
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), dpi=300, sharex=True)
+    
+    # Define styles
+    styles = {
+        "HPV Vaccination": {"color": "#1f77b4", "linestyle": "-", "marker": "o"},
+        "Smoking Cessation": {"color": "#ff7f0e", "linestyle": "--", "marker": "s"},
+        "Hepatitis C Therapy": {"color": "#2ca02c", "linestyle": "-.", "marker": "^"},
+        "Childhood Obesity Prevention": {"color": "#d62728", "linestyle": ":", "marker": "D"},
+        "Housing Insulation": {"color": "#9467bd", "linestyle": "-", "marker": "v"},
+    }
+    
+    import matplotlib.ticker as mtick
+
+    # Plot Gross Cost (Left Panel)
+    ax_gross = axes[0]
+    for name, df in bia_results.items():
+        years = df["year"].tolist()
+        gross_costs = df["gross_cost"].tolist()
+        style = styles.get(name, {"linestyle": "-", "marker": "o"})
+        ax_gross.plot(years, gross_costs, label=name, linewidth=2.5, alpha=0.8, **style)
+    
+    ax_gross.set_ylabel("Gross Budget Impact (NZ$)", fontsize=12)
+    ax_gross.set_xlabel("Year", fontsize=12)
+    ax_gross.set_title("A. Gross Budget Impact\n(Total Investment)", fontsize=14, fontweight="bold", loc="left")
+    ax_gross.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_gross.grid(True, alpha=0.3)
+    # Legend only on the first plot to avoid clutter, or outside
+    ax_gross.legend(fontsize=9, loc="upper left")
+
+    # Plot Net Cost (Center Panel)
+    ax_net = axes[1]
+    for name, df in bia_results.items():
+        years = df["year"].tolist()
+        net_costs = df["net_cost"].tolist()
+        style = styles.get(name, {"linestyle": "-", "marker": "o"})
+        ax_net.plot(years, net_costs, label=name, linewidth=2.5, alpha=0.8, **style)
+        
+    ax_net.axhline(0, color="black", linestyle="-", linewidth=1)
+    ax_net.set_xlabel("Year", fontsize=12)
+    # ax_net.set_ylabel("Net Budget Impact (NZ$)", fontsize=12) # Share y-axis label? No, scales might differ
+    ax_net.set_title("B. Net Budget Impact\n(Investment - Offsets)", fontsize=14, fontweight="bold", loc="left")
+    ax_net.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_net.grid(True, alpha=0.3)
+
+    # Plot Offsets (Right Panel)
+    ax_offsets = axes[2]
+    for name, df in bia_results.items():
+        years = df["year"].tolist()
+        # Calculate offsets if not explicitly in df, but usually it is. 
+        # If not, Gross - Net = Offsets. 
+        # Checking keys: 'offsets' is in the JSON structure we saw earlier.
+        if "offsets" in df.columns:
+            offsets = df["offsets"].tolist()
+        else:
+            offsets = (df["gross_cost"] - df["net_cost"]).tolist()
+            
+        style = styles.get(name, {"linestyle": "-", "marker": "o"})
+        ax_offsets.plot(years, offsets, label=name, linewidth=2.5, alpha=0.8, **style)
+
+    ax_offsets.set_xlabel("Year", fontsize=12)
+    ax_offsets.set_title("C. Cost Offsets\n(Avoided Standard Care)", fontsize=14, fontweight="bold", loc="left")
+    ax_offsets.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_offsets.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    # Save as dashboard_bia_v2.png
+    save_figure(fig, output_dir, "dashboard_bia_v2")

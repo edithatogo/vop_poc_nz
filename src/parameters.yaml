@@ -184,8 +184,8 @@ hepatitis_c_therapy:
   initial_population: [1000, 0, 0]
   costs:
     health_system:
-      standard_care: [6000, 0, 0] # Inflated
-      new_treatment: [6000, 0, 0]
+      standard_care: [2000, 0, 0] # Inflated (Monitoring only)
+      new_treatment: [6000, 0, 0] # Drug + Monitoring
     societal:
       standard_care: [3600, 0, 0]
       new_treatment: [600, 0, 0]

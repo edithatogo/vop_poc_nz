@@ -57,9 +57,30 @@ def load_parameters(filepath: str = "src/parameters.yaml") -> Dict:
 
 
 
+from ..dsa_analysis import (
+    perform_one_way_dsa,
+    perform_comprehensive_two_way_dsa,
+    perform_three_way_dsa,
+)
+
 def perform_dsa_analysis(interventions: Dict) -> Dict:
-    """Placeholder for DSA analysis."""
-    return {"1_way": {}, "2_way": {}, "3_way": {}}
+    """Perform Deterministic Sensitivity Analysis."""
+    logger.info("Running Deterministic Sensitivity Analysis (DSA)...")
+    
+    # 1-Way DSA
+    one_way_results = perform_one_way_dsa(interventions)
+    
+    # 2-Way DSA
+    two_way_results = perform_comprehensive_two_way_dsa(interventions)
+    
+    # 3-Way DSA
+    three_way_results = perform_three_way_dsa(interventions)
+    
+    return {
+        "1_way": one_way_results,
+        "2_way": two_way_results,
+        "3_way": three_way_results,
+    }
 
 
 def calculate_analytical_capacity_costs(
