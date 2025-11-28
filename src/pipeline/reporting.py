@@ -17,6 +17,7 @@ from ..dcea_equity_analysis import (
     plot_probabilistic_equity_impact_plane,
     plot_lorenz_curve,
     plot_probabilistic_equity_impact_plane_with_delta,
+    plot_combined_lorenz_curves,
 )
 from ..dsa_analysis import (
     compose_dsa_dashboard,
@@ -240,6 +241,13 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         )
         plot_probabilistic_equity_impact_plane_with_delta(
             results["probabilistic_results"],
+            output_dir=figures_dir
+        )
+    
+    # Combined Lorenz Curves
+    if results.get("dcea_equity_analysis"):
+        plot_combined_lorenz_curves(
+            results["dcea_equity_analysis"],
             output_dir=figures_dir
         )
 

@@ -1,0 +1,13 @@
+output/
+.tox/
+htmlcov/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.pyc
+.coverage
+.git/

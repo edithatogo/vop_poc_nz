@@ -698,3 +698,159 @@ def plot_probabilistic_equity_impact_plane_with_delta(
     
     plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic_with_delta.png", bbox_inches="tight")
     plt.close()
+
+def plot_combined_lorenz_curves(
+    dcea_results_all: Dict[str, Dict], output_dir: str = "output/figures/"
+):
+    """
+    Plot combined Lorenz curves for all interventions across perspectives.
+    
+    Creates 3 subplots:
+    - Health System perspective
+    - Societal perspective  
+    - Delta (Societal - Health System)
+    
+    Args:
+        dcea_results_all: Dict mapping intervention names to their DCEA results
+        output_dir: Directory to save the plot
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
+    fig.suptitle(
+        "Comparative Lorenz Curves with Perspective Delta",
+        fontsize=16,
+        fontweight="bold",
+    )
+    
+    colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    perspectives = ["health_system", "societal"]
+    perspective_titles = ["Health System", "Societal", "Delta (Societal - HS)"]
+    
+    for perspective_idx, ax in enumerate(axes):
+        # Equality line
+        ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=2, label="Line of Equality", zorder=1)
+        
+        for i, (intervention_name, dcea_results_dict) in enumerate(dcea_results_all.items()):
+            if perspective_idx < 2:
+                # HS or Societal
+                perspective_key = perspectives[perspective_idx]
+                
+                if perspective_key not in dcea_results_dict:
+                    continue
+                    
+                dcea_results = dcea_results_dict[perspective_key]
+                
+                if not dcea_results or "distribution_of_net_health_benefits" not in dcea_results:
+                    continue
+                
+                nhb_list = sorted(dcea_results["distribution_of_net_health_benefits"].values())
+                
+                if len(nhb_list) == 0:
+                    continue
+                
+                # Make positive for Lorenz
+                nhb_list_positive = [max(0, x) for x in nhb_list]
+                
+                if np.sum(nhb_list_positive) == 0:
+                    continue
+                
+                lorenz_curve = np.cumsum(nhb_list_positive) / np.sum(nhb_list_positive)
+                lorenz_curve = np.insert(lorenz_curve, 0, 0)
+                
+                n = len(nhb_list)
+                population_fractions = np.linspace(0, 1, n + 1)
+                
+                ax.plot(
+                    population_fractions,
+                    lorenz_curve,
+                    marker="o",
+                    markersize=4,
+                    linewidth=2,
+                    alpha=0.7,
+                    color=colors[i % len(colors)],
+                    label=intervention_name,
+                    zorder=3
+                )
+            else:
+                # Delta subplot
+                if "health_system" not in dcea_results_dict or "societal" not in dcea_results_dict:
+                    continue
+                    
+                hs_results = dcea_results_dict["health_system"]
+                soc_results = dcea_results_dict["societal"]
+                
+                if not hs_results or not soc_results:
+                    continue
+                    
+                if "distribution_of_net_health_benefits" not in hs_results or "distribution_of_net_health_benefits" not in soc_results:
+                    continue
+                
+                # Get distributions
+                hs_nhb = hs_results["distribution_of_net_health_benefits"]
+                soc_nhb = soc_results["distribution_of_net_health_benefits"]
+                
+                # Calculate delta for each subgroup
+                delta_nhb = {}
+                for subgroup in hs_nhb.keys():
+                    if subgroup in soc_nhb:
+                        delta_nhb[subgroup] = soc_nhb[subgroup] - hs_nhb[subgroup]
+                
+                if len(delta_nhb) == 0:
+                    continue
+                
+                delta_list = sorted(delta_nhb.values())
+                
+                # For delta, we might have negative values - handle differently
+                # Just normalize by total absolute value to keep curve meaningful
+                total_abs = np.sum(np.abs(delta_list))
+                if total_abs == 0:
+                    continue
+                
+                # Create pseudo-Lorenz for delta (cumulative relative to total)
+                cumulative = np.cumsum(delta_list)
+                delta_curve = cumulative / total_abs if total_abs > 0 else cumulative
+                delta_curve = np.insert(delta_curve, 0, 0)
+                
+                n = len(delta_list)
+                population_fractions = np.linspace(0, 1, n + 1)
+                
+                ax.plot(
+                    population_fractions,
+                    delta_curve,
+                    marker="o",
+                    markersize=4,
+                    linewidth=2,
+                    alpha=0.7,
+                    color=colors[i % len(colors)],
+                    label=intervention_name,
+                    zorder=3
+                )
+        
+        ax.set_xlabel("Cumulative Share of Population", fontsize=12)
+        ax.set_ylabel("Cumulative Share of Net Health Benefit", fontsize=12)
+        ax.set_title(perspective_titles[perspective_idx], fontsize=14, fontweight="bold")
+        ax.grid(True, alpha=0.3)
+        ax.set_xlim(0, 1)
+        
+        if perspective_idx < 2:
+            ax.set_ylim(0, 1)
+    
+    # Single legend for all subplots
+    handles, labels = axes[0].get_legend_handles_labels()
+    # Remove duplicate equality line entries
+    unique_labels = []
+    unique_handles = []
+    for h, l in zip(handles, labels):
+        if l not in unique_labels:
+            unique_labels.append(l)
+            unique_handles.append(h)
+    
+    fig.legend(unique_handles, unique_labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(dcea_results_all)+1, fontsize=11)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9, bottom=0.15)
+    
+    plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.png", bbox_inches="tight", dpi=300)
+    plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.pdf", bbox_inches="tight")
+    plt.close()

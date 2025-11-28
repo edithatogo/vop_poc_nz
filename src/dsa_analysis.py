@@ -625,9 +625,16 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         )
         values = np.array([point["nmb"] for point in data["dsa_grid"]])
 
-        # Create slices at different levels of p3 (min, median, max)
-        p3_min, p3_max = np.min(data["p3_range"]), np.max(data["p3_range"])
-        p3_slices = [p3_min, (p3_min + p3_max) / 2, p3_max]
+        # Get unique p3 values and select slices from actual grid
+        unique_p3 = np.unique(points[:, 2])
+        n_p3 = len(unique_p3)
+        
+        # Select slices: first, middle, last from actual grid values
+        p3_slices = [
+            unique_p3[0],  # First (min)
+            unique_p3[n_p3 // 2],  # Middle (median index)
+            unique_p3[-1]  # Last (max)
+        ]
 
         fig = plt.figure(figsize=(5 * len(p3_slices), 5), dpi=300)
         fig.suptitle(
@@ -639,8 +646,15 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         for i, p3_slice in enumerate(p3_slices):
             ax = fig.add_subplot(1, len(p3_slices), i + 1, projection="3d")
 
+            # Calculate tolerance as half the spacing between p3 values
+            if len(unique_p3) > 1:
+                p3_spacing = unique_p3[1] - unique_p3[0]
+                tolerance = p3_spacing / 2
+            else:
+                tolerance = 0.05
+            
             # Find points near this p3 slice
-            mask = (points[:, 2] >= p3_slice - 0.05) & (points[:, 2] <= p3_slice + 0.05)
+            mask = (points[:, 2] >= p3_slice - tolerance) & (points[:, 2] <= p3_slice + tolerance)
             if np.sum(mask) > 10:  # pragma: no cover - requires dense grids
                 slice_points = points[mask]
                 slice_values = values[mask]
