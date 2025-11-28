@@ -1,0 +1,44 @@
+// Decision Tree for HPV Vaccination
+digraph {
+	D [label=Decision shape=box]
+	SC [label="Standard Care"]
+	NT [label="New Treatment"]
+	D -> SC
+	D -> NT
+	SC_Healthy [label="Healthy
+Cost: 120
+QALY: 1.0"]
+	SC -> SC_Healthy
+	SC_Sick [label="Sick
+Cost: 48000
+QALY: 0.6"]
+	SC -> SC_Sick
+	SC_Dead [label="Dead
+Cost: 0
+QALY: 0.0"]
+	SC -> SC_Dead
+	NT_Healthy [label="Healthy
+Cost: 240
+QALY: 1.0"]
+	NT -> NT_Healthy
+	NT_Sick [label="Sick
+Cost: 24000
+QALY: 0.75"]
+	NT -> NT_Sick
+	NT_Dead [label="Dead
+Cost: 0
+QALY: 0.0"]
+	NT -> NT_Dead
+	SC_Healthy -> SC_Healthy [label=0.95]
+	NT_Healthy -> NT_Healthy [label=0.98]
+	SC_Healthy -> SC_Sick [label=0.04]
+	NT_Healthy -> NT_Sick [label=0.015]
+	SC_Healthy -> SC_Dead [label=0.01]
+	NT_Healthy -> NT_Dead [label=0.005]
+	SC_Sick -> SC_Sick [label=0.85]
+	NT_Sick -> NT_Sick [label=0.92]
+	SC_Sick -> SC_Dead [label=0.15]
+	NT_Sick -> NT_Dead [label=0.08]
+	SC_Dead -> SC_Dead [label=1]
+	NT_Dead -> NT_Dead [label=1]
+}

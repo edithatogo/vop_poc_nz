@@ -164,7 +164,8 @@ known_first_party = ["vop_poc_nz", "src"]
 exclude = [
     "notebooks",
     "tests",
-    "docs"
+    "docs",
+    "output"
 ]
 
 [tool.deptry.per_rule_ignores]

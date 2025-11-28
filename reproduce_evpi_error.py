@@ -1,5 +1,6 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 
 def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> float:
     # Calculate NMB for each strategy at the given WTP threshold
@@ -21,7 +22,7 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
             ]
         )
     )
-    
+
     print(f"NMB SC Mean: {np.mean(nmb_sc)}")
     print(f"NMB NT Mean: {np.mean(nmb_nt)}")
     print(f"Current Optimal NMB: {current_optimal_nmb}")

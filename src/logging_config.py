@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 
+
 def setup_logging(output_dir: str = None, log_file: str = "analysis.log", level: int = logging.INFO):
     """
     Configure logging for the application.

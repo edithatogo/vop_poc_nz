@@ -202,7 +202,7 @@ def plot_threshold_waterfall(
     y_pos = np.arange(len(params))
 
     # Create horizontal bars
-    for i, (param, lower, upper) in enumerate(zip(params, lower_bounds, upper_bounds)):
+    for i, (_param, lower, upper) in enumerate(zip(params, lower_bounds, upper_bounds)):
         ax.barh(
             i,
             upper - lower,

@@ -111,7 +111,7 @@ class ProbabilisticSensitivityAnalysis:
             # Legacy/Default (aliased to Societal for backward compatibility if needed, or handled dynamically)
             "cost_effective": [],
         }
-        
+
         # Add keys for each parameter
         for param_name in self.parameters:
             results[param_name] = []
@@ -120,7 +120,7 @@ class ProbabilisticSensitivityAnalysis:
             try:
                 # Run model for standard care
                 res_sc = self.model_func(params, intervention_type="standard_care")
-                
+
                 # Run model for new treatment
                 res_nt = self.model_func(params, intervention_type="new_treatment")
 
@@ -129,7 +129,7 @@ class ProbabilisticSensitivityAnalysis:
                     # Unpack: cost_hs, qaly_hs, cost_soc, qaly_soc, [extras]
                     c_sc_hs, q_sc_hs, c_sc_soc, q_sc_soc = res_sc[:4]
                     c_nt_hs, q_nt_hs, c_nt_soc, q_nt_soc = res_nt[:4]
-                    
+
                     # Handle extras if present
                     if len(res_sc) == 5:
                         extras_sc = res_sc[4]
@@ -138,7 +138,7 @@ class ProbabilisticSensitivityAnalysis:
                             if col_name not in results:
                                 results[col_name] = []
                             results[col_name].append(v)
-                            
+
                     if len(res_nt) == 5:
                         extras_nt = res_nt[4]
                         for k, v in extras_nt.items():
@@ -146,21 +146,21 @@ class ProbabilisticSensitivityAnalysis:
                             if col_name not in results:
                                 results[col_name] = []
                             results[col_name].append(v)
-                    
+
                     # Health System Calculations
                     inc_c_hs = c_nt_hs - c_sc_hs
                     inc_q_hs = q_nt_hs - q_sc_hs
                     nmb_sc_hs = (q_sc_hs * self.wtp_threshold) - c_sc_hs
                     nmb_nt_hs = (q_nt_hs * self.wtp_threshold) - c_nt_hs
                     inc_nmb_hs = nmb_nt_hs - nmb_sc_hs
-                    
+
                     # Societal Calculations
                     inc_c_soc = c_nt_soc - c_sc_soc
                     inc_q_soc = q_nt_soc - q_sc_soc
                     nmb_sc_soc = (q_sc_soc * self.wtp_threshold) - c_sc_soc
                     nmb_nt_soc = (q_nt_soc * self.wtp_threshold) - c_nt_soc
                     inc_nmb_soc = nmb_nt_soc - nmb_sc_soc
-                    
+
                     # Store Health System
                     results["cost_sc_hs"].append(c_sc_hs)
                     results["qaly_sc_hs"].append(q_sc_hs)
@@ -171,7 +171,7 @@ class ProbabilisticSensitivityAnalysis:
                     results["nmb_sc_hs"].append(nmb_sc_hs)
                     results["nmb_nt_hs"].append(nmb_nt_hs)
                     results["inc_nmb_hs"].append(inc_nmb_hs)
-                    
+
                     # Store Societal
                     results["cost_sc_soc"].append(c_sc_soc)
                     results["qaly_sc_soc"].append(q_sc_soc)
@@ -182,7 +182,7 @@ class ProbabilisticSensitivityAnalysis:
                     results["nmb_sc_soc"].append(nmb_sc_soc)
                     results["nmb_nt_soc"].append(nmb_nt_soc)
                     results["inc_nmb_soc"].append(inc_nmb_soc)
-                    
+
                     # Legacy/Default aliases (mapping Societal to standard names for existing plots)
                     # Actually, better to just store them as is and update plots to look for _soc or _hs
                     # But for backward compatibility with code expecting "inc_cost", let's alias Societal
@@ -192,14 +192,14 @@ class ProbabilisticSensitivityAnalysis:
                     # Assume single perspective (2 values)
                     c_sc, q_sc = res_sc[:2]
                     c_nt, q_nt = res_nt[:2]
-                    
+
                     # Calculate incremental
                     inc_c = c_nt - c_sc
                     inc_q = q_nt - q_sc
                     nmb_sc = (q_sc * self.wtp_threshold) - c_sc
                     nmb_nt = (q_nt * self.wtp_threshold) - c_nt
                     inc_nmb = nmb_nt - nmb_sc
-                    
+
                     # Store in Societal columns (defaulting to societal as that's the main focus)
                     # Or maybe we should just use generic names?
                     # Let's map to Societal to be safe as that was the previous behavior
@@ -213,7 +213,7 @@ class ProbabilisticSensitivityAnalysis:
                     results["nmb_nt_soc"].append(nmb_nt)
                     results["inc_nmb_soc"].append(inc_nmb)
                     results["cost_effective"].append(inc_nmb > 0)
-                    
+
                     # Fill HS with NaNs
                     results["cost_sc_hs"].append(np.nan)
                     results["qaly_sc_hs"].append(np.nan)
@@ -226,7 +226,7 @@ class ProbabilisticSensitivityAnalysis:
                     results["inc_nmb_hs"].append(np.nan)
 
                 results["iteration"].append(i)
-                
+
                 # Store sampled parameter values
                 for param_name, param_value in params.items():
                     results[param_name].append(param_value)
@@ -243,7 +243,7 @@ class ProbabilisticSensitivityAnalysis:
 
         # Create DataFrame
         df = pd.DataFrame(results)
-        
+
         # Add alias columns for backward compatibility (mapping Societal to generic)
         # This ensures existing code using "inc_cost" etc. still works (defaulting to Societal)
         df["cost_sc"] = df["cost_sc_soc"]
@@ -255,7 +255,7 @@ class ProbabilisticSensitivityAnalysis:
         df["nmb_sc"] = df["nmb_sc_soc"]
         df["nmb_nt"] = df["nmb_nt_soc"]
         df["inc_nmb"] = df["inc_nmb_soc"]
-        
+
         return df
 
     def calculate_ceac(
@@ -399,10 +399,10 @@ def calculate_evppi(
     # Determine column suffixes based on perspective
     # run_psa output has: cost_sc_hs, qaly_sc_hs, cost_sc_soc, qaly_sc_soc
     # But it also has aliases: cost_sc, qaly_sc (defaulting to societal usually)
-    
+
     # Check if explicit perspective columns exist
     suffix = "_hs" if perspective == "health_system" else "_soc"
-    
+
     # Fallback to standard names if specific ones don't exist
     col_c_sc = f"cost_sc{suffix}" if f"cost_sc{suffix}" in psa_results.columns else "cost_sc"
     col_q_sc = f"qaly_sc{suffix}" if f"qaly_sc{suffix}" in psa_results.columns else "qaly_sc"
@@ -696,21 +696,21 @@ def generate_voi_report(
             "Health_System_Costs": [p for p in parameter_names if "cost_hs" in p],
             "Societal_Costs": [p for p in parameter_names if "cost_soc" in p],
         }
-        
+
         # Calculate for both perspectives
         for perspective in ["health_system", "societal"]:
             suffix = "_HS" if perspective == "health_system" else "_Soc"
-            
+
             for group_name, group_params in param_groups.items():
                 if not group_params:
                     continue
-                
+
                 # Skip irrelevant groups for the perspective to save time/clutter
                 if perspective == "health_system" and "Societal" in group_name:
                     continue
                 if perspective == "societal" and "Health_System" in group_name:
                     continue
-                    
+
                 try:
                     evppi_vals = calculate_evppi(
                         psa_results,

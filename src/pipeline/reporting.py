@@ -12,12 +12,10 @@ import numpy as np
 import pandas as pd
 
 from ..dcea_equity_analysis import (
-    plot_equity_impact_plane,
+    plot_combined_lorenz_curves,
     plot_comparative_equity_impact_plane,
     plot_probabilistic_equity_impact_plane,
-    plot_lorenz_curve,
     plot_probabilistic_equity_impact_plane_with_delta,
-    plot_combined_lorenz_curves,
 )
 from ..dsa_analysis import (
     compose_dsa_dashboard,
@@ -26,29 +24,27 @@ from ..dsa_analysis import (
     plot_two_way_dsa_heatmaps,
 )
 from ..policy_brief_generator import generate_policy_brief
+from ..table_generation import generate_all_tables
 from ..visualizations import (
-    compose_bia_dashboard,
     compose_dashboard,
-    compose_equity_dashboard,
     plot_annual_cash_flow,
-    plot_comparative_bia_line,
     plot_ceac,
     plot_ceaf,
-    plot_ceaf,
+    plot_comparative_bia_line,
     plot_comparative_ce_plane,
-    plot_comparative_ceac,
-    plot_comparative_evpi,
-    plot_comparative_evppi,
     plot_comparative_ce_plane_with_delta,
+    plot_comparative_ceac,
     plot_comparative_ceac_with_delta,
+    plot_comparative_evpi,
     plot_comparative_evpi_with_delta,
+    plot_comparative_evppi,
     plot_comparative_evppi_with_delta,
+    plot_comparative_pop_evpi_with_delta,
     plot_cost_effectiveness_plane,
     plot_decision_tree,
     plot_discordance_loss,
-    plot_evpi,
-    plot_evppi,
     plot_inequality_aversion_sensitivity,
+    plot_markov_trace,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,
@@ -75,7 +71,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     # 0. Save Full Results to JSON (for debugging and reproducibility)
     print("\nSaving full analysis results to JSON...")
     import json
-    
+
     class NumpyEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, np.integer):
@@ -111,6 +107,10 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         for name, report in results["reports"].items():
             outfile.write(f"\n\n---\n\n# {name}\n\n")
             outfile.write(report)
+
+    # 1.5 Generate Tables
+    logger.info("Generating tables...")
+    generate_all_tables(results, results.get("selected_interventions", {}), os.path.join(output_dir, "tables"))
 
     # 2. Generate Plots
     logger.info("Generating all plots...")
@@ -175,7 +175,15 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         results["voi_analysis"],
         output_dir=figures_dir,
     )
-    
+    # Comparative Population EVPI
+    logger.info("Generating Comparative Population EVPI...")
+    plot_comparative_pop_evpi_with_delta(
+        results["probabilistic_results"],
+        wtp_thresholds,
+        population_sizes,
+        output_dir=figures_dir,
+    )
+
     # Delta Plots (New Request)
     plot_comparative_ce_plane_with_delta(
         results["probabilistic_results"],
@@ -215,7 +223,43 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
             intervention=name,
         )
     # compose_bia_dashboard(output_dir=figures_dir)
+    # compose_bia_dashboard(output_dir=figures_dir)
     plot_comparative_bia_line(results["bia_results"], output_dir=figures_dir)
+
+    # Markov Traces
+    logger.info("Generating Markov Traces...")
+    for name, res in results["intervention_results"].items():
+        logger.info(f"Checking traces for {name}...")
+        if "health_system" in res:
+            hs_res = res["health_system"]
+            trace_data = {}
+            if "trace_standard_care" in hs_res and hs_res["trace_standard_care"] is not None:
+                logger.info(f"  Found trace_standard_care for {name}")
+                # Convert to DataFrame for plotting
+                # Need state names from params
+                params = results["selected_interventions"].get(name, {})
+                states = params.get("states", [])
+                if states:
+                    trace_data["standard_care"] = pd.DataFrame(hs_res["trace_standard_care"], columns=states)
+                else:
+                    logger.warning(f"  States missing for {name}")
+            else:
+                logger.warning(f"  trace_standard_care missing or None for {name}")
+
+            if "trace_new_treatment" in hs_res and hs_res["trace_new_treatment"] is not None:
+                logger.info(f"  Found trace_new_treatment for {name}")
+                params = results["selected_interventions"].get(name, {})
+                states = params.get("states", [])
+                if states:
+                    trace_data["new_treatment"] = pd.DataFrame(hs_res["trace_new_treatment"], columns=states)
+            else:
+                logger.warning(f"  trace_new_treatment missing or None for {name}")
+
+            if trace_data:
+                logger.info(f"  Plotting trace for {name}")
+                plot_markov_trace(trace_data, figures_dir, name)
+            else:
+                logger.warning(f"  No trace data collected for {name}")
 
     # Equity Plots
     equity_interventions = []
@@ -225,14 +269,14 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     if equity_interventions:
         # compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
         pass # Added to fix IndentationError
-        
+
     # Comparative Equity Plot
     if results.get("dcea_equity_analysis"):
         plot_comparative_equity_impact_plane(
-            results["dcea_equity_analysis"], 
+            results["dcea_equity_analysis"],
             output_dir=figures_dir
         )
-        
+
     # Probabilistic Equity Plot (Scatter)
     if results.get("probabilistic_results"):
         plot_probabilistic_equity_impact_plane(
@@ -243,7 +287,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
             results["probabilistic_results"],
             output_dir=figures_dir
         )
-    
+
     # Combined Lorenz Curves
     if results.get("dcea_equity_analysis"):
         plot_combined_lorenz_curves(

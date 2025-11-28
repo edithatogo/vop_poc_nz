@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -28,12 +30,9 @@ from src.visualizations import (
     plot_survival_gof,
 )
 
-
-import os
-
 # Skip entire module on CI to prevent timeouts due to heavy plotting
 pytestmark = pytest.mark.skipif(
-    os.environ.get("CI") == "true", 
+    os.environ.get("CI") == "true",
     reason="Too slow/resource intensive for CI environment"
 )
 
@@ -126,8 +125,6 @@ def test_comparative_dsa_plots(tmp_path):
     plot_comparative_three_way_dsa(three_way, output_dir=str(fig_dir))
     assert any(fig_dir.iterdir())
 
-
-import os
 
 @pytest.mark.skipif(os.environ.get("CI") == "true", reason="Too slow for CI environment")
 def test_dsa_workflow_and_dashboard(tmp_path, base_params):

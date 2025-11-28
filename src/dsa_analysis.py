@@ -185,47 +185,47 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
 
     model_names = list(dsa_results.keys())
     n_models = len(model_names)
-    
+
     # Create figure: 2 rows, n_models columns
     fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 12), dpi=300, sharey=False)
-    
+
     # Ensure axes is always 2D array (2, n_models)
     if n_models == 1:
         axes = np.array([[axes[0]], [axes[1]]])
     elif n_models > 1:
         # axes is already (2, n_models)
         pass
-    
+
     perspectives = ["hs", "soc"]
     perspective_titles = ["Health System", "Societal"]
-    
+
     import matplotlib.ticker as mtick
 
     for col, model_name in enumerate(model_names):
         results = dsa_results[model_name]
-        
+
         for row, perspective in enumerate(perspectives):
             ax = axes[row, col]
-            
+
             base_nmb = results[f"base_nmb_{perspective}"]
-            
+
             param_names = []
             nmb_ranges = []
-            
+
             for param_name, param_results in results["dsa_results"].items():
                 param_names.append(param_name)
                 nmb_range = np.array(param_results[f"nmb_{perspective}"])
                 nmb_ranges.append(nmb_range)
-            
+
             # Sort by range width
             range_widths = [np.max(r) - np.min(r) for r in nmb_ranges]
             sorted_indices = np.argsort(range_widths)[::-1]
-            
+
             sorted_param_names = [param_names[i] for i in sorted_indices]
             sorted_nmb_ranges = [nmb_ranges[i] for i in sorted_indices]
-            
+
             y_pos = np.arange(len(sorted_param_names))
-            
+
             for i, nmb_range in enumerate(sorted_nmb_ranges):
                 min_nmb = np.min(nmb_range)
                 max_nmb = np.max(nmb_range)
@@ -238,25 +238,25 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
                     edgecolor="black",
                     linewidth=0.5
                 )
-            
+
             ax.axvline(base_nmb, color="black", linestyle="--", linewidth=1)
             ax.set_yticks(y_pos)
             ax.set_yticklabels(sorted_param_names, fontsize=8)
-            
+
             # Only set ylabel for the first column
             # if col == 0:
             #     ax.set_ylabel("Parameter", fontsize=10)
-            
+
             ax.set_xlabel("Net Monetary Benefit ($)", fontsize=10)
-            
+
             # Title for each subplot
             if row == 0:
                 ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=12, fontweight="bold")
             else:
                 ax.set_title(f"({perspective_titles[row]})", fontsize=12)
-                
+
             ax.grid(True, alpha=0.3)
-            
+
             # Format x-axis as currency
             ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
             plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
@@ -395,17 +395,17 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
     model_names = list(dsa_results.keys())
     n_models = len(model_names)
-    
+
     # Create figure: 2 rows, n_models columns
     fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 10), dpi=300)
-    
+
     # Ensure axes is always 2D array (2, n_models)
     if n_models == 1:
         axes = np.array([[axes[0]], [axes[1]]])
     elif n_models > 1:
         # axes is already (2, n_models)
         pass
-        
+
     perspectives = ["hs", "soc"]
     perspective_titles = ["Health System", "Societal"]
 
@@ -413,7 +413,7 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
         data = dsa_results[model_name]
         param1_range = np.array(data["param1_range"])
         param2_range = np.array(data["param2_range"])
-        
+
         for row, perspective in enumerate(perspectives):
             ax = axes[row, col]
             grid_key = f"dsa_grid_{perspective}"
@@ -427,13 +427,13 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
             # Plot heatmap
             im = ax.imshow(nmb_grid, cmap="RdYlGn", origin="lower", aspect="auto")
-            
+
             # Axis labels
             ax.set_xlabel(data["param2_name"], fontsize=9)
             # Only set ylabel for the first column
             if col == 0:
                 ax.set_ylabel(data["param1_name"], fontsize=9)
-            
+
             # Title
             if row == 0:
                 ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=11, fontweight="bold")
@@ -449,7 +449,7 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
             x_ticks = np.linspace(0, len(param2_range)-1, 5, dtype=int)
             ax.set_xticks(x_ticks)
             ax.set_xticklabels([f"{param2_range[i]:.1f}" for i in x_ticks], fontsize=8, rotation=45)
-            
+
             # Y-axis
             y_ticks = np.linspace(0, len(param1_range)-1, 5, dtype=int)
             ax.set_yticks(y_ticks)
@@ -628,7 +628,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         # Get unique p3 values and select slices from actual grid
         unique_p3 = np.unique(points[:, 2])
         n_p3 = len(unique_p3)
-        
+
         # Select slices: first, middle, last from actual grid values
         p3_slices = [
             unique_p3[0],  # First (min)
@@ -652,7 +652,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
                 tolerance = p3_spacing / 2
             else:
                 tolerance = 0.05
-            
+
             # Find points near this p3 slice
             mask = (points[:, 2] >= p3_slice - tolerance) & (points[:, 2] <= p3_slice + tolerance)
             if np.sum(mask) > 10:  # pragma: no cover - requires dense grids

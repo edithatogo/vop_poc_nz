@@ -253,7 +253,7 @@ def plot_lorenz_curve(
     # Extract Societal results (default for Lorenz)
     if "societal" in dcea_results:
         dcea_results = dcea_results["societal"]
-    
+
     if not dcea_results:
         print(f"No societal DCEA results for {intervention_name}")
         return
@@ -353,7 +353,7 @@ def plot_equity_impact_plane(
         # Ensure limits include 0
         lims[0] = min(lims[0], -1000)
         lims[1] = max(lims[1], 1000)
-        
+
         ax.plot(lims, lims, "k-", alpha=0.5, zorder=0, label="Equity Neutrality")
 
         ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
@@ -373,7 +373,7 @@ def plot_equity_impact_plane(
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.85) # Make room for suptitle
-    
+
     filename = f"equity_impact_plane_{intervention_name.lower().replace(' ', '_')}"
     plt.savefig(f"{output_dir}/{filename}.png", bbox_inches="tight")
     plt.savefig(f"{output_dir}/{filename}.pdf", bbox_inches="tight")
@@ -390,47 +390,47 @@ def plot_comparative_equity_impact_plane(
     Each intervention is a distinct point/marker.
     """
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), dpi=300)
     fig.suptitle(
         "Comparative Equity-Efficiency Trade-offs",
         fontsize=16,
         fontweight="bold",
     )
-    
+
     # Define styles for interventions
     markers = ['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h']
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
-    
+
     # Helper to plot a perspective
     def plot_perspective(ax, perspective_key, title):
         # Add quadrants and lines first
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
-        
+
         # 45-degree line placeholder (will update limits later)
         ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
-        
+
         # Plot points
         texts = []
         max_val = 0
         min_val = 0
-        
+
         for i, (name, results_dict) in enumerate(all_dcea_results.items()):
             res = results_dict.get(perspective_key)
             if not res:
                 continue
-                
+
             total_gain = res["total_health_gain"]
             equity_metric = res.get("weighted_total_health_gain", total_gain)
-            
+
             # Update range tracking
             max_val = max(max_val, abs(total_gain), abs(equity_metric))
-            
+
             ax.scatter(
-                total_gain, 
-                equity_metric, 
-                s=150, 
+                total_gain,
+                equity_metric,
+                s=150,
                 label=name,
                 marker=markers[i % len(markers)],
                 color=colors[i % len(colors)],
@@ -439,37 +439,36 @@ def plot_comparative_equity_impact_plane(
                 alpha=0.9,
                 zorder=10
             )
-            
+
         # Set limits symmetric and large enough
         limit = max_val * 1.2 if max_val > 0 else 1000
         ax.set_xlim(-limit, limit)
         ax.set_ylim(-limit, limit)
-        
+
         ax.set_xlabel("Efficiency (Total Net Health Benefit)", fontsize=12)
         ax.set_ylabel("Equity (Weighted Net Health Benefit)", fontsize=12)
         ax.set_title(f"{title} Perspective", fontsize=14)
         ax.grid(True, alpha=0.3)
-        
+
         # Annotate quadrants
         ax.text(0.05, 0.95, "Pro-Equity\n(Weighted > Unweighted)", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
         ax.text(0.95, 0.05, "Anti-Equity\n(Weighted < Unweighted)", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
 
     plot_perspective(ax1, "health_system", "Health System")
     plot_perspective(ax2, "societal", "Societal")
-    
+
     # Legend
     handles, labels = ax1.get_legend_handles_labels()
     # Filter out the 'Equity Neutrality' line from legend if desired, or keep it
     # Let's keep distinct intervention labels
     by_label = dict(zip(labels, handles))
-    if "Equity Neutrality" in by_label:
-        del by_label["Equity Neutrality"] # Remove line from legend to focus on interventions
-        
+    by_label.pop("Equity Neutrality", None) # Remove line from legend to focus on interventions
+
     fig.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
-    
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
-    
+
     plt.savefig(f"{output_dir}/equity_impact_plane_comparative.png", bbox_inches="tight")
     plt.savefig(f"{output_dir}/equity_impact_plane_comparative.pdf", bbox_inches="tight")
     plt.close()
@@ -486,51 +485,51 @@ def plot_probabilistic_equity_impact_plane(
     Equity = Equity-Weighted Net Health Benefit
     """
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), dpi=300)
     fig.suptitle(
         "Probabilistic Equity Impact Plane (PSA Scatter)",
         fontsize=16,
         fontweight="bold",
     )
-    
+
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
-    
+
     def plot_perspective(ax, perspective_suffix, title):
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
         ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
-        
+
         max_val = 0
-        
+
         for i, (name, df) in enumerate(probabilistic_results.items()):
             eff_col = f"inc_nmb_{perspective_suffix}"
             eq_col = f"equity_weighted_nmb_{perspective_suffix}"
-            
+
             if eff_col not in df.columns or eq_col not in df.columns:
                 continue
-                
+
             efficiency = df[eff_col]
             equity = df[eq_col]
-            
+
             # Update range
             max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
-            
+
             # Plot scatter cloud
             ax.scatter(
-                efficiency, 
-                equity, 
-                s=10, 
-                alpha=0.1, 
+                efficiency,
+                equity,
+                s=10,
+                alpha=0.1,
                 color=colors[i % len(colors)],
                 label=name if i < 10 else None # Avoid legend clutter if too many
             )
-            
+
             # Plot centroid
             ax.scatter(
-                efficiency.mean(), 
-                equity.mean(), 
-                s=100, 
+                efficiency.mean(),
+                equity.mean(),
+                s=100,
                 marker='X',
                 edgecolor='white',
                 linewidth=1.5,
@@ -541,19 +540,19 @@ def plot_probabilistic_equity_impact_plane(
         limit = max_val * 1.1 if max_val > 0 else 1000
         ax.set_xlim(-limit, limit)
         ax.set_ylim(-limit, limit)
-        
+
         ax.set_xlabel("Efficiency (Incremental Net Health Benefit)", fontsize=12)
         ax.set_ylabel("Equity (Equity-Weighted Net Health Benefit)", fontsize=12)
         ax.set_title(f"{title} Perspective", fontsize=14)
         ax.grid(True, alpha=0.3)
-        
+
         # Annotate
         ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
         ax.text(0.95, 0.05, "Anti-Equity", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
 
     plot_perspective(ax1, "hs", "Health System")
     plot_perspective(ax2, "soc", "Societal")
-    
+
     # Legend (using centroids proxy handles)
     handles = []
     labels = []
@@ -561,12 +560,12 @@ def plot_probabilistic_equity_impact_plane(
         h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
         handles.append(h)
         labels.append(name)
-        
+
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
-    
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
-    
+
     plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.png", bbox_inches="tight")
     plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.pdf", bbox_inches="tight")
     plt.close()
@@ -580,28 +579,28 @@ def plot_probabilistic_equity_impact_plane_with_delta(
     3 Subplots: Health System, Societal, Delta (Societal - HS).
     """
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
     fig.suptitle(
         "Probabilistic Equity Impact Plane with Perspective Delta\n(PSA Scatter)",
         fontsize=16,
         fontweight="bold",
     )
-    
+
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
     perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
-    
+
     # Helper to plot a perspective
     def plot_perspective(ax, perspective_idx, title):
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
-        
+
         # Only plot 45-degree line for HS and Soc, not necessarily for Delta (though maybe relevant)
         if perspective_idx < 2:
             ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
-        
+
         max_val = 0
-        
+
         for i, (name, df) in enumerate(probabilistic_results.items()):
             if perspective_idx == 0: # HS
                 eff_col = "inc_nmb_hs"
@@ -615,44 +614,44 @@ def plot_probabilistic_equity_impact_plane_with_delta(
                 eq_hs = df.get("equity_weighted_nmb_hs", pd.Series(0, index=df.index))
                 eff_soc = df.get("inc_nmb_soc", pd.Series(0, index=df.index))
                 eq_soc = df.get("equity_weighted_nmb_soc", pd.Series(0, index=df.index))
-                
+
                 efficiency = eff_soc - eff_hs
                 equity = eq_soc - eq_hs
-                
+
                 # Skip check below as we constructed series
                 # But check if original cols existed
                 if "inc_nmb_hs" not in df.columns: continue
-                
+
                 # Plot
                 max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
-                
+
                 ax.scatter(efficiency, equity, s=10, alpha=0.1, color=colors[i % len(colors)])
                 ax.scatter(efficiency.mean(), equity.mean(), s=100, marker='X', edgecolor='white', linewidth=1.5, color=colors[i % len(colors)], zorder=10)
                 continue
 
             if eff_col not in df.columns or eq_col not in df.columns:
                 continue
-                
+
             efficiency = df[eff_col]
             equity = df[eq_col]
-            
+
             # Update range
             max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
-            
+
             # Plot scatter cloud
             ax.scatter(
-                efficiency, 
-                equity, 
-                s=10, 
-                alpha=0.1, 
+                efficiency,
+                equity,
+                s=10,
+                alpha=0.1,
                 color=colors[i % len(colors)],
             )
-            
+
             # Plot centroid
             ax.scatter(
-                efficiency.mean(), 
-                equity.mean(), 
-                s=100, 
+                efficiency.mean(),
+                equity.mean(),
+                s=100,
                 marker='X',
                 edgecolor='white',
                 linewidth=1.5,
@@ -663,17 +662,17 @@ def plot_probabilistic_equity_impact_plane_with_delta(
         limit = max_val * 1.1 if max_val > 0 else 1000
         ax.set_xlim(-limit, limit)
         ax.set_ylim(-limit, limit)
-        
+
         if perspective_idx < 2:
             ax.set_xlabel("Efficiency (Incremental Net Health Benefit)", fontsize=12)
             ax.set_ylabel("Equity (Equity-Weighted Net Health Benefit)", fontsize=12)
         else:
             ax.set_xlabel("Delta Efficiency (Soc - HS)", fontsize=12)
             ax.set_ylabel("Delta Equity (Soc - HS)", fontsize=12)
-            
+
         ax.set_title(f"{title}", fontsize=14)
         ax.grid(True, alpha=0.3)
-        
+
         # Annotate
         if perspective_idx < 2:
             ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
@@ -682,7 +681,7 @@ def plot_probabilistic_equity_impact_plane_with_delta(
     plot_perspective(axes[0], 0, "Health System")
     plot_perspective(axes[1], 1, "Societal")
     plot_perspective(axes[2], 2, "Delta (Societal - HS)")
-    
+
     # Legend (using centroids proxy handles)
     handles = []
     labels = []
@@ -690,12 +689,12 @@ def plot_probabilistic_equity_impact_plane_with_delta(
         h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
         handles.append(h)
         labels.append(name)
-        
+
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(labels), fontsize=12)
-    
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
-    
+
     plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic_with_delta.png", bbox_inches="tight")
     plt.close()
 
@@ -715,52 +714,52 @@ def plot_combined_lorenz_curves(
         output_dir: Directory to save the plot
     """
     os.makedirs(output_dir, exist_ok=True)
-    
+
     fig, axes = plt.subplots(1, 3, figsize=(24, 8), dpi=300)
     fig.suptitle(
         "Comparative Lorenz Curves with Perspective Delta",
         fontsize=16,
         fontweight="bold",
     )
-    
+
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
     perspectives = ["health_system", "societal"]
     perspective_titles = ["Health System", "Societal", "Delta (Societal - HS)"]
-    
+
     for perspective_idx, ax in enumerate(axes):
         # Equality line
         ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=2, label="Line of Equality", zorder=1)
-        
+
         for i, (intervention_name, dcea_results_dict) in enumerate(dcea_results_all.items()):
             if perspective_idx < 2:
                 # HS or Societal
                 perspective_key = perspectives[perspective_idx]
-                
+
                 if perspective_key not in dcea_results_dict:
                     continue
-                    
+
                 dcea_results = dcea_results_dict[perspective_key]
-                
+
                 if not dcea_results or "distribution_of_net_health_benefits" not in dcea_results:
                     continue
-                
+
                 nhb_list = sorted(dcea_results["distribution_of_net_health_benefits"].values())
-                
+
                 if len(nhb_list) == 0:
                     continue
-                
+
                 # Make positive for Lorenz
                 nhb_list_positive = [max(0, x) for x in nhb_list]
-                
+
                 if np.sum(nhb_list_positive) == 0:
                     continue
-                
+
                 lorenz_curve = np.cumsum(nhb_list_positive) / np.sum(nhb_list_positive)
                 lorenz_curve = np.insert(lorenz_curve, 0, 0)
-                
+
                 n = len(nhb_list)
                 population_fractions = np.linspace(0, 1, n + 1)
-                
+
                 ax.plot(
                     population_fractions,
                     lorenz_curve,
@@ -776,45 +775,45 @@ def plot_combined_lorenz_curves(
                 # Delta subplot
                 if "health_system" not in dcea_results_dict or "societal" not in dcea_results_dict:
                     continue
-                    
+
                 hs_results = dcea_results_dict["health_system"]
                 soc_results = dcea_results_dict["societal"]
-                
+
                 if not hs_results or not soc_results:
                     continue
-                    
+
                 if "distribution_of_net_health_benefits" not in hs_results or "distribution_of_net_health_benefits" not in soc_results:
                     continue
-                
+
                 # Get distributions
                 hs_nhb = hs_results["distribution_of_net_health_benefits"]
                 soc_nhb = soc_results["distribution_of_net_health_benefits"]
-                
+
                 # Calculate delta for each subgroup
                 delta_nhb = {}
                 for subgroup in hs_nhb.keys():
                     if subgroup in soc_nhb:
                         delta_nhb[subgroup] = soc_nhb[subgroup] - hs_nhb[subgroup]
-                
+
                 if len(delta_nhb) == 0:
                     continue
-                
+
                 delta_list = sorted(delta_nhb.values())
-                
+
                 # For delta, we might have negative values - handle differently
                 # Just normalize by total absolute value to keep curve meaningful
                 total_abs = np.sum(np.abs(delta_list))
                 if total_abs == 0:
                     continue
-                
+
                 # Create pseudo-Lorenz for delta (cumulative relative to total)
                 cumulative = np.cumsum(delta_list)
                 delta_curve = cumulative / total_abs if total_abs > 0 else cumulative
                 delta_curve = np.insert(delta_curve, 0, 0)
-                
+
                 n = len(delta_list)
                 population_fractions = np.linspace(0, 1, n + 1)
-                
+
                 ax.plot(
                     population_fractions,
                     delta_curve,
@@ -826,16 +825,16 @@ def plot_combined_lorenz_curves(
                     label=intervention_name,
                     zorder=3
                 )
-        
+
         ax.set_xlabel("Cumulative Share of Population", fontsize=12)
         ax.set_ylabel("Cumulative Share of Net Health Benefit", fontsize=12)
         ax.set_title(perspective_titles[perspective_idx], fontsize=14, fontweight="bold")
         ax.grid(True, alpha=0.3)
         ax.set_xlim(0, 1)
-        
+
         if perspective_idx < 2:
             ax.set_ylim(0, 1)
-    
+
     # Single legend for all subplots
     handles, labels = axes[0].get_legend_handles_labels()
     # Remove duplicate equality line entries
@@ -845,12 +844,12 @@ def plot_combined_lorenz_curves(
         if l not in unique_labels:
             unique_labels.append(l)
             unique_handles.append(h)
-    
+
     fig.legend(unique_handles, unique_labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(dcea_results_all)+1, fontsize=11)
-    
+
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
-    
+
     plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.png", bbox_inches="tight", dpi=300)
     plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.pdf", bbox_inches="tight")
     plt.close()

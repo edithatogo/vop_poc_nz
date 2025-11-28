@@ -68,7 +68,7 @@ class MarkovModel:
         initial_population: np.ndarray,
         costs: np.ndarray,
         qalys: np.ndarray,
-    ) -> Tuple[float, float]:
+    ) -> Tuple[float, float, np.ndarray]:
         """
         Runs the Markov model for a given number of cycles.
 
@@ -117,7 +117,7 @@ class MarkovModel:
             total_discounted_cost += cycle_cost / discount_factor
             total_discounted_qalys += cycle_qalys / discount_factor
 
-        return float(total_discounted_cost), float(total_discounted_qalys)
+        return float(total_discounted_cost), float(total_discounted_qalys), population_trace
 
 
 def deep_update(d, u):
@@ -166,6 +166,9 @@ def run_cea(
             0.0,
             0.0,
         )
+        # Initialize aggregated traces
+        total_trace_sc = None
+        total_trace_nt = None
 
         for subgroup_name, subgroup_params in model_parameters["subgroups"].items():
             # Create a deep copy of the base parameters and update with subgroup-specific values
@@ -196,6 +199,17 @@ def run_cea(
             total_cost_nt += sub_results["cost_new_treatment"]
             total_qalys_nt += sub_results["qalys_new_treatment"]
 
+            # Aggregate traces
+            if sub_results.get("trace_standard_care") is not None:
+                if total_trace_sc is None:
+                    total_trace_sc = np.zeros_like(sub_results["trace_standard_care"])
+                total_trace_sc += sub_results["trace_standard_care"]
+
+            if sub_results.get("trace_new_treatment") is not None:
+                if total_trace_nt is None:
+                    total_trace_nt = np.zeros_like(sub_results["trace_new_treatment"])
+                total_trace_nt += sub_results["trace_new_treatment"]
+
         # Use aggregated results for the main CEA calculations
         cost_sc, qalys_sc, cost_nt, qalys_nt = (
             total_cost_sc,
@@ -205,6 +219,10 @@ def run_cea(
         )
         # After aggregation, the subgroup_results dict is part of the final return
         # so we don't nullify it here.
+
+        # Assign aggregated traces to variables expected by return dict
+        trace_sc = total_trace_sc
+        trace_nt = total_trace_nt
 
     else:
         # Standard CEA without subgroups
@@ -225,12 +243,12 @@ def run_cea(
         )
 
         model_sc = MarkovModel(states, tm_standard_care, discount_rate=discount_rate)
-        cost_sc, qalys_sc = model_sc.run(
+        cost_sc, qalys_sc, trace_sc = model_sc.run(
             cycles, initial_population, costs_standard, qalys_standard
         )
 
         model_nt = MarkovModel(states, tm_new_treatment, discount_rate=discount_rate)
-        cost_nt, qalys_nt = model_nt.run(
+        cost_nt, qalys_nt, trace_nt = model_nt.run(
             cycles, initial_population, costs_new, qalys_new
         )
         subgroup_results = None
@@ -256,6 +274,8 @@ def run_cea(
         "wtp_threshold": wtp_threshold,
         "productivity_cost_method": productivity_cost_method,
         "subgroup_results": subgroup_results,  # Include subgroup results if they exist
+        "trace_standard_care": trace_sc if "trace_sc" in locals() else None,
+        "trace_new_treatment": trace_nt if "trace_nt" in locals() else None,
     }
 
     return results

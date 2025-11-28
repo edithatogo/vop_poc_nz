@@ -1,0 +1,50 @@
+// Decision Tree for Housing Insulation
+digraph {
+	D [label=Decision shape=box]
+	SC [label="Standard Care"]
+	NT [label="New Treatment"]
+	D -> SC
+	D -> NT
+	SC_Healthy [label="Healthy
+Cost: 0
+QALY: 0.95"]
+	SC -> SC_Healthy
+	"SC_Respiratory Illness" [label="Respiratory Illness
+Cost: 1440
+QALY: 0.75"]
+	SC -> "SC_Respiratory Illness"
+	"SC_Other Illnesses" [label="Other Illnesses
+Cost: 2400
+QALY: 0.7"]
+	SC -> "SC_Other Illnesses"
+	NT_Healthy [label="Healthy
+Cost: 4200
+QALY: 0.96"]
+	NT -> NT_Healthy
+	"NT_Respiratory Illness" [label="Respiratory Illness
+Cost: 960
+QALY: 0.85"]
+	NT -> "NT_Respiratory Illness"
+	"NT_Other Illnesses" [label="Other Illnesses
+Cost: 1800
+QALY: 0.75"]
+	NT -> "NT_Other Illnesses"
+	SC_Healthy -> SC_Healthy [label=0.9]
+	NT_Healthy -> NT_Healthy [label=0.94]
+	SC_Healthy -> "SC_Respiratory Illness" [label=0.07]
+	NT_Healthy -> "NT_Respiratory Illness" [label=0.04]
+	SC_Healthy -> "SC_Other Illnesses" [label=0.03]
+	NT_Healthy -> "NT_Other Illnesses" [label=0.02]
+	"SC_Respiratory Illness" -> SC_Healthy [label=0.1]
+	"NT_Respiratory Illness" -> NT_Healthy [label=0.2]
+	"SC_Respiratory Illness" -> "SC_Respiratory Illness" [label=0.75]
+	"NT_Respiratory Illness" -> "NT_Respiratory Illness" [label=0.75]
+	"SC_Respiratory Illness" -> "SC_Other Illnesses" [label=0.15]
+	"NT_Respiratory Illness" -> "NT_Other Illnesses" [label=0.05]
+	"SC_Other Illnesses" -> SC_Healthy [label=0.05]
+	"NT_Other Illnesses" -> NT_Healthy [label=0.1]
+	"SC_Other Illnesses" -> "SC_Respiratory Illness" [label=0.1]
+	"NT_Other Illnesses" -> "NT_Respiratory Illness" [label=0.05]
+	"SC_Other Illnesses" -> "SC_Other Illnesses" [label=0.85]
+	"NT_Other Illnesses" -> "NT_Other Illnesses" [label=0.85]
+}

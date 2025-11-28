@@ -132,7 +132,7 @@ def plot_icer_ladder(
 
     # Plot points
     colors = plt.cm.viridis(np.linspace(0, 1, len(interventions)))
-    for i, (qaly, cost, name, icer) in enumerate(
+    for i, (qaly, cost, name, _icer) in enumerate(
         zip(inc_qalys_sorted, inc_costs_sorted, interventions_sorted, icers_sorted)
     ):
         ax.scatter(
@@ -258,7 +258,7 @@ def plot_nmb_comparison(
         )
 
         # Add value labels on bars
-        for idx, bar in enumerate(bars):
+        for _idx, bar in enumerate(bars):
             height = bar.get_height()
             ax.text(
                 bar.get_x() + bar.get_width() / 2.0,
@@ -464,7 +464,7 @@ def plot_comprehensive_intervention_summary(
         nmb_values.append(nmb)
 
     colors_nmb = ["g" if nmb > 0 else "r" for nmb in nmb_values]
-    bars = ax2.barh(
+    ax2.barh(
         interventions, nmb_values, color=colors_nmb, alpha=0.7, edgecolor="black"
     )
     ax2.axvline(x=0, color="k", linestyle="-", linewidth=1)

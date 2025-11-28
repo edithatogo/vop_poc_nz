@@ -11,18 +11,15 @@ This module combines:
 """
 
 import json
-import os
 import logging
+import os
 from typing import Any, Dict
-
-from .logging_config import setup_logging
 
 import numpy as np
 import pandas as pd
 
 # Import our corrected modules (assumes running as installed package or with src on PYTHONPATH)
 from .dcea_equity_analysis import plot_equity_impact_plane, plot_lorenz_curve
-from .visualizations import plot_discordance_loss
 from .dsa_analysis import (
     compose_dsa_dashboard,
     perform_comprehensive_two_way_dsa,
@@ -32,6 +29,7 @@ from .dsa_analysis import (
     plot_three_way_dsa_3d,
     plot_two_way_dsa_heatmaps,
 )
+from .logging_config import setup_logging
 from .pipeline.analysis import run_analysis_pipeline
 from .policy_brief_generator import generate_policy_brief
 from .visualizations import (
@@ -40,10 +38,10 @@ from .visualizations import (
     compose_equity_dashboard,
     plot_ceac,
     plot_ceaf,
-    plot_cost_effectiveness_plane,
-    plot_evpi,
-    plot_evppi,
     plot_comparative_evppi,
+    plot_cost_effectiveness_plane,
+    plot_discordance_loss,
+    plot_evpi,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,

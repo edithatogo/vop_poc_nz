@@ -8,14 +8,15 @@ This script orchestrates the full analysis workflow:
 
 import argparse
 import logging
+import pickle
 
 import matplotlib
 
 matplotlib.use("Agg")
 
+from .logging_config import setup_logging
 from .pipeline.analysis import run_analysis_pipeline
 from .pipeline.reporting import run_reporting_pipeline
-from .logging_config import setup_logging
 
 
 def main():
@@ -33,6 +34,10 @@ def main():
 
     # 1. Run Analysis
     results = run_analysis_pipeline()
+
+    # Save results to pickle for easier re-running of reporting
+    with open("output/results.pkl", "wb") as f:
+        pickle.dump(results, f)
 
     # 2. Run Reporting
     run_reporting_pipeline(results, output_dir=args.output_dir)

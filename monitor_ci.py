@@ -1,8 +1,7 @@
+import json
 import subprocess
 import time
-import json
-import sys
-import re
+
 
 def run_command(cmd):
     try:
@@ -31,17 +30,17 @@ def monitor_run(run_id):
             status_data = json.loads(output)
             status = status_data.get("status")
             conclusion = status_data.get("conclusion")
-            
+
             print(f"Current Status: {status}, Conclusion: {conclusion}")
-            
+
             if status == "completed":
                 return conclusion
-            
+
         time.sleep(10)
 
 def get_failed_logs(run_id):
     print(f"Fetching logs for failed run {run_id}...")
-    # Fetch the log for the failed step. 
+    # Fetch the log for the failed step.
     # We look for the 'Test with pytest' step failure.
     cmd = f"gh run view {run_id} --log-failed"
     output = run_command(cmd)
@@ -53,7 +52,7 @@ def get_failed_logs(run_id):
 
 def main():
     print("Starting CI Monitor...")
-    
+
     # 1. Find latest run
     latest_run = get_latest_run_id()
     if not latest_run:
@@ -65,12 +64,12 @@ def main():
 
     # 2. Monitor until complete
     conclusion = monitor_run(run_id)
-    
+
     if conclusion == "success":
         print("Run passed successfully! ✅")
     else:
         print(f"Run failed with conclusion: {conclusion} ❌")
-        
+
         # 3. Get logs and extract DEBUG info
         logs = get_failed_logs(run_id)
         if logs:
@@ -79,7 +78,7 @@ def main():
             debug_lines = [line for line in logs.splitlines() if "DEBUG:" in line]
             for line in debug_lines:
                 print(line)
-            
+
             print("\n--- FAILURE DETAILS ---")
             # Print the assertion error part
             lines = logs.splitlines()

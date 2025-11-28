@@ -1,7 +1,8 @@
-import pickle
-import numpy as np
-import pandas as pd
 import os
+import pickle
+
+import numpy as np
+
 
 def check_delta():
     results_path = "output/results.pkl"
@@ -13,7 +14,7 @@ def check_delta():
         results = pickle.load(f)
 
     prob_results = results.get("probabilistic_results", {})
-    
+
     for name, df in prob_results.items():
         if "inc_qaly_soc" in df.columns and "inc_qaly_hs" in df.columns:
             delta_qaly = df["inc_qaly_soc"] - df["inc_qaly_hs"]
