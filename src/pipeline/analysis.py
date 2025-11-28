@@ -215,7 +215,7 @@ def run_analysis_pipeline() -> Dict:
 
         # Add subgroup-specific multipliers if subgroups exist
         if "subgroups" in params:
-            for subgroup in params["subgroups"].keys():
+            for subgroup in params["subgroups"]:
                 # Add independent uncertainty for each subgroup (centered around 1.0)
                 # We use a smaller std dev for subgroups to represent specific variation around the global trend
                 # OR we can treat them as fully independent. Let's add them as independent modifiers.

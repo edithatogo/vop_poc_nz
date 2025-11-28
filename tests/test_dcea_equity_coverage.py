@@ -1,24 +1,25 @@
-import unittest
-from unittest.mock import MagicMock, patch
-import numpy as np
-import pandas as pd
-import os
 import shutil
 import tempfile
+import unittest
+from unittest.mock import patch
+
+import pandas as pd
+
 from src.dcea_equity_analysis import (
-    calculate_gini,
-    calculate_atkinson_index,
     apply_equity_weights,
-    run_dcea,
-    generate_dcea_results_table,
+    calculate_atkinson_index,
+    calculate_gini,
     calculate_inequality_aversion_sensitivity,
-    plot_lorenz_curve,
-    plot_equity_impact_plane,
+    generate_dcea_results_table,
+    plot_combined_lorenz_curves,
     plot_comparative_equity_impact_plane,
+    plot_equity_impact_plane,
+    plot_lorenz_curve,
     plot_probabilistic_equity_impact_plane,
     plot_probabilistic_equity_impact_plane_with_delta,
-    plot_combined_lorenz_curves
+    run_dcea,
 )
+
 
 class TestDCEAEquityCoverage(unittest.TestCase):
     def setUp(self):
@@ -93,7 +94,7 @@ class TestDCEAEquityCoverage(unittest.TestCase):
         plot_lorenz_curve(dcea_results, "Intervention X", output_dir=self.test_dir)
         # Check if file creation was attempted (mocked)
         self.assertTrue(mock_savefig.called)
-        
+
         # Test empty/no societal
         plot_lorenz_curve({}, "Intervention Y", output_dir=self.test_dir)
 

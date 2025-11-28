@@ -398,10 +398,7 @@ def generate_bia_tables(results, output_dir):
     # Table 24: Annual Budget Impact
     bia_rows = []
     for name, bia_df in results['bia_results'].items():
-        if isinstance(bia_df, pd.DataFrame):
-            df = bia_df
-        else:
-            df = pd.DataFrame(bia_df)
+        df = bia_df if isinstance(bia_df, pd.DataFrame) else pd.DataFrame(bia_df)
 
         row = {"Intervention": name.replace('_', ' ').title()}
         for _, r in df.iterrows():
@@ -418,10 +415,7 @@ def generate_bia_tables(results, output_dir):
     # Assuming bia_df has 'gross_cost' and 'offsets' (calculated as net - gross)
     breakdown_rows = []
     for name, bia_df in results['bia_results'].items():
-        if isinstance(bia_df, pd.DataFrame):
-            df = bia_df
-        else:
-            df = pd.DataFrame(bia_df)
+        df = bia_df if isinstance(bia_df, pd.DataFrame) else pd.DataFrame(bia_df)
 
         for _, r in df.iterrows():
             breakdown_rows.append({

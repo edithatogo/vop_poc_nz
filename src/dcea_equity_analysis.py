@@ -385,7 +385,7 @@ def plot_comparative_equity_impact_plane(
 ):
     """
     Generates a single comparative equity impact plane for ALL interventions.
-    
+
     Two subplots: Health System vs Societal.
     Each intervention is a distinct point/marker.
     """
@@ -412,9 +412,7 @@ def plot_comparative_equity_impact_plane(
         ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
 
         # Plot points
-        texts = []
         max_val = 0
-        min_val = 0
 
         for i, (name, results_dict) in enumerate(all_dcea_results.items()):
             res = results_dict.get(perspective_key)
@@ -479,7 +477,7 @@ def plot_probabilistic_equity_impact_plane(
 ):
     """
     Generates a probabilistic equity impact plane (Scatter Plot of PSA results).
-    
+
     Plots the cloud of (Efficiency, Equity) points for each intervention.
     Efficiency = Total Net Health Benefit (Unweighted)
     Equity = Equity-Weighted Net Health Benefit
@@ -588,7 +586,6 @@ def plot_probabilistic_equity_impact_plane_with_delta(
     )
 
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
-    perspectives = ["Health System", "Societal", "Delta (Societal - HS)"]
 
     # Helper to plot a perspective
     def plot_perspective(ax, perspective_idx, title):
@@ -601,7 +598,7 @@ def plot_probabilistic_equity_impact_plane_with_delta(
 
         max_val = 0
 
-        for i, (name, df) in enumerate(probabilistic_results.items()):
+        for i, (_name, df) in enumerate(probabilistic_results.items()):
             if perspective_idx == 0: # HS
                 eff_col = "inc_nmb_hs"
                 eq_col = "equity_weighted_nmb_hs"
@@ -703,12 +700,12 @@ def plot_combined_lorenz_curves(
 ):
     """
     Plot combined Lorenz curves for all interventions across perspectives.
-    
+
     Creates 3 subplots:
     - Health System perspective
-    - Societal perspective  
+    - Societal perspective
     - Delta (Societal - Health System)
-    
+
     Args:
         dcea_results_all: Dict mapping intervention names to their DCEA results
         output_dir: Directory to save the plot
@@ -791,7 +788,7 @@ def plot_combined_lorenz_curves(
 
                 # Calculate delta for each subgroup
                 delta_nhb = {}
-                for subgroup in hs_nhb.keys():
+                for subgroup in hs_nhb:
                     if subgroup in soc_nhb:
                         delta_nhb[subgroup] = soc_nhb[subgroup] - hs_nhb[subgroup]
 

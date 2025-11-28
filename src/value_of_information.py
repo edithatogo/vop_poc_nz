@@ -416,7 +416,7 @@ def calculate_evppi(
         if not param_cols:
             warnings.warn(
                 f"No parameter columns found matching: {parameter_group}",
-                UserWarning,
+                UserWarning, stacklevel=2,
             )
             evppi_values.append(0.0)
             continue
@@ -549,7 +549,7 @@ def calculate_value_of_perspective(
     else:
         avg_discordance_cost = 0.0
 
-    # Expected discordance cost = probability × average cost when discordant
+    # Expected discordance cost = probability * average cost when discordant
     expected_discordance_cost = prop_discordant * avg_discordance_cost
 
     # 4. INFORMATION VALUE OF PERSPECTIVE CHOICE

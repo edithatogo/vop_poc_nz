@@ -1,28 +1,30 @@
-import unittest
-import pandas as pd
-import numpy as np
+import os
 import shutil
 import tempfile
-import os
+import unittest
+
+import pandas as pd
+
 from src.table_generation import (
     dataframe_to_markdown,
-    generate_core_tables,
-    generate_qualitative_tables,
-    generate_cea_tables,
-    generate_subgroup_tables,
-    generate_dcea_tables,
-    generate_extended_dcea_tables,
+    generate_all_tables,
     generate_bia_tables,
+    generate_cea_tables,
+    generate_core_tables,
+    generate_dcea_tables,
     generate_extended_bia_tables,
-    generate_voi_tables,
+    generate_extended_dcea_tables,
     generate_extended_voi_tables,
-    generate_all_tables
+    generate_qualitative_tables,
+    generate_subgroup_tables,
+    generate_voi_tables,
 )
+
 
 class TestTableGenerationCoverage(unittest.TestCase):
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
-        
+
         # Dummy Params
         self.params = {
             "Intervention_A": {
@@ -139,7 +141,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
     def test_generate_core_tables(self):
         tables = generate_core_tables(self.params, self.test_dir)
         self.assertIn("Table_1_Study_Setting", tables)
-        
+
         # Test skip logic
         params_skip = {"new_high_cost_cancer_drug": {}}
         tables_skip = generate_core_tables(params_skip, self.test_dir)
@@ -161,7 +163,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
     def test_generate_dcea_tables(self):
         tables = generate_dcea_tables(self.results, self.test_dir)
         self.assertIn("Table_19_DCEA_Outcomes_by_Group", tables)
-        
+
         # Test empty results
         tables_empty = generate_dcea_tables({}, self.test_dir)
         self.assertEqual(tables_empty, {})
@@ -173,7 +175,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
     def test_generate_bia_tables(self):
         tables = generate_bia_tables(self.results, self.test_dir)
         self.assertIn("Table_24_Annual_Budget_Impact", tables)
-        
+
         # Test list of dicts input
         results_list = {
             "bia_results": {
@@ -182,7 +184,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
         }
         tables_list = generate_bia_tables(results_list, self.test_dir)
         self.assertIn("Table_24_Annual_Budget_Impact", tables_list)
-        
+
         # Test empty
         self.assertEqual(generate_bia_tables({}, self.test_dir), {})
 
@@ -193,7 +195,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
     def test_generate_voi_tables(self):
         tables = generate_voi_tables(self.results, self.test_dir)
         self.assertIn("Table_27_EVPI_Summary", tables)
-        
+
         # Test legacy format
         results_legacy = {
             "voi_analysis": {
@@ -206,7 +208,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
         tables_legacy = generate_voi_tables(results_legacy, self.test_dir)
         self.assertIn("Table_27_EVPI_Summary", tables_legacy)
         self.assertIn("Table_28_EVPPI_Summary", tables_legacy)
-        
+
         # Test empty
         self.assertEqual(generate_voi_tables({}, self.test_dir), {})
 

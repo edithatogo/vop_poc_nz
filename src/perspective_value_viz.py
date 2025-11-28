@@ -342,7 +342,7 @@ def plot_perspective_comparison_scatter(
         transform=ax.transAxes,
         fontsize=12,
         verticalalignment="top",
-        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+        bbox={"boxstyle": "round", "facecolor": "wheat", "alpha": 0.5},
     )
 
     ax.set_xlabel("NMB: Health System Perspective ($)", fontsize=12)

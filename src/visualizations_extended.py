@@ -149,7 +149,7 @@ def plot_population_evpi_timeline(
         f"Total: ${cumulative_evpi:,.0f}",
         xy=(time_horizon, cumulative_evpi),
         xytext=(time_horizon - 2, cumulative_evpi * 0.8),
-        arrowprops=dict(arrowstyle="->", color="black"),
+        arrowprops={"arrowstyle": "->", "color": "black"},
         fontsize=10,
         fontweight="bold",
     )
@@ -257,7 +257,7 @@ def plot_intervention_radar(
     angles += angles[:1]  # Complete the circle
 
     fig, ax = plt.subplots(
-        figsize=(10, 10), dpi=300, subplot_kw=dict(projection="polar")
+        figsize=(10, 10), dpi=300, subplot_kw={"projection": "polar"}
     )
 
     colors = plt.cm.Set2(np.linspace(0, 1, len(intervention_results)))

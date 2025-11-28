@@ -85,7 +85,7 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
                 return obj.to_dict(orient="list")
             if isinstance(obj, pd.Series):
                 return obj.to_list()
-            return super(NumpyEncoder, self).default(obj)
+            return super().default(obj)
 
     try:
         with open(os.path.join(output_dir, "complete_analysis_results.json"), "w") as f:

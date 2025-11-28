@@ -312,7 +312,7 @@ def plot_comparative_ceac(
 ) -> None:
     """
     Plot Comparative Cost-Effectiveness Acceptability Curves (CEAC).
-    
+
     Shows both Health System and Societal perspectives side-by-side.
     """
     output_dir = Path(output_dir)
@@ -885,7 +885,7 @@ def plot_evppi(voi_report, output_dir="output/figures/"):
 def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
     """
     Plot Comparative Expected Value of Partial Perfect Information (EVPPI).
-    
+
     Creates a side-by-side comparison of EVPPI for Health System and Societal perspectives.
     Plots all interventions on each subplot.
     """
@@ -3370,9 +3370,9 @@ def plot_comparative_bia_line(
 def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, intervention_name: str):
     """
     Plot Markov trace (state probabilities over time).
-    
+
     Args:
-        trace_data: Dictionary with keys 'standard_care' and 'new_treatment', 
+        trace_data: Dictionary with keys 'standard_care' and 'new_treatment',
                    values are DataFrames with state probabilities (columns=states, index=cycles).
         output_dir: Directory to save the plot.
         intervention_name: Name of the intervention.
@@ -3387,7 +3387,7 @@ def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, inte
 
         # Plot each state
         # Assuming columns are state names
-        
+
         # Check if data needs normalization (if max > 1.05, it's likely counts not probabilities)
         if df.max().max() > 1.05:
             # Normalize by row sum to get proportions
@@ -3418,7 +3418,7 @@ def plot_comparative_pop_evpi_with_delta(
 ):
     """
     Plot comparative Population EVPI with Delta panel.
-    
+
     Args:
         probabilistic_results: Dictionary of PSA results.
         wtp_thresholds: Array of WTP thresholds.

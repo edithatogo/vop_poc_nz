@@ -269,7 +269,7 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     )
 
 
-def perform_comprehensive_two_way_dsa(  # noqa: C901
+def perform_comprehensive_two_way_dsa(
     models, wtp_threshold=50000, n_points=20
 ):
     """
@@ -479,7 +479,7 @@ def compose_dsa_dashboard(output_dir="data/data_outputs/figures/"):
     compose_dashboard(images, output_dir=output_dir, filename_base="dashboard_dsa")
 
 
-def perform_three_way_dsa(  # noqa: C901
+def perform_three_way_dsa(
     models, wtp_threshold=50000, n_points=10
 ):
     """

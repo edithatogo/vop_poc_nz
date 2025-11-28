@@ -11,4 +11,7 @@ pandera
 psutil
 openpyxl
 pytest
+pytest-xdist
 tabulate
+pip-audit
+bandit

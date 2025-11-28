@@ -19,13 +19,15 @@ from .visualizations import apply_default_style, save_figure
 
 
 def run_scalability_test(
-    sample_sizes: List[int] = [100, 500, 1000, 2000, 5000],
+    sample_sizes: List[int] = None,
     intervention_name: str = "HPV Vaccination",
     output_dir: str = "output/profiling/",
 ):
     """
     Run PSA with increasing sample sizes and measure time/memory.
     """
+    if sample_sizes is None:
+        sample_sizes = [100, 500, 1000, 2000, 5000]
     print(f"Running scalability test for {intervention_name}...")
     print(f"Sample sizes: {sample_sizes}")
 

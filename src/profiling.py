@@ -138,7 +138,7 @@ def profile_section(section_name: str):
             perform_dsa(...)
     """
     process = psutil.Process(os.getpid())
-    mem_before = process.memory_info().rss / 1024 / 1024
+    process.memory_info().rss / 1024 / 1024
 
     start_time = time.time()
     try:

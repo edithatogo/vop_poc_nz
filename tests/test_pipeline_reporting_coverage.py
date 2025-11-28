@@ -1,11 +1,14 @@
-import unittest
-from unittest.mock import MagicMock, patch
-import pandas as pd
-import numpy as np
+import os
 import shutil
 import tempfile
-import os
+import unittest
+from unittest.mock import patch
+
+import numpy as np
+import pandas as pd
+
 from src.pipeline.reporting import run_reporting_pipeline
+
 
 class TestPipelineReportingCoverage(unittest.TestCase):
     def setUp(self):
@@ -93,10 +96,10 @@ class TestPipelineReportingCoverage(unittest.TestCase):
     def test_run_reporting_pipeline(self, *mocks):
         # Run the pipeline
         run_reporting_pipeline(self.results, self.test_dir)
-        
+
         # Verify JSON dump
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, "complete_analysis_results.json")))
-        
+
         # Verify Report creation
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, "combined_report.md")))
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, "Intervention_A_report.md")))

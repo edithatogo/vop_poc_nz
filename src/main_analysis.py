@@ -388,7 +388,7 @@ def main():  # pragma: no cover - CLI entry point for full demo run
                 population_sizes[name] = 100000  # Default
     else:
         # Fallback
-        for name in results["probabilistic_results"].keys():
+        for name in results["probabilistic_results"]:
             population_sizes[name] = 100000
 
     plot_pop_evpi(

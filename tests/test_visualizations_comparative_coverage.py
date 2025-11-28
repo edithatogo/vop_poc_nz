@@ -1,17 +1,18 @@
-import unittest
-from unittest.mock import MagicMock, patch
-import pandas as pd
-import numpy as np
 import shutil
 import tempfile
-import os
+import unittest
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
+
 from src.visualizations_comparative import (
     plot_comparative_cash_flow,
+    plot_comprehensive_intervention_summary,
+    plot_equity_impact_comparison,
     plot_icer_ladder,
     plot_nmb_comparison,
-    plot_equity_impact_comparison,
-    plot_comprehensive_intervention_summary
 )
+
 
 class TestVisualizationsComparativeCoverage(unittest.TestCase):
     def setUp(self):
@@ -75,10 +76,10 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         plot_comparative_cash_flow(self.bia_results, self.test_dir, discount=True)
         self.assertTrue(mock_save.called)
-        
+
         # Test nominal
         plot_comparative_cash_flow(self.bia_results, self.test_dir, discount=False)
 
@@ -89,10 +90,10 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         plot_icer_ladder(self.intervention_results, output_dir=self.test_dir, perspective="societal")
         self.assertTrue(mock_save.called)
-        
+
         # Test fallback to top-level results (Int_B structure)
         plot_icer_ladder(self.intervention_results, output_dir=self.test_dir, perspective="health_system")
 
@@ -103,7 +104,7 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, mock_ax)
-        
+
         plot_nmb_comparison(self.intervention_results, output_dir=self.test_dir)
         self.assertTrue(mock_save.called)
 
@@ -114,10 +115,10 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
         mock_plt.subplots.return_value = (mock_fig, (mock_ax, mock_ax))
-        
+
         plot_equity_impact_comparison(self.intervention_results, output_dir=self.test_dir)
         self.assertTrue(mock_save.called)
-        
+
         # Test no equity data
         plot_equity_impact_comparison({"Int_C": {}}, output_dir=self.test_dir)
 
@@ -129,7 +130,7 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         mock_ax = MagicMock()
         mock_plt.figure.return_value = mock_fig
         mock_fig.add_subplot.return_value = mock_ax
-        
+
         plot_comprehensive_intervention_summary(
             self.intervention_results,
             self.bia_results,

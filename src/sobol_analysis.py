@@ -84,7 +84,7 @@ class SobolAnalyzer:
         """
         from scipy.stats import beta, gamma, norm, uniform
 
-        n_samples = samples_01.shape[0]
+        samples_01.shape[0]
         sampled_params = {}
 
         for i, param_name in enumerate(self.param_names):
@@ -279,7 +279,7 @@ def plot_sobol_indices(
     import matplotlib.pyplot as plt
 
     indices_df = sobol_results["indices"]
-    ci_df = sobol_results["confidence_intervals"]
+    sobol_results["confidence_intervals"]
 
     # Sort by total-order index
     indices_df = indices_df.sort_values("total_order", ascending=True)
@@ -318,7 +318,7 @@ def plot_sobol_indices(
     ax.set_xlim(0, max(1, max(indices_df["total_order"]) * 1.1))
 
     # Add interaction annotation
-    for i, (param, interaction) in enumerate(zip(params, indices_df["interaction"])):
+    for i, (_param, interaction) in enumerate(zip(params, indices_df["interaction"])):
         if interaction > 0.05:  # Only annotate significant interactions
             ax.annotate(
                 f"Interaction: {interaction:.2f}",

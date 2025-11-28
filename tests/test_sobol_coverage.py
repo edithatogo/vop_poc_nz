@@ -1,10 +1,13 @@
-import unittest
-from unittest.mock import MagicMock, patch
-import numpy as np
-import pandas as pd
 import shutil
 import tempfile
+import unittest
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pandas as pd
+
 from src.sobol_analysis import SobolAnalyzer, plot_sobol_indices
+
 
 class TestSobolCoverage(unittest.TestCase):
     def setUp(self):
@@ -84,7 +87,7 @@ class TestSobolCoverage(unittest.TestCase):
         model = lambda p: p["x1"] + p["x2"]
         analyzer = SobolAnalyzer(model, params, n_samples=100)
         results = analyzer.calculate_sobol_indices()
-        
+
         self.assertIn("indices", results)
         self.assertIn("confidence_intervals", results)
         indices = results["indices"]
@@ -110,7 +113,7 @@ class TestSobolCoverage(unittest.TestCase):
             "n_evaluations": 1000
         }
         plot_sobol_indices(results, output_dir=self.test_dir)
-        
+
         # Verify savefig was called on the figure object
         self.assertTrue(mock_fig.savefig.called)
 

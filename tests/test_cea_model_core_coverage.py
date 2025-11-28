@@ -1,18 +1,21 @@
 import unittest
+
 import numpy as np
 import pandas as pd
+
 from src.cea_model_core import (
     MarkovModel,
-    run_cea,
-    deep_update,
-    create_parameters_table,
-    generate_comparative_icer_table,
-    _calculate_icer,
     _calculate_cer,
-    _validate_model_parameters,
     _calculate_friction_cost,
-    _get_costs_qalys_by_perspective
+    _calculate_icer,
+    _get_costs_qalys_by_perspective,
+    _validate_model_parameters,
+    create_parameters_table,
+    deep_update,
+    generate_comparative_icer_table,
+    run_cea,
 )
+
 
 class TestCEAModelCore(unittest.TestCase):
     def setUp(self):
@@ -25,7 +28,7 @@ class TestCEAModelCore(unittest.TestCase):
         self.initial_pop = np.array([1000, 0, 0])
         self.costs = np.array([100, 500, 0])
         self.qalys = np.array([1.0, 0.7, 0.0])
-        
+
         self.model_params = {
             "states": self.states,
             "transition_matrices": {
@@ -107,15 +110,15 @@ class TestCEAModelCore(unittest.TestCase):
         # Normal case
         icer = _calculate_icer(1000, 1.0)
         self.assertEqual(icer, 1000)
-        
+
         # Dominated (negative QALY)
         icer = _calculate_icer(1000, -0.5)
         self.assertTrue(icer < 0)  # Negative ICER
-        
+
         # Dominant (negative cost, positive QALY)
         icer = _calculate_icer(-1000, 0.5)
         self.assertEqual(icer, -2000)  # Negative ICER
-        
+
         # Zero QALY, positive cost
         icer = _calculate_icer(1000, 0)
         self.assertTrue(np.isinf(icer) and icer > 0)
@@ -123,7 +126,7 @@ class TestCEAModelCore(unittest.TestCase):
     def test_calculate_cer(self):
         cer = _calculate_cer(1000, 1.0)
         self.assertEqual(cer, 1000)
-        
+
         # Zero QALY
         cer = _calculate_cer(1000, 0)
         self.assertTrue(np.isinf(cer) or cer > 1e10)
@@ -131,7 +134,7 @@ class TestCEAModelCore(unittest.TestCase):
     def test_validate_model_parameters(self):
         # Should not raise
         _validate_model_parameters(self.model_params)
-        
+
         # Should raise for missing keys
         with self.assertRaises(ValueError):
             _validate_model_parameters({"states": []})

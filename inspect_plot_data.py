@@ -1,13 +1,15 @@
 
 import pickle
+
 import numpy as np
 import pandas as pd
+
 
 def inspect_data():
     print("Loading results...")
     with open("output/results.pkl", "rb") as f:
         results = pickle.load(f)
-        
+
     print("\n--- Inspecting Markov Traces ---")
     if 'intervention_results' in results:
         for name, res in results['intervention_results'].items():
@@ -24,13 +26,13 @@ def inspect_data():
                     else:
                         print(f"  Standard Care Trace Head:\n{trace[:5]}")
                         row_sums = trace.sum(axis=1)
-                    
+
                     print(f"  Row Sums (should be 1.0): {row_sums[:5]}")
                     if not np.allclose(row_sums, 1.0):
                         print("  WARNING: Standard Care rows do not sum to 1.0!")
                 else:
                     print("  Standard Care Trace MISSING in health_system")
-                    
+
                 if 'trace_new_treatment' in hs_res:
                     trace = hs_res['trace_new_treatment']
                     print(f"  New Treatment Trace Shape: {trace.shape}")
@@ -38,7 +40,7 @@ def inspect_data():
                         row_sums = trace.sum(axis=1)
                     else:
                         row_sums = trace.sum(axis=1)
-                        
+
                     print(f"  Row Sums (should be 1.0): {row_sums[:5]}")
                     if not np.allclose(row_sums, 1.0):
                         print("  WARNING: New Treatment rows do not sum to 1.0!")
@@ -53,7 +55,7 @@ def inspect_data():
             print(f"\nIntervention: {name}")
             print(f"  PSA Results Columns: {df.columns.tolist()}")
             print(f"  PSA Results Head:\n{df.head()}")
-            
+
             # Check for zero variance which would lead to zero EVPI
             if 'net_benefit_hs' in df.columns:
                 print(f"  Net Benefit HS Std Dev: {df['net_benefit_hs'].std()}")

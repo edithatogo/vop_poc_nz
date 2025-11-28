@@ -151,7 +151,7 @@ def plot_icer_ladder(
             xytext=(10, 10),
             textcoords="offset points",
             fontsize=9,
-            bbox=dict(boxstyle="round,pad=0.5", facecolor=colors[i], alpha=0.3),
+            bbox={"boxstyle": "round,pad=0.5", "facecolor": colors[i], "alpha": 0.3},
         )
 
     # Connect efficient frontier
