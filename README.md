@@ -196,6 +196,8 @@ All outputs are saved to `output/latest/` (symlinked to `output/{version}/`):
 
 ## Methodological References
 
+For detailed mathematical specifications, see [FORMULAE.md](docs/FORMULAE.md).
+
 - **CEA**: Drummond et al. (2015) - Methods for the Economic Evaluation of Health Care Programmes
 - **DCEA**: Cookson et al. (2017) - Distributional Cost-Effectiveness Analysis
 - **Atkinson Index**: Atkinson (1970) - On the Measurement of Inequality
