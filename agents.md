@@ -40,11 +40,13 @@ This repository contains a comprehensive health economic analysis addressing rev
 - **Stakeholder Preferences**: DCE framework for quantifying preferences
 
 ### Current State
-- All tests pass
+- All tests pass (verified via `tox`)
 - Code is structured as proper Python package
 - Mathematical calculations corrected
 - All reviewer feedback addressed
-- Development tools configured
+- Development tools configured (`tox`, `ruff`, `mypy`, `memray`)
+- **Memory Optimized**: Dashboard generation now uses `Pillow` to avoid Matplotlib memory leaks.
+- **CI/CD Ready**: `tox` configuration mirrors CI pipeline; `act` issues documented.
 
 ### Next Steps for Agent
 - Implement any additional model refinements

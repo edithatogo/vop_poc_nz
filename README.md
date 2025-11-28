@@ -87,12 +87,19 @@ snakemake -c1
 # Run with specific version
 snakemake -c1 --config version=v2.0
 
-# Run tests
-pytest
+# Run tests via Tox (Recommended)
+tox                  # Run all environments (tests, lint, type, coverage)
+tox -e py313         # Run tests on Python 3.13
+tox -e lint          # Run linting
+tox -e type          # Run type checking
 
-# Run linting
-ruff check src/ tests/
-ruff format src/ tests/
+# Run memory profiling
+memray run -o output/memray.bin -m src.pipeline.reporting
+memray flamegraph output/memray.bin -o output/memray-flamegraph.html
+
+# Run linting manually
+ruff check .
+ruff format .
 ```
 
 ### Python API
