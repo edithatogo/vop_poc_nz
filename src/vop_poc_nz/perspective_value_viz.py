@@ -29,7 +29,7 @@ def plot_perspective_value_dashboard(
         output_dir: Output directory
         intervention_name: Name of intervention
     """
-    from src.visualizations import apply_default_style, save_figure
+    from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
     fig = plt.figure(figsize=(16, 12), dpi=300)
@@ -130,7 +130,7 @@ def plot_perspective_value_dashboard(
 
     # Pie chart
     colors_pie = ["steelblue", "forestgreen", "coral"]
-    wedges, texts, autotexts = ax3.pie(
+    wedges, texts, autotexts = ax3.pie(  # type: ignore[misc]
         [discordance_data[0], discordance_data[1], discordance_data[2]],
         labels=labels,
         colors=colors_pie,
@@ -273,7 +273,7 @@ def plot_perspective_comparison_scatter(
         output_dir: Output directory
         intervention_name: Intervention name
     """
-    from src.visualizations import apply_default_style, save_figure
+    from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
     fig, ax = plt.subplots(figsize=(10, 10), dpi=300)

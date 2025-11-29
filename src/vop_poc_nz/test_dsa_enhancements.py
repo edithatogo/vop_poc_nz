@@ -10,12 +10,12 @@ Runs on HPV vaccination intervention to verify:
 
 import os
 
+from .pipeline.analysis import load_parameters
 from .perspective_value_dsa import (
     generate_perspective_value_dsa_table,
     perform_perspective_value_dsa,
     plot_perspective_value_dsa,
 )
-from .pipeline.analysis import load_parameters
 from .profiling import (
     print_profiling_report,
     profile_section,
@@ -32,7 +32,7 @@ reset_profiler()
 
 # Load parameters
 with profile_section("Load Parameters"):
-    params = load_parameters("src/parameters.yaml")
+    params = load_parameters()
     hpv_params = params["hpv_vaccination"]
 
 print("\n✓ Loaded HPV vaccination parameters")

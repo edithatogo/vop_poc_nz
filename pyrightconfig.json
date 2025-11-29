@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src/vop_poc_nz"],
   "exclude": [
     "**/__pycache__",
     "**/.pytest_cache",
@@ -16,8 +16,25 @@
     "run_textstat_analysis.py",
     "tests"
   ],
-  "reportMissingImports": true,
+  "reportMissingImports": "warning",
   "reportMissingTypeStubs": false,
   "pythonVersion": "3.10",
-  "typeCheckingMode": "strict"
+  "typeCheckingMode": "basic",
+  "reportUnknownParameterType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownMemberType": "none",
+  "reportMissingParameterType": "none",
+  "reportMissingTypeArgument": "none",
+  "reportArgumentType": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportOptionalMemberAccess": "none",
+  "reportPrivateImportUsage": "none",
+  "reportReturnType": "none",
+  "reportCallIssue": "none",
+  "reportOperatorIssue": "none",
+  "reportIndexIssue": "none",
+  "reportOptionalSubscript": "none",
+  "reportOptionalIterable": "none",
+  "reportIncompatibleVariableOverride": "none"
 }

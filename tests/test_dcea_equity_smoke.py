@@ -1,4 +1,4 @@
-from src.dcea_equity_analysis import (
+from vop_poc_nz.dcea_equity_analysis import (
     calculate_atkinson_index,
     calculate_gini,
     generate_dcea_results_table,

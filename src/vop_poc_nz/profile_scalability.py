@@ -32,7 +32,7 @@ def run_scalability_test(
     print(f"Sample sizes: {sample_sizes}")
 
     # Load parameters
-    params = load_parameters("src/parameters.yaml")
+    params = load_parameters()
     model_params = params["hpv_vaccination"]  # Use HPV as benchmark
 
     results = {

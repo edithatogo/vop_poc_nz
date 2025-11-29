@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.visualizations import (
+from vop_poc_nz.visualizations import (
     plot_ceac,
     plot_ceaf,
     plot_cost_effectiveness_plane,

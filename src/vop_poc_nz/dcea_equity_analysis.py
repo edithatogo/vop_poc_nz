@@ -607,10 +607,10 @@ def plot_probabilistic_equity_impact_plane_with_delta(
                 eq_col = "equity_weighted_nmb_soc"
             else: # Delta
                 # Calculate delta
-                eff_hs = df.get("inc_nmb_hs", pd.Series(0, index=df.index))
-                eq_hs = df.get("equity_weighted_nmb_hs", pd.Series(0, index=df.index))
-                eff_soc = df.get("inc_nmb_soc", pd.Series(0, index=df.index))
-                eq_soc = df.get("equity_weighted_nmb_soc", pd.Series(0, index=df.index))
+                eff_hs: pd.Series = df.get("inc_nmb_hs", pd.Series(0, index=df.index))  # type: ignore[assignment]
+                eq_hs: pd.Series = df.get("equity_weighted_nmb_hs", pd.Series(0, index=df.index))  # type: ignore[assignment]
+                eff_soc: pd.Series = df.get("inc_nmb_soc", pd.Series(0, index=df.index))  # type: ignore[assignment]
+                eq_soc: pd.Series = df.get("equity_weighted_nmb_soc", pd.Series(0, index=df.index))  # type: ignore[assignment]
 
                 efficiency = eff_soc - eff_hs
                 equity = eq_soc - eq_hs

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from src.visualizations import (
+from vop_poc_nz.visualizations import (
     plot_cumulative_nmb,
     plot_efficiency_frontier,
     plot_equity_efficiency_plane,

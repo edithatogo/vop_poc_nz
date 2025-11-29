@@ -1,11 +1,11 @@
 import pandas as pd
 
-from src.bia_model import bia_to_markdown_table
-from src.cea_model_core import run_cea
-from src.dcea_equity_analysis import run_dcea
-from src.main_analysis import generate_cheers_report
-from src.reporting import generate_comprehensive_report, generate_dcea_results_table
-from src.value_of_information import ProbabilisticSensitivityAnalysis
+from vop_poc_nz.bia_model import bia_to_markdown_table
+from vop_poc_nz.cea_model_core import run_cea
+from vop_poc_nz.dcea_equity_analysis import run_dcea
+from vop_poc_nz.main_analysis import generate_cheers_report
+from vop_poc_nz.reporting import generate_comprehensive_report, generate_dcea_results_table
+from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
 
 def minimal_params():

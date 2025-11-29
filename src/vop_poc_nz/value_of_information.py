@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from scipy.stats import beta, gamma, norm, uniform
+# from scipy.stats import beta, gamma, norm, uniform  # Moved to local import
 
 from .validation import validate_psa_results
 
@@ -58,6 +58,9 @@ class ProbabilisticSensitivityAnalysis:
             for param_name, dist_info in self.parameters.items():
                 dist_type = dist_info["distribution"]
                 params = dist_info["params"]
+                
+                # Local import to avoid hard dependency if not sampling
+                from scipy.stats import beta, gamma, norm, uniform
 
                 if dist_type == "beta":
                     # Beta distribution for probabilities and utilities

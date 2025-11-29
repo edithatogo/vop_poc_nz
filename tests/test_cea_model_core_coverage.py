@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.cea_model_core import (
+from vop_poc_nz.cea_model_core import (
     MarkovModel,
     _calculate_cer,
     _calculate_friction_cost,

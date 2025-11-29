@@ -171,6 +171,12 @@ def perform_one_way_dsa(models, wtp_threshold=50000, n_points=20):
     return results
 
 
+def run_dsa(models, wtp_threshold=50000, n_points=20):
+    """Compatibility wrapper that delegates to ``perform_one_way_dsa``."""
+
+    return perform_one_way_dsa(models, wtp_threshold=wtp_threshold, n_points=n_points)
+
+
 def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/"):
     """
     Create a combined one-way DSA tornado plot (2 rows x N columns).
@@ -379,6 +385,14 @@ def perform_comprehensive_two_way_dsa(
         }
 
     return results
+
+
+def run_two_way_dsa(models, wtp_threshold=50000, n_points=20):
+    """Compatibility wrapper that delegates to ``perform_comprehensive_two_way_dsa``."""
+
+    return perform_comprehensive_two_way_dsa(
+        models, wtp_threshold=wtp_threshold, n_points=n_points
+    )
 
 
 def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures/"):

@@ -10,11 +10,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import numpy as np
 import pandas as pd
 
-from src.bia_model import bia_to_markdown_table, project_bia
-from src.discordance_analysis import calculate_decision_discordance
-from src.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
-from src.reporting import generate_comprehensive_report
-from src.threshold_analysis import run_threshold_analysis
+from vop_poc_nz.bia_model import bia_to_markdown_table, project_bia
+from vop_poc_nz.discordance_analysis import calculate_decision_discordance
+from vop_poc_nz.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
+from vop_poc_nz.reporting import generate_comprehensive_report
+from vop_poc_nz.threshold_analysis import run_threshold_analysis
 
 
 class TestNewFeatures(unittest.TestCase):

@@ -5,7 +5,7 @@ import unittest
 
 import pandas as pd
 
-from src.table_generation import (
+from vop_poc_nz.table_generation import (
     dataframe_to_markdown,
     generate_all_tables,
     generate_bia_tables,

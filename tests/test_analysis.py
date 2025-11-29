@@ -13,14 +13,14 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from src.cea_model_core import (
+from vop_poc_nz.cea_model_core import (
     MarkovModel,
     _calculate_cer,
     _calculate_icer,
     create_parameters_table,
     run_cea,
 )
-from src.value_of_information import (
+from vop_poc_nz.value_of_information import (
     ProbabilisticSensitivityAnalysis,
     calculate_evpi,
 )

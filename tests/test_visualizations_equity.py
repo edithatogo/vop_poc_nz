@@ -1,7 +1,7 @@
 import pandas as pd
 
-from src.dcea_equity_analysis import plot_equity_impact_plane
-from src.visualizations import (
+from vop_poc_nz.dcea_equity_analysis import plot_equity_impact_plane
+from vop_poc_nz.visualizations import (
     plot_equity_efficiency_plane,
     plot_inequality_aversion_sensitivity,
     plot_inequality_staircase,

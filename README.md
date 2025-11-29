@@ -113,7 +113,9 @@ from src.sobol_analysis import SobolAnalyzer
 
 # Load parameters
 import yaml
-with open("src/parameters.yaml") as f:
+from importlib import resources
+
+with resources.files("vop_poc_nz").joinpath("parameters.yaml").open("r") as f:
     params = yaml.safe_load(f)
 
 # Run CEA with subgroups
@@ -147,7 +149,7 @@ print(indices['indices'])
 
 ```
 vop_poc_nz/
-├── src/                          # Source code
+├── src/vop_poc_nz/               # Source package
 │   ├── pipeline/                 # Analysis orchestration
 │   │   ├── analysis.py           # Core pipeline logic
 │   │   └── reporting.py          # Report generation
