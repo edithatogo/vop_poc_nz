@@ -6,12 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-publish:
+  build:
+    name: Build distributions
     runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      contents: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +23,7 @@ jobs:
       - name: Install build tooling
         run: |
           python -m pip install --upgrade pip
-          pip install hatch twine anaconda-client
+          pip install hatch twine
 
       - name: Build distributions
         run: hatch build
@@ -34,41 +31,81 @@ jobs:
       - name: Verify distributions
         run: python -m twine check dist/*
 
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
       - name: Publish to TestPyPI
-        env:
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
-        run: |
-          python -m twine upload --repository testpypi dist/*
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [build, publish-testpypi]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
       - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          python -m twine upload dist/*
+        uses: pypa/gh-action-pypi-publish@release/v1
 
-      - name: Smoke test installation from PyPI
+  smoke-test:
+    name: Smoke test
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Wait for PyPI propagation
+        run: sleep 60
+
+      - name: Test installation
         run: |
-          python -m venv /tmp/smoke-test
-          source /tmp/smoke-test/bin/activate
           pip install vop-poc-nz
           python -c "import vop_poc_nz; print(f'Installed version: {vop_poc_nz.__version__}')"
 
-      - name: Publish to Anaconda
-        if: ${{ secrets.ANACONDA_TOKEN != '' }}
-        env:
-          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-          ANACONDA_USER: ${{ secrets.ANACONDA_USERNAME }}
-        run: |
-          if [ -n "$ANACONDA_API_TOKEN" ] && [ -n "$ANACONDA_USER" ]; then
-            anaconda --token "$ANACONDA_API_TOKEN" upload --user "$ANACONDA_USER" --label main dist/*.whl
-          else
-            echo "Skipping Anaconda upload: secrets not configured"
-          fi
+  github-release:
+    name: Attach artifacts to release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'release'
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
 
       - name: Attach artifacts to GitHub Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*

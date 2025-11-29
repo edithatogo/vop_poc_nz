@@ -2,8 +2,9 @@
 
 [![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
-[![Python](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/vop-poc-nz)](https://pypi.org/project/vop-poc-nz/)
+[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
@@ -247,7 +248,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
 
 ## License
 
-MIT License - see LICENSE file for details
+Apache License 2.0 - see [LICENSE](LICENSE) file for details
 
 ## Citation
 

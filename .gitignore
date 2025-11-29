@@ -113,3 +113,41 @@ data/
 *.xls
 *.docx
 *.pdf
+
+# Debug and temporary files
+debug_*.py
+inspect_*.py
+reproduce_*.py
+check_*.py
+run_*.py
+format_references.py
+generate_presentation.py
+update_methods_table.py
+monitor_ci.py
+*_log.txt
+*_log_*.txt
+full_log.txt
+inspection_output*.txt
+pipeline_run.log
+pytest_error.log
+test_failure_details.log
+
+# Virtual environments
+.venv/
+.venv_*/
+venv/
+
+# Tox
+.tox/
+
+# Ruff cache
+.ruff_cache/
+
+# Snakemake
+.snakemake/
+
+# Benchmarks
+.benchmarks/
+
+# PPTX outputs
+pptx/
