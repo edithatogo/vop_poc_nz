@@ -163,7 +163,9 @@ class TestDSAAnalysisCoverage:
         assert "dsa_results" in results["test_with_ranges"]
         assert "base_nmb_hs" in results["test_with_ranges"]
 
-    def test_perform_one_way_dsa_extended_parameters(self, sample_models_with_extended_dsa_ranges):
+    def test_perform_one_way_dsa_extended_parameters(
+        self, sample_models_with_extended_dsa_ranges
+    ):
         """Test one-way DSA with extended parameters covering all branches."""
         from vop_poc_nz.dsa_analysis import perform_one_way_dsa
 
@@ -203,7 +205,10 @@ class TestDSAAnalysisCoverage:
 
     def test_plot_one_way_dsa_tornado_single_model(self, sample_models):
         """Test tornado plot with a single model."""
-        from vop_poc_nz.dsa_analysis import perform_one_way_dsa, plot_one_way_dsa_tornado
+        from vop_poc_nz.dsa_analysis import (
+            perform_one_way_dsa,
+            plot_one_way_dsa_tornado,
+        )
 
         results = perform_one_way_dsa(sample_models, wtp_threshold=50000, n_points=3)
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -250,14 +255,16 @@ class TestVisualizationsCoverage:
         """Sample PSA DataFrame for visualization tests."""
         np.random.seed(42)
         n = 50
-        return pd.DataFrame({
-            "inc_cost": np.random.normal(5000, 1000, n),
-            "inc_qaly": np.random.normal(0.5, 0.1, n),
-            "cost_sc": np.random.gamma(10, 100, n),
-            "cost_nt": np.random.gamma(15, 100, n),
-            "qaly_sc": np.random.beta(50, 5, n) * 10,
-            "qaly_nt": np.random.beta(55, 5, n) * 10,
-        })
+        return pd.DataFrame(
+            {
+                "inc_cost": np.random.normal(5000, 1000, n),
+                "inc_qaly": np.random.normal(0.5, 0.1, n),
+                "cost_sc": np.random.gamma(10, 100, n),
+                "cost_nt": np.random.gamma(15, 100, n),
+                "qaly_sc": np.random.beta(50, 5, n) * 10,
+                "qaly_nt": np.random.beta(55, 5, n) * 10,
+            }
+        )
 
     def test_plot_ce_plane_basic(self, sample_psa_df):
         """Test basic CE plane plotting."""
@@ -332,14 +339,16 @@ class TestValueOfInformationCoverage:
         """Sample PSA results for VOI tests."""
         np.random.seed(42)
         n = 100
-        return pd.DataFrame({
-            "cost_sc": np.random.gamma(10, 100, n),
-            "cost_nt": np.random.gamma(15, 100, n),
-            "qaly_sc": np.random.beta(50, 5, n) * 10,
-            "qaly_nt": np.random.beta(55, 5, n) * 10,
-            "inc_cost": np.random.normal(500, 100, n),
-            "inc_qaly": np.random.normal(0.5, 0.1, n),
-        })
+        return pd.DataFrame(
+            {
+                "cost_sc": np.random.gamma(10, 100, n),
+                "cost_nt": np.random.gamma(15, 100, n),
+                "qaly_sc": np.random.beta(50, 5, n) * 10,
+                "qaly_nt": np.random.beta(55, 5, n) * 10,
+                "inc_cost": np.random.normal(500, 100, n),
+                "inc_qaly": np.random.normal(0.5, 0.1, n),
+            }
+        )
 
     def test_calculate_evpi_edge_cases(self, sample_psa_results):
         """Test EVPI with edge cases."""
@@ -430,7 +439,13 @@ class TestValueOfInformationCoverage:
             base_qaly = params.get("qaly", 10)
             if intervention_type == "new_treatment":
                 extras = {"productivity_gain": 500, "caregiver_hours_saved": 120}
-                return base_cost * 1.5, base_qaly * 1.1, base_cost * 1.2, base_qaly * 1.15, extras
+                return (
+                    base_cost * 1.5,
+                    base_qaly * 1.1,
+                    base_cost * 1.2,
+                    base_qaly * 1.15,
+                    extras,
+                )
             else:
                 extras = {"productivity_gain": 0, "caregiver_hours_saved": 0}
                 return base_cost, base_qaly, base_cost * 0.9, base_qaly, extras
@@ -466,12 +481,14 @@ class TestValidationCoverage:
         from vop_poc_nz.validation import validate_psa_results
 
         # DataFrame with required columns
-        df = pd.DataFrame({
-            "qaly_sc": [1.0, 2.0, 3.0],
-            "qaly_nt": [1.5, 2.5, 3.5],
-            "cost_sc": [100.0, 200.0, 300.0],
-            "cost_nt": [150.0, 250.0, 350.0],
-        })
+        df = pd.DataFrame(
+            {
+                "qaly_sc": [1.0, 2.0, 3.0],
+                "qaly_nt": [1.5, 2.5, 3.5],
+                "cost_sc": [100.0, 200.0, 300.0],
+                "cost_nt": [150.0, 250.0, 350.0],
+            }
+        )
 
         result = validate_psa_results(df)
         assert result is not None
@@ -498,7 +515,7 @@ class TestValidationCoverage:
             "transition_matrices": {
                 "standard_care": [[0.9, 0.1], [0, 1]],
                 "new_treatment": [[0.95, 0.05], [0, 1]],
-            }
+            },
         }
         # Should not raise
         validate_transition_matrices(valid_params)
@@ -512,7 +529,7 @@ class TestValidationCoverage:
             "transition_matrices": {
                 "standard_care": [[0.9, 0.2], [0, 1]],  # Row sums to 1.1
                 "new_treatment": [[0.95, 0.05], [0, 1]],
-            }
+            },
         }
         with pytest.raises(ValueError, match="rows must sum to 1.0"):
             validate_transition_matrices(invalid_params)
@@ -526,7 +543,7 @@ class TestValidationCoverage:
             "transition_matrices": {
                 "standard_care": [[0.9, 0.1], [0, 1]],  # Only 2x2 matrix
                 "new_treatment": [[0.95, 0.05], [0, 1]],
-            }
+            },
         }
         with pytest.raises(ValueError, match="must be square"):
             validate_transition_matrices(invalid_params)
@@ -540,7 +557,7 @@ class TestValidationCoverage:
             "transition_matrices": {
                 "standard_care": [[0.9, 0.1], [-0.1, 1.1]],  # Negative entry
                 "new_treatment": [[0.95, 0.05], [0, 1]],
-            }
+            },
         }
         with pytest.raises(ValueError, match="negative entries"):
             validate_transition_matrices(invalid_params)
@@ -609,6 +626,7 @@ class TestValidationCoverage:
         }
         # Should warn but not raise
         import warnings
+
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             validate_costs_and_qalys(params_with_savings)
@@ -677,7 +695,9 @@ class TestClusterAnalysisCoverage:
         analyzer = ClusterAnalysis(uniform_results, sample_models)
         # Just test that it doesn't crash - clustering identical points is a special case
         try:
-            _ = analyzer.perform_clustering("Test_Intervention", n_clusters_range=range(2, 4))
+            _ = analyzer.perform_clustering(
+                "Test_Intervention", n_clusters_range=range(2, 4)
+            )
         except Exception:
             pass  # Expected when all data points are identical
 
@@ -894,7 +914,11 @@ class TestCEAModelValidationBranches:
                     "new_treatment": [200, 2500, 0],
                 },
                 "societal": {
-                    "standard_care": [0, 2000, 0],  # List, not dict with friction_cost_params
+                    "standard_care": [
+                        0,
+                        2000,
+                        0,
+                    ],  # List, not dict with friction_cost_params
                     "new_treatment": [0, 1000, 0],
                 },
             },

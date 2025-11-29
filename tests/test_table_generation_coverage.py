@@ -33,7 +33,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
                 "initial_population": [900, 100, 0],
                 "costs": {
                     "health_system": {"new_treatment": [100, 200, 0]},
-                    "societal": {"new_treatment": [50, 100, 0]}
+                    "societal": {"new_treatment": [50, 100, 0]},
                 },
                 "qalys": {"new_treatment": [1.0, 0.7, 0.0]},
                 "dsa_parameter_ranges": {
@@ -42,16 +42,20 @@ class TestTableGenerationCoverage(unittest.TestCase):
                 "treatment_effect": {"value": 0.8, "source": "Trial"},
                 "subgroups": {
                     "Maori": {"population_size": 1000, "weight": 1.5, "param_x": 10},
-                    "Non-Maori": {"population_size": 5000, "weight": 1.0}
+                    "Non-Maori": {"population_size": 5000, "weight": 1.0},
                 },
-                "bia_population": {"total_population": 5000000, "eligible_proportion": 0.01}
+                "bia_population": {
+                    "total_population": 5000000,
+                    "eligible_proportion": 0.01,
+                },
             },
             "Intervention_B": {
                 # Missing treatment_effect to test else branch
                 "states": ["A"],
-                "initial_population": [0], # Test zero pop
-                "costs": {}, "qalys": {}
-            }
+                "initial_population": [0],  # Test zero pop
+                "costs": {},
+                "qalys": {},
+            },
         }
 
         # Dummy Results
@@ -59,24 +63,34 @@ class TestTableGenerationCoverage(unittest.TestCase):
             "intervention_results": {
                 "Intervention_A": {
                     "health_system": {
-                        "cost_new_treatment": 1000, "qalys_new_treatment": 10,
-                        "incremental_cost": 500, "incremental_qalys": 0.5,
-                        "icer": 1000, "incremental_nmb": 20000
+                        "cost_new_treatment": 1000,
+                        "qalys_new_treatment": 10,
+                        "incremental_cost": 500,
+                        "incremental_qalys": 0.5,
+                        "icer": 1000,
+                        "incremental_nmb": 20000,
                     },
                     "societal": {
                         "human_capital": {
-                            "cost_new_treatment": 1200, "qalys_new_treatment": 10,
-                            "incremental_cost": 600, "incremental_qalys": 0.5,
-                            "icer": 1200, "incremental_nmb": 19000
+                            "cost_new_treatment": 1200,
+                            "qalys_new_treatment": 10,
+                            "incremental_cost": 600,
+                            "incremental_qalys": 0.5,
+                            "icer": 1200,
+                            "incremental_nmb": 19000,
                         }
-                    }
+                    },
                 }
             },
             "dsa_analysis": {
                 "1_way": {
                     "Intervention_A": {
                         "health_system": {
-                            "param_1": {"low_input": 0.8, "high_input": 1.2, "range": 5000}
+                            "param_1": {
+                                "low_input": 0.8,
+                                "high_input": 1.2,
+                                "range": 5000,
+                            }
                         }
                     }
                 }
@@ -85,34 +99,46 @@ class TestTableGenerationCoverage(unittest.TestCase):
                 "Intervention_A": {
                     "health_system": {
                         "incremental_costs": [400, 600],
-                        "incremental_qalys": [0.4, 0.6]
+                        "incremental_qalys": [0.4, 0.6],
                     }
                 }
             },
             "dcea_equity_analysis": {
                 "Intervention_A": {
                     "societal": {
-                        "distribution_of_net_health_benefits": {"Maori": 100, "Non-Maori": 200},
+                        "distribution_of_net_health_benefits": {
+                            "Maori": 100,
+                            "Non-Maori": 200,
+                        },
                         "outcomes_by_group": {
-                            "Maori": {"incremental_qalys": 0.1, "incremental_costs": 100, "net_health_benefit": 50}
+                            "Maori": {
+                                "incremental_qalys": 0.1,
+                                "incremental_costs": 100,
+                                "net_health_benefit": 50,
+                            }
                         },
                         "equity_metrics": {
                             "atkinson_index": 0.1,
                             "health_achievement_index": 0.9,
-                            "equity_weighted_nmb": 25000
-                        }
+                            "equity_weighted_nmb": 25000,
+                        },
                     },
                     "health_system": {
-                        "distribution_of_net_health_benefits": {"Maori": 80, "Non-Maori": 180}
-                    }
+                        "distribution_of_net_health_benefits": {
+                            "Maori": 80,
+                            "Non-Maori": 180,
+                        }
+                    },
                 }
             },
             "bia_results": {
-                "Intervention_A": pd.DataFrame({
-                    "year": [1, 2, 3, 4, 5],
-                    "gross_cost": [100, 100, 100, 100, 100],
-                    "net_cost": [80, 80, 80, 80, 80]
-                })
+                "Intervention_A": pd.DataFrame(
+                    {
+                        "year": [1, 2, 3, 4, 5],
+                        "gross_cost": [100, 100, 100, 100, 100],
+                        "net_cost": [80, 80, 80, 80, 80],
+                    }
+                )
             },
             "voi_analysis": {
                 "Intervention_A": {
@@ -120,12 +146,12 @@ class TestTableGenerationCoverage(unittest.TestCase):
                         "population_evpi": 500000,
                         "evppi_by_parameter_group": {
                             "Group A": [10, 20],
-                            "Group B": 15.5 # Scalar case
+                            "Group B": 15.5,  # Scalar case
                         },
-                        "wtp_thresholds": [20000, 50000]
+                        "wtp_thresholds": [20000, 50000],
                     }
                 }
-            }
+            },
         }
 
     def tearDown(self):
@@ -178,9 +204,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
 
         # Test list of dicts input
         results_list = {
-            "bia_results": {
-                "Int_B": [{"year": 1, "gross_cost": 10, "net_cost": 5}]
-            }
+            "bia_results": {"Int_B": [{"year": 1, "gross_cost": 10, "net_cost": 5}]}
         }
         tables_list = generate_bia_tables(results_list, self.test_dir)
         self.assertIn("Table_24_Annual_Budget_Impact", tables_list)
@@ -201,7 +225,7 @@ class TestTableGenerationCoverage(unittest.TestCase):
             "voi_analysis": {
                 "Int_Legacy": {
                     "evpi": {"thresholds": [50000], "evpi": [1000]},
-                    "evppi": {"Param": 100}
+                    "evppi": {"Param": 100},
                 }
             }
         }
@@ -219,7 +243,10 @@ class TestTableGenerationCoverage(unittest.TestCase):
     def test_generate_all_tables(self):
         tables = generate_all_tables(self.results, self.params, self.test_dir)
         self.assertTrue(len(tables) > 0)
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, "generated_tables.md")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.test_dir, "generated_tables.md"))
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

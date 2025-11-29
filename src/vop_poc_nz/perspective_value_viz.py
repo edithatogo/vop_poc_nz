@@ -7,15 +7,13 @@ Functions for visualizing and reporting the comprehensive value of perspective a
 - Decision discordance visualization
 """
 
-from typing import Dict
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 
 def plot_perspective_value_dashboard(
-    vop_results: Dict,
+    vop_results: dict,
     output_dir: str = "output/figures/",
     intervention_name: str = "Intervention",
 ):
@@ -102,7 +100,7 @@ def plot_perspective_value_dashboard(
         ax2.text(
             bar.get_x() + bar.get_width() / 2,
             height,
-            f"${height/1e6:.2f}M" if abs(height) >= 1e6 else f"${height/1e3:.0f}K",
+            f"${height / 1e6:.2f}M" if abs(height) >= 1e6 else f"${height / 1e3:.0f}K",
             ha="center",
             va="bottom" if height > 0 else "top",
             fontweight="bold",
@@ -141,7 +139,7 @@ def plot_perspective_value_dashboard(
     )
 
     ax3.set_title(
-        f'Decision Concordance\n({vop_results["proportion_discordant"]*100:.1f}% Discordant)',
+        f"Decision Concordance\n({vop_results['proportion_discordant'] * 100:.1f}% Discordant)",
         fontsize=13,
         fontweight="bold",
     )
@@ -153,21 +151,21 @@ def plot_perspective_value_dashboard(
     table_data = [
         [
             "EVP (Opportunity Loss)",
-            f'${vop_results["expected_value_of_perspective"]:,.0f}',
+            f"${vop_results['expected_value_of_perspective']:,.0f}",
         ],
-        ["Perspective Premium", f'${vop_results["perspective_premium"]:,.0f}'],
-        ["Discordance Cost", f'${vop_results["decision_discordance_cost"]:,.0f}'],
-        ["Information Value", f'${vop_results["information_value"]:,.0f}'],
+        ["Perspective Premium", f"${vop_results['perspective_premium']:,.0f}"],
+        ["Discordance Cost", f"${vop_results['decision_discordance_cost']:,.0f}"],
+        ["Information Value", f"${vop_results['information_value']:,.0f}"],
         ["", ""],
-        ["Correlation (HS ↔ Soc)", f'{vop_results["correlation_hs_soc"]:.3f}'],
-        ["Variance (HS)", f'${vop_results["variance_health_system"]:,.0f}'],
-        ["Variance (Societal)", f'${vop_results["variance_societal"]:,.0f}'],
+        ["Correlation (HS ↔ Soc)", f"{vop_results['correlation_hs_soc']:.3f}"],
+        ["Variance (HS)", f"${vop_results['variance_health_system']:,.0f}"],
+        ["Variance (Societal)", f"${vop_results['variance_societal']:,.0f}"],
         ["", ""],
         [
             "Chosen Perspective",
             vop_results["chosen_perspective"].replace("_", " ").title(),
         ],
-        ["WTP Threshold", f'${vop_results["wtp_threshold"]:,}/QALY'],
+        ["WTP Threshold", f"${vop_results['wtp_threshold']:,}/QALY"],
     ]
 
     table = ax4.table(
@@ -206,7 +204,7 @@ def plot_perspective_value_dashboard(
 
 
 def generate_perspective_value_table(
-    vop_results: Dict, intervention_name: str = "Intervention"
+    vop_results: dict, intervention_name: str = "Intervention"
 ) -> pd.DataFrame:
     """
     Generate formatted table of perspective value metrics for manuscript.

@@ -6,7 +6,7 @@ It restores the full plotting suite after refactoring while keeping a single imp
 """
 
 import os
-from typing import Dict, List, Optional
+from typing import Optional
 
 import matplotlib
 
@@ -20,6 +20,7 @@ import seaborn as sns
 
 try:
     from graphviz import Digraph
+
     GRAPHVIZ_AVAILABLE = True
 except ImportError:
     GRAPHVIZ_AVAILABLE = False
@@ -112,7 +113,7 @@ def build_filename_base(
 
 
 def plot_decision_tree(  # pragma: no cover - requires graphviz rendering
-    model_name: str, params: Dict, output_dir: str = "output/figures/"
+    model_name: str, params: dict, output_dir: str = "output/figures/"
 ):
     """
     Generates a decision tree diagram for a given intervention.
@@ -207,7 +208,7 @@ def plot_cost_effectiveness_plane(
 
 
 def plot_comparative_ce_plane(
-    all_results, output_dir="output/figures/", psa_results: Optional[Dict] = None
+    all_results, output_dir="output/figures/", psa_results: Optional[dict] = None
 ):
     """
     Create side-by-side cost-effectiveness plane plots (Health System vs Societal).
@@ -241,7 +242,7 @@ def plot_comparative_ce_plane(
                     if "inc_cost_hs" in psa_df.columns:
                         scatter_data = {
                             "inc_cost": psa_df["inc_cost_hs"],
-                            "inc_qaly": psa_df["inc_qaly_hs"]
+                            "inc_qaly": psa_df["inc_qaly_hs"],
                         }
 
                 # Fallback to deterministic
@@ -255,13 +256,13 @@ def plot_comparative_ce_plane(
                     if "inc_cost_soc" in psa_df.columns:
                         scatter_data = {
                             "inc_cost": psa_df["inc_cost_soc"],
-                            "inc_qaly": psa_df["inc_qaly_soc"]
+                            "inc_qaly": psa_df["inc_qaly_soc"],
                         }
                     # Backward compatibility if _soc columns missing but inc_cost exists (legacy)
                     elif "inc_cost" in psa_df.columns:
-                         scatter_data = {
+                        scatter_data = {
                             "inc_cost": psa_df["inc_cost"],
-                            "inc_qaly": psa_df["inc_qaly"]
+                            "inc_qaly": psa_df["inc_qaly"],
                         }
 
                 # Fallback to deterministic
@@ -308,7 +309,7 @@ def plot_comparative_ce_plane(
 
 
 def plot_comparative_ceac(
-    psa_results: Dict[str, pd.DataFrame], output_dir: Path
+    psa_results: dict[str, pd.DataFrame], output_dir: Path
 ) -> None:
     """
     Plot Comparative Cost-Effectiveness Acceptability Curves (CEAC).
@@ -324,11 +325,44 @@ def plot_comparative_ceac(
     # Define styles for distinct lines to handle overlaps
     # Strategy: Vary width and style so underlying lines are visible
     styles = {
-        "HPV Vaccination": {"color": "#1f77b4", "linestyle": "-", "linewidth": 4, "alpha": 0.4, "label": "HPV Vaccination"},
-        "Smoking Cessation": {"color": "#ff7f0e", "linestyle": "--", "linewidth": 2.5, "alpha": 0.9, "label": "Smoking Cessation"},
-        "Hepatitis C Therapy": {"color": "#2ca02c", "linestyle": "-.", "linewidth": 2.5, "alpha": 0.9, "label": "Hepatitis C Therapy"},
-        "Childhood Obesity Prevention": {"color": "#d62728", "linestyle": ":", "linewidth": 2.5, "alpha": 0.9, "label": "Childhood Obesity"},
-        "Housing Insulation": {"color": "#9467bd", "linestyle": "-", "linewidth": 1.5, "marker": "o", "markevery": 10, "markersize": 5, "alpha": 0.9, "label": "Housing Insulation"},
+        "HPV Vaccination": {
+            "color": "#1f77b4",
+            "linestyle": "-",
+            "linewidth": 4,
+            "alpha": 0.4,
+            "label": "HPV Vaccination",
+        },
+        "Smoking Cessation": {
+            "color": "#ff7f0e",
+            "linestyle": "--",
+            "linewidth": 2.5,
+            "alpha": 0.9,
+            "label": "Smoking Cessation",
+        },
+        "Hepatitis C Therapy": {
+            "color": "#2ca02c",
+            "linestyle": "-.",
+            "linewidth": 2.5,
+            "alpha": 0.9,
+            "label": "Hepatitis C Therapy",
+        },
+        "Childhood Obesity Prevention": {
+            "color": "#d62728",
+            "linestyle": ":",
+            "linewidth": 2.5,
+            "alpha": 0.9,
+            "label": "Childhood Obesity",
+        },
+        "Housing Insulation": {
+            "color": "#9467bd",
+            "linestyle": "-",
+            "linewidth": 1.5,
+            "marker": "o",
+            "markevery": 10,
+            "markersize": 5,
+            "alpha": 0.9,
+            "label": "Housing Insulation",
+        },
     }
     # Fallback style for others
     default_style = {"linestyle": "-", "linewidth": 1, "alpha": 0.7}
@@ -343,15 +377,30 @@ def plot_comparative_ceac(
 
             # Determine correct columns based on suffix
             if perspective_suffix == "_hs":
-                cols = {"q_nt": "qaly_nt_hs", "q_sc": "qaly_sc_hs", "c_nt": "cost_nt_hs", "c_sc": "cost_sc_hs"}
-            else: # _soc
-                cols = {"q_nt": "qaly_nt_soc", "q_sc": "qaly_sc_soc", "c_nt": "cost_nt_soc", "c_sc": "cost_sc_soc"}
+                cols = {
+                    "q_nt": "qaly_nt_hs",
+                    "q_sc": "qaly_sc_hs",
+                    "c_nt": "cost_nt_hs",
+                    "c_sc": "cost_sc_hs",
+                }
+            else:  # _soc
+                cols = {
+                    "q_nt": "qaly_nt_soc",
+                    "q_sc": "qaly_sc_soc",
+                    "c_nt": "cost_nt_soc",
+                    "c_sc": "cost_sc_soc",
+                }
 
             # Check if columns exist (fallback to legacy if needed)
             if cols["q_nt"] not in df.columns:
                 if perspective_suffix == "_soc" and "qaly_nt" in df.columns:
                     # Legacy fallback for societal
-                    cols = {"q_nt": "qaly_nt", "q_sc": "qaly_sc", "c_nt": "cost_nt", "c_sc": "cost_sc"}
+                    cols = {
+                        "q_nt": "qaly_nt",
+                        "q_sc": "qaly_sc",
+                        "c_nt": "cost_nt",
+                        "c_sc": "cost_sc",
+                    }
                 else:
                     print(f"Skipping {model_name} for {title} (missing columns)")
                     continue
@@ -368,11 +417,7 @@ def plot_comparative_ceac(
 
             print(f"  {model_name}: Max Prob = {max(probs):.2%}")
 
-            ax.plot(
-                wtp_values,
-                probs,
-                **style
-            )
+            ax.plot(wtp_values, probs, **style)
 
         ax.set_title(title, fontsize=14, fontweight="bold", pad=15)
         ax.set_xlabel("Willingness-to-Pay Threshold ($/QALY)", fontsize=12)
@@ -381,7 +426,9 @@ def plot_comparative_ceac(
 
         # Add 50k line
         ax.axvline(50000, color="gray", linestyle=":", alpha=0.5)
-        ax.text(51000, 0.05, "NZ Threshold ($50k)", fontsize=8, color="gray", rotation=90)
+        ax.text(
+            51000, 0.05, "NZ Threshold ($50k)", fontsize=8, color="gray", rotation=90
+        )
 
     # Plot Health System Perspective
     plot_perspective(ax1, "_hs", "Health System Perspective")
@@ -392,10 +439,17 @@ def plot_comparative_ceac(
 
     # Add single legend
     handles, labels = ax1.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, fontsize=12)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=3,
+        fontsize=12,
+    )
 
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15) # Make room for legend
+    plt.subplots_adjust(bottom=0.15)  # Make room for legend
 
     save_path = output_dir / "ceac_comparative.png"
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -619,7 +673,7 @@ def plot_comparative_evpi(
                 else:
                     print(f"Skipping {model_name} for HS EVPI (missing columns)")
                     continue
-            else: # societal
+            else:  # societal
                 if "qaly_sc_soc" in df_calc.columns:
                     df_calc["qaly_sc"] = df_calc["qaly_sc_soc"]
                     df_calc["cost_sc"] = df_calc["cost_sc_soc"]
@@ -637,11 +691,7 @@ def plot_comparative_evpi(
                 print(f"  {model_name} ({perspective}): EVPI is all zero.")
 
             ax.plot(
-                wtp_thresholds,
-                evpi_values,
-                label=model_name,
-                linewidth=2,
-                alpha=0.8
+                wtp_thresholds, evpi_values, label=model_name, linewidth=2, alpha=0.8
             )
 
         ax.set_xlabel("Willingness-To-Pay Threshold ($/QALY)", fontsize=12)
@@ -655,10 +705,17 @@ def plot_comparative_evpi(
 
     # Add single legend
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, fontsize=12)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=3,
+        fontsize=12,
+    )
 
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.15) # Make room for legend
+    plt.subplots_adjust(bottom=0.15)  # Make room for legend
 
     save_figure(
         fig,
@@ -788,7 +845,7 @@ def plot_value_of_perspective(
 def plot_pop_evpi(
     all_results,
     wtp_thresholds,
-    population_sizes: Dict[str, int],
+    population_sizes: dict[str, int],
     output_dir="output/figures/",
     perspective: Optional[str] = None,
 ):
@@ -907,10 +964,14 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
             # Suffix is _HS or _Soc
             if key.endswith("_HS"):
                 perspective = "Health System"
-                group_name = key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+                group_name = (
+                    key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+                )
             elif key.endswith("_Soc"):
                 perspective = "Societal"
-                group_name = key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+                group_name = (
+                    key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+                )
             else:
                 # Fallback for old keys or generic ones
                 perspective = "Societal"
@@ -921,17 +982,22 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
             # Or specific ones like "Health System Costs"
 
             # Let's simplify: Show "Cost Parameters" and "QALY Parameters" for each intervention
-            if "Cost Parameters" not in group_name and "QALY Parameters" not in group_name:
+            if (
+                "Cost Parameters" not in group_name
+                and "QALY Parameters" not in group_name
+            ):
                 continue
 
             for wtp, val in zip(wtp_thresholds, values):
-                data_rows.append({
-                    "Intervention": model_name,
-                    "Perspective": perspective,
-                    "Parameter Group": group_name,
-                    "WTP": wtp,
-                    "EVPPI": val
-                })
+                data_rows.append(
+                    {
+                        "Intervention": model_name,
+                        "Perspective": perspective,
+                        "Parameter Group": group_name,
+                        "WTP": wtp,
+                        "EVPPI": val,
+                    }
+                )
 
     if not data_rows:
         print("No EVPPI data rows extracted.")
@@ -965,7 +1031,7 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
         subset = df[df["Perspective"] == perspective]
 
         if subset.empty:
-            ax.text(0.5, 0.5, "No Data", ha='center', va='center')
+            ax.text(0.5, 0.5, "No Data", ha="center", va="center")
             ax.set_title(f"{perspective} Perspective")
             continue
 
@@ -985,7 +1051,7 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
                         label=f"{intervention} ({group})",
                         color=c,
                         linestyle=linestyles.get(group, "-"),
-                        linewidth=2
+                        linewidth=2,
                     )
 
         ax.set_title(f"{perspective} Perspective", fontsize=14, fontweight="bold")
@@ -993,7 +1059,9 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
         ax.grid(True, alpha=0.3)
 
         # Format axis labels
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        ax.xaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+        )
 
     ax1.set_ylabel("EVPPI ($)", fontsize=12)
     ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
@@ -1006,30 +1074,39 @@ def plot_comparative_evppi(voi_results, output_dir="output/figures/"):
     legend_elements = []
     # Interventions
     # Use an invisible patch for the title
-    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Interventions:}$'))
+    legend_elements.append(mpatches.Patch(color="none", label=r"$\bf{Interventions:}$"))
     for intervention in interventions:
-        legend_elements.append(Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention))
+        legend_elements.append(
+            Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention)
+        )
 
     # Spacing
-    legend_elements.append(mpatches.Patch(color='none', label=' '))
+    legend_elements.append(mpatches.Patch(color="none", label=" "))
 
     # Parameter Groups
-    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Parameters:}$'))
-    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cost Parameters'))
-    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='--', label='QALY Parameters'))
+    legend_elements.append(mpatches.Patch(color="none", label=r"$\bf{Parameters:}$"))
+    legend_elements.append(
+        Line2D([0], [0], color="black", lw=2, linestyle="-", label="Cost Parameters")
+    )
+    legend_elements.append(
+        Line2D([0], [0], color="black", lw=2, linestyle="--", label="QALY Parameters")
+    )
 
     # Place legend below the plots
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+    fig.legend(
+        handles=legend_elements,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=4,
+        frameon=False,
+    )
 
-    plt.tight_layout(rect=[0, 0.05, 1, 0.95]) # Adjust for suptitle and legend
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])  # Adjust for suptitle and legend
     save_figure(
         fig,
         output_dir,
         "expected_value_partial_perfect_information_comparative",
     )
-
-
-
 
 
 def plot_comparative_two_way_dsa(comparative_results, output_dir="output/figures/"):
@@ -1487,11 +1564,8 @@ def plot_comparative_clusters(cluster_results, output_dir="output/figures/"):
 # ---------------------------------------------------------------------------
 
 
-
-
-
 def plot_cost_qaly_breakdown(
-    cost_qaly_data: Dict[str, Dict[str, float]],
+    cost_qaly_data: dict[str, dict[str, float]],
     output_dir: str = "output/figures/",
     intervention_name: str = "Intervention",
 ):
@@ -1510,7 +1584,7 @@ def plot_cost_qaly_breakdown(
         return
 
     apply_default_style()
-    categories: List[str] = []
+    categories: list[str] = []
     for arm in cost_qaly_data.values():
         categories.extend(arm.keys())
     categories = sorted(set(categories))
@@ -1549,8 +1623,8 @@ def plot_cost_qaly_breakdown(
 
 
 def plot_density_ce_plane(
-    inc_costs: List[float],
-    inc_qalys: List[float],
+    inc_costs: list[float],
+    inc_qalys: list[float],
     wtp_threshold: float = 50000,
     output_dir: str = "output/figures/",
     use_hexbin: bool = True,
@@ -1728,13 +1802,10 @@ def plot_subgroup_forest(
         )
 
 
-
-
-
 def plot_efficiency_frontier(
-    costs: List[float],
-    qalys: List[float],
-    strategy_names: List[str],
+    costs: list[float],
+    qalys: list[float],
+    strategy_names: list[str],
     output_dir: str = "output/figures/",
 ):
     """
@@ -1779,7 +1850,7 @@ def plot_efficiency_frontier(
 
 
 def plot_cumulative_nmb(
-    nmb_per_cycle: List[float],
+    nmb_per_cycle: list[float],
     output_dir: str = "output/figures/",
     wtp_label: str = "$/QALY",
 ):
@@ -1818,7 +1889,7 @@ def plot_cumulative_nmb(
 
 def plot_scenario_waterfall(
     base_value: float,
-    scenarios: Dict[str, float],
+    scenarios: dict[str, float],
     output_dir: str = "output/figures/",
     metric_label: str = "ICER",
 ):
@@ -1851,7 +1922,7 @@ def plot_scenario_waterfall(
 
 
 def plot_psa_convergence(
-    values: List[float], output_dir: str = "output/figures/", metric_label: str = "ICER"
+    values: list[float], output_dir: str = "output/figures/", metric_label: str = "ICER"
 ):
     """
     Plot running mean of a PSA metric (ICER or NMB) to show convergence.
@@ -1878,12 +1949,12 @@ def plot_psa_convergence(
 
 
 def plot_model_calibration(
-    years: List[int],
-    observed_mean: List[float],
-    observed_ci: Optional[List[float]],
-    predicted_mean: List[float],
-    predicted_lower: Optional[List[float]],
-    predicted_upper: Optional[List[float]],
+    years: list[int],
+    observed_mean: list[float],
+    observed_ci: Optional[list[float]],
+    predicted_mean: list[float],
+    predicted_lower: Optional[list[float]],
+    predicted_upper: Optional[list[float]],
     output_dir: str = "output/figures/",
     metric_label: str = "Events",
     use_plotnine: bool = False,
@@ -2016,8 +2087,8 @@ def plot_rankogram(
 
 
 def plot_price_acceptability_curve(
-    wtp_range: List[float],
-    break_even_prices: List[float],
+    wtp_range: list[float],
+    break_even_prices: list[float],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2039,7 +2110,7 @@ def plot_price_acceptability_curve(
 
 
 def plot_resource_constraint(
-    annual_resource_use: List[float],
+    annual_resource_use: list[float],
     capacity_limit: float,
     output_dir: str = "output/figures/",
 ):
@@ -2076,7 +2147,7 @@ def plot_resource_constraint(
 
 
 def plot_expected_loss_curve(
-    psa_nmb_by_wtp: Dict[float, pd.DataFrame], output_dir: str = "output/figures/"
+    psa_nmb_by_wtp: dict[float, pd.DataFrame], output_dir: str = "output/figures/"
 ):
     """
     Expected opportunity loss vs WTP.
@@ -2110,9 +2181,9 @@ def plot_expected_loss_curve(
 
 
 def plot_ly_vs_qaly(
-    strategies: List[str],
-    ly_gains: List[float],
-    utility_gains: List[float],
+    strategies: list[str],
+    ly_gains: list[float],
+    utility_gains: list[float],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2139,9 +2210,9 @@ def plot_ly_vs_qaly(
 
 
 def plot_decision_reversal_matrix(
-    hs_nmb: List[float],
-    soc_nmb: List[float],
-    strategy_names: List[str],
+    hs_nmb: list[float],
+    soc_nmb: list[float],
+    strategy_names: list[str],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2195,7 +2266,7 @@ def plot_decision_reversal_matrix(
 
 def plot_societal_drivers(
     intervention_name: str,
-    drivers: Dict[str, float],
+    drivers: dict[str, float],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2221,9 +2292,9 @@ def plot_societal_drivers(
 
 
 def plot_evp_curve(
-    wtp_values: List[float],
-    hs_nmb: Dict[str, List[float]],
-    soc_nmb: Dict[str, List[float]],
+    wtp_values: list[float],
+    hs_nmb: dict[str, list[float]],
+    soc_nmb: dict[str, list[float]],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2255,7 +2326,7 @@ def plot_evp_curve(
 
 def plot_structural_tornado(
     base_nmb: float,
-    scenario_ranges: Dict[str, tuple],
+    scenario_ranges: dict[str, tuple],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2302,7 +2373,7 @@ def plot_structural_tornado(
 
 
 def compose_dashboard(
-    image_paths: List[str],
+    image_paths: list[str],
     output_dir: str = "output/figures/",
     filename_base: str = "dashboard",
     ncols: int = 2,
@@ -2358,7 +2429,7 @@ def compose_dashboard(
     # Create canvas
     dashboard_w = ncols * cell_w
     dashboard_h = nrows * cell_h
-    dashboard = Image.new('RGB', (dashboard_w, dashboard_h), 'white')
+    dashboard = Image.new("RGB", (dashboard_w, dashboard_h), "white")
     draw = ImageDraw.Draw(dashboard)
 
     # Try to load a font, fallback to default
@@ -2419,7 +2490,7 @@ def compose_bia_dashboard(output_dir: str = "output/figures/"):
 
 
 def compose_equity_dashboard(
-    intervention_names: List[str], output_dir: str = "output/figures/"
+    intervention_names: list[str], output_dir: str = "output/figures/"
 ):
     """Compose Equity/DCEA dashboard across interventions."""
     images = []
@@ -2441,9 +2512,9 @@ def compose_equity_dashboard(
 
 
 def plot_survival_gof(
-    km_time: List[float],
-    km_survival: List[float],
-    fitted_models: Dict[str, Dict[str, List[float]]],
+    km_time: list[float],
+    km_survival: list[float],
+    fitted_models: dict[str, dict[str, list[float]]],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2474,9 +2545,9 @@ def plot_survival_gof(
 
 
 def plot_equity_efficiency_plane(
-    strategies: List[str],
-    efficiency_gains: List[float],
-    equity_gains: List[float],
+    strategies: list[str],
+    efficiency_gains: list[float],
+    equity_gains: list[float],
     output_dir: str = "output/figures/",
 ):
     """Equity-Efficiency impact plane."""
@@ -2501,7 +2572,7 @@ def plot_equity_efficiency_plane(
 
 
 def plot_inequality_staircase(
-    stages: List[str], relative_risks: List[float], output_dir: str = "output/figures/"
+    stages: list[str], relative_risks: list[float], output_dir: str = "output/figures/"
 ):
     """Staircase of inequality across pathway stages."""
     if not stages or not relative_risks:  # pragma: no cover - guard
@@ -2521,8 +2592,8 @@ def plot_inequality_staircase(
 
 
 def plot_financial_risk_protection(
-    strategies: List[str],
-    poverty_cases_averted: List[float],
+    strategies: list[str],
+    poverty_cases_averted: list[float],
     output_dir: str = "output/figures/",
 ):
     """Financial risk protection (ECEA) plot."""
@@ -2540,10 +2611,10 @@ def plot_financial_risk_protection(
 
 
 def plot_affordability_ribbon(
-    years: List[int],
-    mean: List[float],
-    lower: List[float],
-    upper: List[float],
+    years: list[int],
+    mean: list[float],
+    lower: list[float],
+    upper: list[float],
     output_dir: str = "output/figures/",
     intervention: Optional[str] = None,
     perspective: Optional[str] = None,
@@ -2575,8 +2646,8 @@ def plot_affordability_ribbon(
 
 
 def plot_threshold_crossing(
-    param_range: List[float],
-    nmb_values: List[float],
+    param_range: list[float],
+    nmb_values: list[float],
     param_name: str,
     output_dir: str = "output/figures/",
 ):
@@ -2629,7 +2700,7 @@ def plot_threshold_crossing(
 
 def plot_structural_waterfall(
     base_value: float,
-    scenarios: Dict[str, float],
+    scenarios: dict[str, float],
     output_dir: str = "output/figures/",
     metric_label: str = "ICER",
 ):
@@ -2638,9 +2709,9 @@ def plot_structural_waterfall(
 
 
 def plot_net_cash_flow_waterfall(
-    investment_costs: List[float],
-    cost_offsets: List[float],
-    years: List[int],
+    investment_costs: list[float],
+    cost_offsets: list[float],
+    years: list[int],
     output_dir: str = "output/figures/",
     intervention: Optional[str] = None,
     perspective: Optional[str] = None,
@@ -2652,7 +2723,7 @@ def plot_net_cash_flow_waterfall(
         print("Inputs missing for net cash flow waterfall.")
         return
     apply_default_style()
-    net: List[float] = [
+    net: list[float] = [
         float(i) - float(o) for i, o in zip(investment_costs, cost_offsets)
     ]
     labels = [f"Year {y}" for y in years]
@@ -2676,9 +2747,9 @@ def plot_net_cash_flow_waterfall(
 
 
 def plot_annual_cash_flow(
-    years: List[int],
-    gross_costs: List[float],
-    net_costs: List[float],
+    years: list[int],
+    gross_costs: list[float],
+    net_costs: list[float],
     output_dir: str = "output/figures/",
     intervention: Optional[str] = None,
     perspective: Optional[str] = None,
@@ -2723,7 +2794,7 @@ def plot_annual_cash_flow(
 
 
 def plot_discordance_loss(
-    discordance_results: List[Dict],
+    discordance_results: list[dict],
     output_dir: str = "output/figures/",
 ):
     """
@@ -2879,7 +2950,7 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
             color=c,
             alpha=0.15,
             s=10,
-            edgecolors="none"
+            edgecolors="none",
         )
         # Plot Mean Point
         axes[0].scatter(
@@ -2888,7 +2959,7 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
             color=c,
             s=100,
             edgecolors="black",
-            marker="o"
+            marker="o",
         )
 
         # Plot Societal
@@ -2899,7 +2970,7 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
             color=c,
             alpha=0.15,
             s=10,
-            edgecolors="none"
+            edgecolors="none",
         )
         axes[1].scatter(
             np.mean(inc_qaly_soc),
@@ -2907,26 +2978,23 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
             color=c,
             s=100,
             edgecolors="black",
-            marker="o"
+            marker="o",
         )
 
     # Plot Delta (Violin)
     # axes[2] is now a Violin Plot of Delta Costs
     parts = axes[2].violinplot(
-        delta_costs_data,
-        showmeans=True,
-        showextrema=False,
-        showmedians=False
+        delta_costs_data, showmeans=True, showextrema=False, showmedians=False
     )
 
     # Color the violins
-    for i, pc in enumerate(parts['bodies']):
+    for i, pc in enumerate(parts["bodies"]):
         pc.set_facecolor(colors[i])
-        pc.set_edgecolor('black')
+        pc.set_edgecolor("black")
         pc.set_alpha(0.7)
 
     # Fix means color
-    parts['cmeans'].set_color('black')
+    parts["cmeans"].set_color("black")
 
     # Formatting
     for i, ax in enumerate(axes):
@@ -2936,25 +3004,29 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
         if i < 2:
             ax.set_xlabel("Incremental QALYs", fontsize=12)
             ax.set_ylabel("Incremental Cost ($)", fontsize=12)
-            ax.axhline(0, color='black', linewidth=0.8, linestyle='-')
-            ax.axvline(0, color='black', linewidth=0.8, linestyle='-')
+            ax.axhline(0, color="black", linewidth=0.8, linestyle="-")
+            ax.axvline(0, color="black", linewidth=0.8, linestyle="-")
 
             # WTP Threshold line (50k)
             xlim = ax.get_xlim()
             x_vals = np.array(xlim)
             y_vals = 50000 * x_vals
-            ax.plot(x_vals, y_vals, 'k--', alpha=0.5, label="WTP $50k/QALY")
-            ax.set_xlim(xlim) # Restore limits
+            ax.plot(x_vals, y_vals, "k--", alpha=0.5, label="WTP $50k/QALY")
+            ax.set_xlim(xlim)  # Restore limits
 
             # Format y-axis
-            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:,.0f}k"))
+            ax.yaxis.set_major_formatter(
+                plt.FuncFormatter(lambda x, p: f"${x / 1000:,.0f}k")
+            )
         else:
             # Delta Plot Formatting
             ax.set_ylabel("Delta Cost (Societal - HS)", fontsize=12)
             ax.set_xticks(np.arange(1, len(model_names) + 1))
             ax.set_xticklabels(model_names, rotation=45, ha="right")
-            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
-            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:,.0f}k"))
+            ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
+            ax.yaxis.set_major_formatter(
+                plt.FuncFormatter(lambda x, p: f"${x / 1000:,.0f}k")
+            )
 
     # Legend
     handles, labels = axes[0].get_legend_handles_labels()
@@ -2964,10 +3036,30 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
 
     # Create custom legend for interventions
     from matplotlib.lines import Line2D
-    legend_elements = [Line2D([0], [0], marker='o', color='w', label=name, markerfacecolor=color_map[name], markersize=10) for name in model_names]
-    legend_elements.append(Line2D([0], [0], color='k', linestyle='--', label='WTP $50k/QALY'))
 
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names)+1, frameon=False)
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            label=name,
+            markerfacecolor=color_map[name],
+            markersize=10,
+        )
+        for name in model_names
+    ]
+    legend_elements.append(
+        Line2D([0], [0], color="k", linestyle="--", label="WTP $50k/QALY")
+    )
+
+    fig.legend(
+        handles=legend_elements,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=len(model_names) + 1,
+        frameon=False,
+    )
 
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     save_figure(
@@ -2977,7 +3069,9 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
     )
 
 
-def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="output/figures/"):
+def plot_comparative_ceac_with_delta(
+    all_results, wtp_thresholds, output_dir="output/figures/"
+):
     """
     Create comparative CEAC with Delta subplot.
     3 Subplots: Health System, Societal, Delta (Societal - HS).
@@ -3026,7 +3120,9 @@ def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="ou
         axes[0].plot(wtp_thresholds, prob_ce_hs, label=model_name, color=c, linewidth=2)
 
         # Plot Societal
-        axes[1].plot(wtp_thresholds, prob_ce_soc, label=model_name, color=c, linewidth=2)
+        axes[1].plot(
+            wtp_thresholds, prob_ce_soc, label=model_name, color=c, linewidth=2
+        )
 
         # Plot Delta
         axes[2].plot(wtp_thresholds, delta_prob, label=model_name, color=c, linewidth=2)
@@ -3036,7 +3132,9 @@ def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="ou
         ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
         ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
         ax.grid(True, alpha=0.3)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        ax.xaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+        )
 
         if i < 2:
             ax.set_ylabel("Probability Cost-Effective", fontsize=12)
@@ -3045,12 +3143,22 @@ def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="ou
             ax.set_ylabel("Delta Probability (Soc - HS)", fontsize=12)
             # Delta can be negative or positive, generally between -1 and 1
             ax.set_ylim(-1.05, 1.05)
-            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+            ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
 
     # Legend
     from matplotlib.lines import Line2D
-    legend_elements = [Line2D([0], [0], color=color_map[name], lw=2, label=name) for name in model_names]
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names), frameon=False)
+
+    legend_elements = [
+        Line2D([0], [0], color=color_map[name], lw=2, label=name)
+        for name in model_names
+    ]
+    fig.legend(
+        handles=legend_elements,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=len(model_names),
+        frameon=False,
+    )
 
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     save_figure(
@@ -3060,7 +3168,9 @@ def plot_comparative_ceac_with_delta(all_results, wtp_thresholds, output_dir="ou
     )
 
 
-def plot_comparative_evpi_with_delta(all_results, wtp_thresholds, output_dir="output/figures/"):
+def plot_comparative_evpi_with_delta(
+    all_results, wtp_thresholds, output_dir="output/figures/"
+):
     """
     Create comparative EVPI plot with Delta subplot.
     3 Subplots: Health System, Societal, Delta (Societal - HS).
@@ -3108,15 +3218,21 @@ def plot_comparative_evpi_with_delta(all_results, wtp_thresholds, output_dir="ou
         # Health System Columns
         evpi_hs = calc_evpi_vals(
             psa_results,
-            "cost_sc_hs", "qaly_sc_hs", "cost_nt_hs", "qaly_nt_hs",
-            wtp_thresholds
+            "cost_sc_hs",
+            "qaly_sc_hs",
+            "cost_nt_hs",
+            "qaly_nt_hs",
+            wtp_thresholds,
         )
 
         # Societal Columns
         evpi_soc = calc_evpi_vals(
             psa_results,
-            "cost_sc_soc", "qaly_sc_soc", "cost_nt_soc", "qaly_nt_soc",
-            wtp_thresholds
+            "cost_sc_soc",
+            "qaly_sc_soc",
+            "cost_nt_soc",
+            "qaly_nt_soc",
+            wtp_thresholds,
         )
 
         delta_evpi = evpi_soc - evpi_hs
@@ -3135,20 +3251,32 @@ def plot_comparative_evpi_with_delta(all_results, wtp_thresholds, output_dir="ou
         ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
         ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
         ax.grid(True, alpha=0.3)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        ax.xaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+        )
 
         if i < 2:
             ax.set_ylabel("EVPI ($)", fontsize=12)
         else:
             ax.set_ylabel("Delta EVPI (Soc - HS)", fontsize=12)
-            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+            ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
 
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
 
     # Legend
     from matplotlib.lines import Line2D
-    legend_elements = [Line2D([0], [0], color=color_map[name], lw=2, label=name) for name in model_names]
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=len(model_names), frameon=False)
+
+    legend_elements = [
+        Line2D([0], [0], color=color_map[name], lw=2, label=name)
+        for name in model_names
+    ]
+    fig.legend(
+        handles=legend_elements,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=len(model_names),
+        frameon=False,
+    )
 
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     save_figure(
@@ -3178,25 +3306,34 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
         for key, values in evppi_data.items():
             if key.endswith("_HS"):
                 perspective = "Health System"
-                group_name = key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+                group_name = (
+                    key.replace("EVPPI_", "").replace("_HS", "").replace("_", " ")
+                )
             elif key.endswith("_Soc"):
                 perspective = "Societal"
-                group_name = key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+                group_name = (
+                    key.replace("EVPPI_", "").replace("_Soc", "").replace("_", " ")
+                )
             else:
-                continue # Skip generic
+                continue  # Skip generic
 
-            if "Cost Parameters" not in group_name and "QALY Parameters" not in group_name:
+            if (
+                "Cost Parameters" not in group_name
+                and "QALY Parameters" not in group_name
+            ):
                 continue
 
             for i, wtp in enumerate(wtp_thresholds):
-                data_rows.append({
-                    "Intervention": model_name,
-                    "Perspective": perspective,
-                    "Parameter Group": group_name,
-                    "WTP": wtp,
-                    "EVPPI": values[i],
-                    "Index": i # Keep index to match for delta
-                })
+                data_rows.append(
+                    {
+                        "Intervention": model_name,
+                        "Perspective": perspective,
+                        "Parameter Group": group_name,
+                        "WTP": wtp,
+                        "EVPPI": values[i],
+                        "Index": i,  # Keep index to match for delta
+                    }
+                )
 
     if not data_rows:
         return
@@ -3208,7 +3345,7 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
     df_pivot = df.pivot_table(
         index=["Intervention", "Parameter Group", "WTP", "Index"],
         columns="Perspective",
-        values="EVPPI"
+        values="EVPPI",
     ).reset_index()
 
     df_pivot["Delta"] = df_pivot["Societal"] - df_pivot["Health System"]
@@ -3239,7 +3376,13 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
             for group in ["Cost Parameters", "QALY Parameters"]:
                 group_data = int_data[int_data["Parameter Group"] == group]
                 if not group_data.empty:
-                    ax.plot(group_data["WTP"], group_data["EVPPI"], color=c, linestyle=linestyles[group], linewidth=2)
+                    ax.plot(
+                        group_data["WTP"],
+                        group_data["EVPPI"],
+                        color=c,
+                        linestyle=linestyles[group],
+                        linewidth=2,
+                    )
 
     # Plot Delta
     ax = axes[2]
@@ -3249,14 +3392,22 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
         for group in ["Cost Parameters", "QALY Parameters"]:
             group_data = int_data[int_data["Parameter Group"] == group]
             if not group_data.empty:
-                ax.plot(group_data["WTP"], group_data["Delta"], color=c, linestyle=linestyles[group], linewidth=2)
+                ax.plot(
+                    group_data["WTP"],
+                    group_data["Delta"],
+                    color=c,
+                    linestyle=linestyles[group],
+                    linewidth=2,
+                )
 
     # Formatting
     for i, ax in enumerate(axes):
         ax.set_title(perspectives[i], fontsize=14, fontweight="bold")
         ax.set_xlabel("WTP Threshold ($/QALY)", fontsize=12)
         ax.grid(True, alpha=0.3)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        ax.xaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+        )
 
         if i < 2:
             ax.set_ylabel("EVPPI ($)", fontsize=12)
@@ -3264,23 +3415,35 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
         else:
             ax.set_ylabel("Delta EVPPI ($)", fontsize=12)
             ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x:,.0f}"))
-            ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
+            ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
 
     # Legend
     import matplotlib.patches as mpatches
     from matplotlib.lines import Line2D
 
     legend_elements = []
-    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Interventions:}$'))
+    legend_elements.append(mpatches.Patch(color="none", label=r"$\bf{Interventions:}$"))
     for intervention in interventions:
-        legend_elements.append(Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention))
+        legend_elements.append(
+            Line2D([0], [0], color=color_map[intervention], lw=2, label=intervention)
+        )
 
-    legend_elements.append(mpatches.Patch(color='none', label=' '))
-    legend_elements.append(mpatches.Patch(color='none', label=r'$\bf{Parameters:}$'))
-    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='-', label='Cost Parameters'))
-    legend_elements.append(Line2D([0], [0], color='black', lw=2, linestyle='--', label='QALY Parameters'))
+    legend_elements.append(mpatches.Patch(color="none", label=" "))
+    legend_elements.append(mpatches.Patch(color="none", label=r"$\bf{Parameters:}$"))
+    legend_elements.append(
+        Line2D([0], [0], color="black", lw=2, linestyle="-", label="Cost Parameters")
+    )
+    legend_elements.append(
+        Line2D([0], [0], color="black", lw=2, linestyle="--", label="QALY Parameters")
+    )
 
-    fig.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=4, frameon=False)
+    fig.legend(
+        handles=legend_elements,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.05),
+        ncol=4,
+        frameon=False,
+    )
 
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     save_figure(
@@ -3291,7 +3454,7 @@ def plot_comparative_evppi_with_delta(voi_results, output_dir="output/figures/")
 
 
 def plot_comparative_bia_line(
-    bia_results: Dict[str, pd.DataFrame],
+    bia_results: dict[str, pd.DataFrame],
     output_dir: str = "output/figures/",
 ):
     """
@@ -3306,7 +3469,11 @@ def plot_comparative_bia_line(
         "HPV Vaccination": {"color": "#1f77b4", "linestyle": "-", "marker": "o"},
         "Smoking Cessation": {"color": "#ff7f0e", "linestyle": "--", "marker": "s"},
         "Hepatitis C Therapy": {"color": "#2ca02c", "linestyle": "-.", "marker": "^"},
-        "Childhood Obesity Prevention": {"color": "#d62728", "linestyle": ":", "marker": "D"},
+        "Childhood Obesity Prevention": {
+            "color": "#d62728",
+            "linestyle": ":",
+            "marker": "D",
+        },
         "Housing Insulation": {"color": "#9467bd", "linestyle": "-", "marker": "v"},
     }
 
@@ -3322,8 +3489,13 @@ def plot_comparative_bia_line(
 
     ax_gross.set_ylabel("Gross Budget Impact (NZ$)", fontsize=12)
     ax_gross.set_xlabel("Year", fontsize=12)
-    ax_gross.set_title("A. Gross Budget Impact\n(Total Investment)", fontsize=14, fontweight="bold", loc="left")
-    ax_gross.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_gross.set_title(
+        "A. Gross Budget Impact\n(Total Investment)",
+        fontsize=14,
+        fontweight="bold",
+        loc="left",
+    )
+    ax_gross.yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
     ax_gross.grid(True, alpha=0.3)
     # Legend only on the first plot to avoid clutter, or outside
     ax_gross.legend(fontsize=9, loc="upper left")
@@ -3339,8 +3511,13 @@ def plot_comparative_bia_line(
     ax_net.axhline(0, color="black", linestyle="-", linewidth=1)
     ax_net.set_xlabel("Year", fontsize=12)
     # ax_net.set_ylabel("Net Budget Impact (NZ$)", fontsize=12) # Share y-axis label? No, scales might differ
-    ax_net.set_title("B. Net Budget Impact\n(Investment - Offsets)", fontsize=14, fontweight="bold", loc="left")
-    ax_net.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_net.set_title(
+        "B. Net Budget Impact\n(Investment - Offsets)",
+        fontsize=14,
+        fontweight="bold",
+        loc="left",
+    )
+    ax_net.yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
     ax_net.grid(True, alpha=0.3)
 
     # Plot Offsets (Right Panel)
@@ -3359,15 +3536,23 @@ def plot_comparative_bia_line(
         ax_offsets.plot(years, offsets, label=name, linewidth=2.5, alpha=0.8, **style)
 
     ax_offsets.set_xlabel("Year", fontsize=12)
-    ax_offsets.set_title("C. Cost Offsets\n(Avoided Standard Care)", fontsize=14, fontweight="bold", loc="left")
-    ax_offsets.yaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+    ax_offsets.set_title(
+        "C. Cost Offsets\n(Avoided Standard Care)",
+        fontsize=14,
+        fontweight="bold",
+        loc="left",
+    )
+    ax_offsets.yaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
     ax_offsets.grid(True, alpha=0.3)
 
     plt.tight_layout()
     # Save as dashboard_bia_v2.png
     save_figure(fig, output_dir, "dashboard_bia_v2")
 
-def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, intervention_name: str):
+
+def plot_markov_trace(
+    trace_data: dict[str, pd.DataFrame], output_dir: str, intervention_name: str
+):
     """
     Plot Markov trace (state probabilities over time).
 
@@ -3396,10 +3581,12 @@ def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, inte
         else:
             df.plot(ax=ax, linewidth=2)
 
-        ax.set_title(f"Markov Trace: {intervention_name.replace('_', ' ').title()} ({arm.replace('_', ' ').title()})")
+        ax.set_title(
+            f"Markov Trace: {intervention_name.replace('_', ' ').title()} ({arm.replace('_', ' ').title()})"
+        )
         ax.set_xlabel("Cycle (Year)")
         ax.set_ylabel("Proportion in State")
-        ax.legend(title="Health State", bbox_to_anchor=(1.05, 1), loc='upper left')
+        ax.legend(title="Health State", bbox_to_anchor=(1.05, 1), loc="upper left")
         ax.grid(True, alpha=0.3)
 
         # Ensure y-axis is 0-1
@@ -3411,9 +3598,9 @@ def plot_markov_trace(trace_data: Dict[str, pd.DataFrame], output_dir: str, inte
 
 
 def plot_comparative_pop_evpi_with_delta(
-    probabilistic_results: Dict,
+    probabilistic_results: dict,
     wtp_thresholds: np.ndarray,
-    population_sizes: Dict[str, int],
+    population_sizes: dict[str, int],
     output_dir: str,
 ):
     """
@@ -3434,7 +3621,11 @@ def plot_comparative_pop_evpi_with_delta(
     fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True)
 
     perspectives = ["health_system", "societal"]
-    titles = ["Health System Perspective", "Societal Perspective", "Delta (Societal - Health System)"]
+    titles = [
+        "Health System Perspective",
+        "Societal Perspective",
+        "Delta (Societal - Health System)",
+    ]
 
     # Store data for delta calculation
     pop_evpi_data = {p: {} for p in perspectives}
@@ -3455,7 +3646,7 @@ def plot_comparative_pop_evpi_with_delta(
                     f"cost_sc{suffix}": "cost_sc",
                     f"qaly_sc{suffix}": "qaly_sc",
                     f"cost_nt{suffix}": "cost_nt",
-                    f"qaly_nt{suffix}": "qaly_nt"
+                    f"qaly_nt{suffix}": "qaly_nt",
                 }
 
                 valid_cols = True
@@ -3481,12 +3672,17 @@ def plot_comparative_pop_evpi_with_delta(
                     evpi_values.append(evpi)
 
                 evpi_values = np.array(evpi_values)
-                pop_size = population_sizes.get(name, 100000) # Default if missing
+                pop_size = population_sizes.get(name, 100000)  # Default if missing
                 pop_evpi = evpi_values * pop_size
 
                 pop_evpi_data[perspective][name] = pop_evpi
 
-                ax.plot(wtp_thresholds, pop_evpi, label=name.replace("_", " ").title(), linewidth=2)
+                ax.plot(
+                    wtp_thresholds,
+                    pop_evpi,
+                    label=name.replace("_", " ").title(),
+                    linewidth=2,
+                )
 
         ax.set_title(titles[i])
         ax.set_xlabel("Willingness-to-Pay Threshold ($)")
@@ -3495,26 +3691,33 @@ def plot_comparative_pop_evpi_with_delta(
         ax.grid(True, alpha=0.3)
 
         # Format x-axis as currency
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+        ax.xaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+        )
 
         # Format y-axis as millions
-        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1e6:.0f}M"))
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x / 1e6:.0f}M"))
 
     # Plot Delta
     ax_delta = axes[2]
     for name in interventions:
         if name in pop_evpi_data["health_system"] and name in pop_evpi_data["societal"]:
-            delta = pop_evpi_data["societal"][name] - pop_evpi_data["health_system"][name]
-            ax_delta.plot(wtp_thresholds, delta, label=name.replace("_", " ").title(), linewidth=2)
+            delta = (
+                pop_evpi_data["societal"][name] - pop_evpi_data["health_system"][name]
+            )
+            ax_delta.plot(
+                wtp_thresholds, delta, label=name.replace("_", " ").title(), linewidth=2
+            )
 
     ax_delta.set_title(titles[2])
     ax_delta.set_xlabel("Willingness-to-Pay Threshold ($)")
     ax_delta.grid(True, alpha=0.3)
-    ax_delta.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"${x/1000:.0f}k"))
+    ax_delta.xaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, p: f"${x / 1000:.0f}k")
+    )
 
     # Add legend to the last plot
-    axes[2].legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    axes[2].legend(bbox_to_anchor=(1.05, 1), loc="upper left")
 
     plt.tight_layout()
     save_figure(fig, output_dir, "comparative_population_evpi_with_delta")
-

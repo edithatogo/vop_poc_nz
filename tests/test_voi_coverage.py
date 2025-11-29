@@ -28,22 +28,24 @@ class TestValueOfInformation(unittest.TestCase):
             "cost_sc": {"distribution": "gamma", "params": {"shape": 10, "scale": 100}},
             "cost_nt": {"distribution": "gamma", "params": {"shape": 15, "scale": 100}},
             "qaly_sc": {"distribution": "beta", "params": {"alpha": 50, "beta": 5}},
-            "qaly_nt": {"distribution": "beta", "params": {"alpha": 55, "beta": 5}}
+            "qaly_nt": {"distribution": "beta", "params": {"alpha": 55, "beta": 5}},
         }
 
         # Create sample PSA results for testing
         np.random.seed(42)
         n = 100
-        self.psa_results = pd.DataFrame({
-            "cost_sc": np.random.gamma(10, 100, n),
-            "cost_nt": np.random.gamma(15, 100, n),
-            "qaly_sc": np.random.beta(50, 5, n),
-            "qaly_nt": np.random.beta(55, 5, n),
-            "inc_cost": np.random.normal(500, 100, n),
-            "inc_qaly": np.random.normal(2, 0.5, n),  # Note: inc_qaly not inc_qalys
-            "icer": np.random.normal(250, 50, n),
-            "nmb": np.random.normal(99500, 1000, n)
-        })
+        self.psa_results = pd.DataFrame(
+            {
+                "cost_sc": np.random.gamma(10, 100, n),
+                "cost_nt": np.random.gamma(15, 100, n),
+                "qaly_sc": np.random.beta(50, 5, n),
+                "qaly_nt": np.random.beta(55, 5, n),
+                "inc_cost": np.random.normal(500, 100, n),
+                "inc_qaly": np.random.normal(2, 0.5, n),  # Note: inc_qaly not inc_qalys
+                "icer": np.random.normal(250, 50, n),
+                "nmb": np.random.normal(99500, 1000, n),
+            }
+        )
         self.psa_results["cost_effective"] = self.psa_results["nmb"] > 0
 
     def test_psa_init(self):
@@ -90,7 +92,7 @@ class TestValueOfInformation(unittest.TestCase):
             parameter_group=["cost_nt"],
             all_params=["cost_sc", "cost_nt", "qaly_sc", "qaly_nt"],
             wtp_thresholds=[50000],
-            n_bootstrap=10
+            n_bootstrap=10,
         )
         self.assertIsInstance(evppi, list)
         self.assertGreaterEqual(len(evppi), 0)
@@ -100,18 +102,22 @@ class TestValueOfInformation(unittest.TestCase):
         # calculate_value_of_perspective expects: qaly_nt, qaly_sc, cost_nt, cost_sc
         np.random.seed(42)
         n = 100
-        psa_hs = pd.DataFrame({
-            "cost_sc": np.random.gamma(10, 100, n),
-            "cost_nt": np.random.gamma(15, 100, n),
-            "qaly_sc": np.random.beta(50, 5, n) * 10,  # Scale to reasonable QALY
-            "qaly_nt": np.random.beta(55, 5, n) * 10,
-        })
-        psa_soc = pd.DataFrame({
-            "cost_sc": np.random.gamma(10, 110, n),  # Slightly different costs
-            "cost_nt": np.random.gamma(15, 110, n),
-            "qaly_sc": np.random.beta(50, 5, n) * 10,
-            "qaly_nt": np.random.beta(55, 5, n) * 10,
-        })
+        psa_hs = pd.DataFrame(
+            {
+                "cost_sc": np.random.gamma(10, 100, n),
+                "cost_nt": np.random.gamma(15, 100, n),
+                "qaly_sc": np.random.beta(50, 5, n) * 10,  # Scale to reasonable QALY
+                "qaly_nt": np.random.beta(55, 5, n) * 10,
+            }
+        )
+        psa_soc = pd.DataFrame(
+            {
+                "cost_sc": np.random.gamma(10, 110, n),  # Slightly different costs
+                "cost_nt": np.random.gamma(15, 110, n),
+                "qaly_sc": np.random.beta(50, 5, n) * 10,
+                "qaly_nt": np.random.beta(55, 5, n) * 10,
+            }
+        )
 
         vop = calculate_value_of_perspective(
             psa_hs, psa_soc, wtp_threshold=50000, chosen_perspective="health_system"
@@ -121,11 +127,15 @@ class TestValueOfInformation(unittest.TestCase):
         self.assertIn("perspective_premium", vop)
 
     def test_calculate_population_evpi(self):
-        pop_evpi = calculate_population_evpi(evpi_per_person=100, target_population_size=100000)
+        pop_evpi = calculate_population_evpi(
+            evpi_per_person=100, target_population_size=100000
+        )
         self.assertEqual(pop_evpi, 10000000)
 
     def test_explain_voi_benefits(self):
-        explanation = explain_value_of_information_benefits(base_icer=30000, wtp_threshold=50000)
+        explanation = explain_value_of_information_benefits(
+            base_icer=30000, wtp_threshold=50000
+        )
         self.assertIsInstance(explanation, dict)
         self.assertIn("base_case_info", explanation)
 
@@ -136,11 +146,12 @@ class TestValueOfInformation(unittest.TestCase):
             self.psa_results,
             wtp_thresholds=[50000],
             target_population=100000,
-            parameter_names=["cost_sc", "cost_nt", "qaly_sc", "qaly_nt"]
+            parameter_names=["cost_sc", "cost_nt", "qaly_sc", "qaly_nt"],
         )
         self.assertIsInstance(report, dict)
         self.assertIn("summary_statistics", report)
         self.assertIn("value_of_information", report)
+
 
 if __name__ == "__main__":
     unittest.main()

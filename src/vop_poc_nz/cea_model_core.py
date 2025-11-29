@@ -9,7 +9,7 @@ import collections.abc
 import copy
 import logging
 import warnings
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ class MarkovModel:
 
     def __init__(
         self,
-        states: List[str],
+        states: list[str],
         transition_matrix: np.ndarray,
         discount_rate: float = 0.03,
     ):
@@ -68,7 +68,7 @@ class MarkovModel:
         initial_population: np.ndarray,
         costs: np.ndarray,
         qalys: np.ndarray,
-    ) -> Tuple[float, float, np.ndarray]:
+    ) -> tuple[float, float, np.ndarray]:
         """
         Runs the Markov model for a given number of cycles.
 
@@ -117,7 +117,11 @@ class MarkovModel:
             total_discounted_cost += cycle_cost / discount_factor
             total_discounted_qalys += cycle_qalys / discount_factor
 
-        return float(total_discounted_cost), float(total_discounted_qalys), population_trace
+        return (
+            float(total_discounted_cost),
+            float(total_discounted_qalys),
+            population_trace,
+        )
 
 
 def deep_update(d, u):
@@ -133,11 +137,11 @@ def deep_update(d, u):
 
 
 def run_cea(
-    model_parameters: Dict,
+    model_parameters: dict,
     perspective: str = "health_system",
     wtp_threshold: float = 50000.0,
     productivity_cost_method: str = "human_capital",
-) -> Dict:
+) -> dict:
     """
     Runs a cost-effectiveness analysis, handling subgroups for DCEA if present.
 
@@ -281,7 +285,7 @@ def run_cea(
     return results
 
 
-def _validate_model_parameters(params: Dict):
+def _validate_model_parameters(params: dict):
     """Validate that model parameters are properly structured."""
     required_keys = [
         "states",
@@ -327,7 +331,7 @@ def _validate_model_parameters(params: Dict):
 
 
 def _calculate_friction_cost(
-    model_parameters: Dict, intervention_type: str
+    model_parameters: dict, intervention_type: str
 ) -> np.ndarray:
     """
     Calculate productivity costs using the Friction Cost Method.
@@ -396,8 +400,8 @@ def _calculate_friction_cost(
 
 
 def _get_costs_qalys_by_perspective(
-    model_parameters: Dict, perspective: str, productivity_cost_method: str
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    model_parameters: dict, perspective: str, productivity_cost_method: str
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Extract appropriate costs and QALYs based on perspective."""
     if perspective == "health_system":
         costs_standard = np.array(
@@ -515,7 +519,7 @@ def _calculate_cer(cost: float, qalys: float) -> Union[float, str]:
 
 
 def create_parameters_table(
-    model_parameters: Dict, sources: Optional[Dict] = None
+    model_parameters: dict, sources: Optional[dict] = None
 ) -> pd.DataFrame:
     """
     Create a comprehensive parameters/assumptions/sources table as requested by reviewers.
@@ -672,8 +676,8 @@ def create_parameters_table(
 
 
 def generate_comparative_icer_table(
-    results_health_system: Dict,
-    results_societal: Dict,
+    results_health_system: dict,
+    results_societal: dict,
     intervention_name: str = "Intervention",
 ) -> pd.DataFrame:
     """

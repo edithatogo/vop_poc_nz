@@ -13,7 +13,7 @@ This module combines:
 import json
 import logging
 import os
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,7 @@ from .visualizations import (
 )
 
 
-def generate_cheers_report() -> Dict:
+def generate_cheers_report() -> dict:
     """Generate CHEERS 2022 compliance report."""
 
     # Check compliance with key CHEERS items
@@ -143,11 +143,11 @@ def generate_cheers_report() -> Dict:
     return report
 
 
-def generate_policy_implications_report(intervention_results: Dict) -> Dict:
+def generate_policy_implications_report(intervention_results: dict) -> dict:
     """Generate policy implications report addressing reviewer feedback."""
 
     # Analyze the differences between perspectives
-    policy_implications: Dict[str, Any] = {
+    policy_implications: dict[str, Any] = {
         "intervention_level_differences": {},
         "societal_benefits_quantification": {},
         "implementation_feasibility": {
@@ -212,7 +212,7 @@ def generate_policy_implications_report(intervention_results: Dict) -> Dict:
     return policy_implications
 
 
-def generate_literature_informed_dcea_view(intervention_results: Dict) -> pd.DataFrame:
+def generate_literature_informed_dcea_view(intervention_results: dict) -> pd.DataFrame:
     """Create a literature-informed preference-weighted NMB view.
 
     This applies transparent, literature-informed weights:
@@ -266,7 +266,7 @@ def generate_literature_informed_dcea_view(intervention_results: Dict) -> pd.Dat
     return df
 
 
-def write_results_to_files(results: Dict, output_dir: str = "output"):
+def write_results_to_files(results: dict, output_dir: str = "output"):
     """Write results to files for manuscript inclusion."""
 
     os.makedirs(output_dir, exist_ok=True)

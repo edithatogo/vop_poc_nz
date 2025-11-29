@@ -36,5 +36,6 @@ def test_evpi_dominance():
         {"cost_sc": [1000], "qaly_sc": [5], "cost_nt": [900], "qaly_nt": [6]}
     )
     evpi_dominant = calculate_evpi(psa_df_dominant, wtp)
-    assert evpi_dominant == 0, f"EVPI should be 0 if one option dominates, got {evpi_dominant}"
-
+    assert evpi_dominant == 0, (
+        f"EVPI should be 0 if one option dominates, got {evpi_dominant}"
+    )

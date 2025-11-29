@@ -16,7 +16,6 @@ import argparse
 import logging
 import os
 import pickle
-import shutil
 import sys
 from importlib import resources
 
@@ -107,10 +106,10 @@ def cmd_init(args):
         print("Use --force to overwrite existing files.")
 
     if created or not skipped:
-        print(f"\nNext steps:")
-        print(f"  1. Edit parameters.yaml with your intervention data")
-        print(f"  2. Run: snakemake -c1")
-        print(f"  Or use: vop-poc-nz run")
+        print("\nNext steps:")
+        print("  1. Edit parameters.yaml with your intervention data")
+        print("  2. Run: snakemake -c1")
+        print("  Or use: vop-poc-nz run")
 
 
 def main():

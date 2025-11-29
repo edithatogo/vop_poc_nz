@@ -7,7 +7,6 @@ Useful for determining optimal sample sizes for production runs.
 
 import os
 import time
-from typing import List
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -19,7 +18,7 @@ from .visualizations import apply_default_style, save_figure
 
 
 def run_scalability_test(
-    sample_sizes: List[int] = None,
+    sample_sizes: list[int] = None,
     intervention_name: str = "HPV Vaccination",
     output_dir: str = "output/profiling/",
 ):

@@ -5,7 +5,6 @@ This module provides functions to generate comprehensive reports in Markdown for
 """
 
 import copy
-from typing import Dict
 
 import pandas as pd
 
@@ -23,7 +22,7 @@ except Exception:  # pragma: no cover - optional path
 
 
 def generate_comprehensive_report(
-    intervention_name: str, params: Dict, wtp_threshold: float = 50000
+    intervention_name: str, params: dict, wtp_threshold: float = 50000
 ) -> str:
     """
     Generate a comprehensive report for an intervention.
@@ -108,7 +107,7 @@ Based on the societal perspective analysis, {intervention_name} {"should be cons
     return report
 
 
-def generate_dcea_results_table(dcea_results: Dict) -> str:
+def generate_dcea_results_table(dcea_results: dict) -> str:
     """
     Generates a markdown table for DCEA results.
 
@@ -162,7 +161,7 @@ def generate_dcea_results_table(dcea_results: Dict) -> str:
     return _render_table(df)
 
 
-def generate_impact_inventory_table(params: Dict) -> str:
+def generate_impact_inventory_table(params: dict) -> str:
     """
     Generate a CHEERS-style impact inventory indicating which cost components
     are included under each perspective.

@@ -7,10 +7,9 @@ including CEA, DCEA, VOI, and DSA. It separates the "math" from the "reporting".
 
 import copy
 import logging
-from pathlib import Path
-from typing import Dict, Optional
-
 from importlib import resources
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -34,7 +33,7 @@ from ..value_of_information import (
 logger = logging.getLogger(__name__)
 
 
-def load_parameters(filepath: Optional[str] = None) -> Dict:
+def load_parameters(filepath: Optional[str] = None) -> dict:
     """Load model parameters from a YAML file.
 
     If ``filepath`` is ``None`` the bundled ``parameters.yaml`` shipped with the
@@ -53,9 +52,6 @@ def load_parameters(filepath: Optional[str] = None) -> Dict:
         return yaml.safe_load(handle)
 
 
-
-
-
 from ..dsa_analysis import (
     perform_comprehensive_two_way_dsa,
     perform_one_way_dsa,
@@ -63,7 +59,7 @@ from ..dsa_analysis import (
 )
 
 
-def perform_dsa_analysis(interventions: Dict) -> Dict:
+def perform_dsa_analysis(interventions: dict) -> dict:
     """Perform Deterministic Sensitivity Analysis."""
     logger.info("Running Deterministic Sensitivity Analysis (DSA)...")
 
@@ -85,12 +81,12 @@ def perform_dsa_analysis(interventions: Dict) -> Dict:
 
 def calculate_analytical_capacity_costs(
     _dce_study_size: int, _stakeholder_groups: list, _country: str
-) -> Dict:
+) -> dict:
     """Placeholder for capacity cost calculation."""
     return {"total_cost": 0}
 
 
-def generate_cheers_report() -> Dict:
+def generate_cheers_report() -> dict:
     """Placeholder for CHEERS compliance report."""
     return {
         "cheers_2022_compliance": {
@@ -100,7 +96,7 @@ def generate_cheers_report() -> Dict:
     }
 
 
-def run_analysis_pipeline() -> Dict:
+def run_analysis_pipeline() -> dict:
     """
     Run the complete health economic analysis pipeline.
 
@@ -204,14 +200,31 @@ def run_analysis_pipeline() -> Dict:
         # Define PSA distributions
         psa_distributions = {
             # Global Cost Multipliers
-            "cost_hs_sc_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.1}},
-            "cost_hs_nt_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.1}},
-            "cost_soc_sc_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.15}},
-            "cost_soc_nt_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.15}},
-
+            "cost_hs_sc_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.1},
+            },
+            "cost_hs_nt_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.1},
+            },
+            "cost_soc_sc_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.15},
+            },
+            "cost_soc_nt_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.15},
+            },
             # Global QALY Multipliers
-            "qaly_sc_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.05}},
-            "qaly_nt_multiplier": {"distribution": "normal", "params": {"mean": 1.0, "std": 0.05}},
+            "qaly_sc_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.05},
+            },
+            "qaly_nt_multiplier": {
+                "distribution": "normal",
+                "params": {"mean": 1.0, "std": 0.05},
+            },
         }
 
         # Add subgroup-specific multipliers if subgroups exist
@@ -228,12 +241,30 @@ def run_analysis_pipeline() -> Dict:
                 # Let's define specific multipliers for each subgroup with the SAME variance as global,
                 # effectively treating them as independent populations.
                 clean_name = subgroup.replace(" ", "_")
-                psa_distributions[f"cost_hs_sc_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.1}}
-                psa_distributions[f"cost_hs_nt_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.1}}
-                psa_distributions[f"cost_soc_sc_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.15}}
-                psa_distributions[f"cost_soc_nt_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.15}}
-                psa_distributions[f"qaly_sc_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.05}}
-                psa_distributions[f"qaly_nt_multiplier_{clean_name}"] = {"distribution": "normal", "params": {"mean": 1.0, "std": 0.05}}
+                psa_distributions[f"cost_hs_sc_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.1},
+                }
+                psa_distributions[f"cost_hs_nt_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.1},
+                }
+                psa_distributions[f"cost_soc_sc_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.15},
+                }
+                psa_distributions[f"cost_soc_nt_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.15},
+                }
+                psa_distributions[f"qaly_sc_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.05},
+                }
+                psa_distributions[f"qaly_nt_multiplier_{clean_name}"] = {
+                    "distribution": "normal",
+                    "params": {"mean": 1.0, "std": 0.05},
+                }
 
         def psa_run_cea_wrapper(sampled_params, intervention_type, base_params=params):
             temp_params = copy.deepcopy(base_params)
@@ -248,16 +279,25 @@ def run_analysis_pipeline() -> Dict:
                     return sampled_params[base_name]
 
                 # Apply multipliers to Health System Costs
-                if "costs" in target_params and "health_system" in target_params["costs"]:
+                if (
+                    "costs" in target_params
+                    and "health_system" in target_params["costs"]
+                ):
                     if "standard_care" in target_params["costs"]["health_system"]:
                         m = get_mult("cost_hs_sc_multiplier")
                         target_params["costs"]["health_system"]["standard_care"] = [
-                            c * m for c in target_params["costs"]["health_system"]["standard_care"]
+                            c * m
+                            for c in target_params["costs"]["health_system"][
+                                "standard_care"
+                            ]
                         ]
                     if "new_treatment" in target_params["costs"]["health_system"]:
                         m = get_mult("cost_hs_nt_multiplier")
                         target_params["costs"]["health_system"]["new_treatment"] = [
-                            c * m for c in target_params["costs"]["health_system"]["new_treatment"]
+                            c * m
+                            for c in target_params["costs"]["health_system"][
+                                "new_treatment"
+                            ]
                         ]
 
                 # Apply multipliers to Societal Costs
@@ -265,12 +305,14 @@ def run_analysis_pipeline() -> Dict:
                     if "standard_care" in target_params["costs"]["societal"]:
                         m = get_mult("cost_soc_sc_multiplier")
                         target_params["costs"]["societal"]["standard_care"] = [
-                            c * m for c in target_params["costs"]["societal"]["standard_care"]
+                            c * m
+                            for c in target_params["costs"]["societal"]["standard_care"]
                         ]
                     if "new_treatment" in target_params["costs"]["societal"]:
                         m = get_mult("cost_soc_nt_multiplier")
                         target_params["costs"]["societal"]["new_treatment"] = [
-                            c * m for c in target_params["costs"]["societal"]["new_treatment"]
+                            c * m
+                            for c in target_params["costs"]["societal"]["new_treatment"]
                         ]
 
                 # Apply multipliers to QALYs
@@ -325,7 +367,7 @@ def run_analysis_pipeline() -> Dict:
                     cea_results_hs["qalys_standard_care"],
                     cea_results_soc["cost_standard_care"],
                     cea_results_soc["qalys_standard_care"],
-                    extras
+                    extras,
                 )
             elif intervention_type == "new_treatment":
                 return (
@@ -333,7 +375,7 @@ def run_analysis_pipeline() -> Dict:
                     cea_results_hs["qalys_new_treatment"],
                     cea_results_soc["cost_new_treatment"],
                     cea_results_soc["qalys_new_treatment"],
-                    extras
+                    extras,
                 )
             else:
                 raise ValueError("Invalid intervention_type")
@@ -360,7 +402,7 @@ def run_analysis_pipeline() -> Dict:
                 # Extract subgroup name: remove prefix "sc_cost_" and suffix "_hs"
                 subgroup = col[8:-3]
                 subgroups.append(subgroup)
-        subgroups = list(set(subgroups)) # Unique subgroups
+        subgroups = list(set(subgroups))  # Unique subgroups
 
         if subgroups:
             logger.info(f"  Calculating Probabilistic Equity Metrics for {name}...")
@@ -369,8 +411,12 @@ def run_analysis_pipeline() -> Dict:
             for subgroup in subgroups:
                 weight = equity_weights.get(subgroup, 1.0)
                 # Inc NMB = (Inc QALY * WTP) - Inc Cost
-                inc_qaly = psa_df[f"nt_qaly_{subgroup}_hs"] - psa_df[f"sc_qaly_{subgroup}_hs"]
-                inc_cost = psa_df[f"nt_cost_{subgroup}_hs"] - psa_df[f"sc_cost_{subgroup}_hs"]
+                inc_qaly = (
+                    psa_df[f"nt_qaly_{subgroup}_hs"] - psa_df[f"sc_qaly_{subgroup}_hs"]
+                )
+                inc_cost = (
+                    psa_df[f"nt_cost_{subgroup}_hs"] - psa_df[f"sc_cost_{subgroup}_hs"]
+                )
                 inc_nmb = (inc_qaly * 50000) - inc_cost
                 weighted_nmb_hs += inc_nmb * weight
             psa_df["equity_weighted_nmb_hs"] = weighted_nmb_hs
@@ -379,8 +425,14 @@ def run_analysis_pipeline() -> Dict:
             weighted_nmb_soc = 0
             for subgroup in subgroups:
                 weight = equity_weights.get(subgroup, 1.0)
-                inc_qaly = psa_df[f"nt_qaly_{subgroup}_soc"] - psa_df[f"sc_qaly_{subgroup}_soc"]
-                inc_cost = psa_df[f"nt_cost_{subgroup}_soc"] - psa_df[f"sc_cost_{subgroup}_soc"]
+                inc_qaly = (
+                    psa_df[f"nt_qaly_{subgroup}_soc"]
+                    - psa_df[f"sc_qaly_{subgroup}_soc"]
+                )
+                inc_cost = (
+                    psa_df[f"nt_cost_{subgroup}_soc"]
+                    - psa_df[f"sc_cost_{subgroup}_soc"]
+                )
                 inc_nmb = (inc_qaly * 50000) - inc_cost
                 weighted_nmb_soc += inc_nmb * weight
             psa_df["equity_weighted_nmb_soc"] = weighted_nmb_soc
@@ -405,8 +457,8 @@ def run_analysis_pipeline() -> Dict:
         voi_report = generate_voi_report(
             psa_df,
             wtp_thresholds=list(np.linspace(0, 100000, 21)),
-            target_population=100000, # Should ideally come from BIA params
-            parameter_names=param_cols
+            target_population=100000,  # Should ideally come from BIA params
+            parameter_names=param_cols,
         )
         voi_results[name] = voi_report
 
@@ -425,8 +477,6 @@ def run_analysis_pipeline() -> Dict:
             )
         }
         threshold_results[name] = run_threshold_analysis(name, params, parameter_ranges)
-
-
 
     # 9. Budget Impact Analysis (BIA)
     logger.info("Performing Budget Impact Analysis (BIA)...")
@@ -451,7 +501,7 @@ def run_analysis_pipeline() -> Dict:
         }
         bia_results[name] = project_bia(**bia_params)
         logger.debug(
-            f"  {name}: Population={total_pop:,}, Eligible={eligible_prop:.0%} ({total_pop *eligible_prop:,.0f} people)"
+            f"  {name}: Population={total_pop:,}, Eligible={eligible_prop:.0%} ({total_pop * eligible_prop:,.0f} people)"
         )
 
     # 10. Comprehensive Reports
@@ -480,8 +530,12 @@ def run_analysis_pipeline() -> Dict:
         "cluster_analysis": cluster_results,
         "dcea_equity_analysis": {
             name: {
-                "health_system": res.get("health_system", {}).get("dcea_equity_analysis"),
-                "societal": res.get("societal", {}).get("human_capital", {}).get("dcea_equity_analysis"),
+                "health_system": res.get("health_system", {}).get(
+                    "dcea_equity_analysis"
+                ),
+                "societal": res.get("societal", {})
+                .get("human_capital", {})
+                .get("dcea_equity_analysis"),
             }
             for name, res in all_results.items()
             if res.get("health_system", {}).get("dcea_equity_analysis")

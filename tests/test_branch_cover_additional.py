@@ -5,7 +5,10 @@ import pytest
 import vop_poc_nz.dcea_equity_analysis as equity
 from vop_poc_nz.cea_model_core import MarkovModel, _validate_model_parameters
 from vop_poc_nz.cluster_analysis import ClusterAnalysis
-from vop_poc_nz.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
+from vop_poc_nz.dsa_analysis import (
+    perform_comprehensive_two_way_dsa,
+    perform_three_way_dsa,
+)
 from vop_poc_nz.threshold_analysis import run_threshold_analysis
 from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 

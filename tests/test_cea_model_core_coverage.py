@@ -20,11 +20,9 @@ from vop_poc_nz.cea_model_core import (
 class TestCEAModelCore(unittest.TestCase):
     def setUp(self):
         self.states = ["Healthy", "Sick", "Dead"]
-        self.transition_matrix = np.array([
-            [0.8, 0.15, 0.05],
-            [0.1, 0.7, 0.2],
-            [0.0, 0.0, 1.0]
-        ])
+        self.transition_matrix = np.array(
+            [[0.8, 0.15, 0.05], [0.1, 0.7, 0.2], [0.0, 0.0, 1.0]]
+        )
         self.initial_pop = np.array([1000, 0, 0])
         self.costs = np.array([100, 500, 0])
         self.qalys = np.array([1.0, 0.7, 0.0])
@@ -33,35 +31,35 @@ class TestCEAModelCore(unittest.TestCase):
             "states": self.states,
             "transition_matrices": {
                 "standard_care": self.transition_matrix.tolist(),
-                "new_treatment": self.transition_matrix.tolist()
+                "new_treatment": self.transition_matrix.tolist(),
             },
             "initial_population": self.initial_pop.tolist(),
             "costs": {
                 "health_system": {
                     "standard_care": self.costs.tolist(),
-                    "new_treatment": self.costs.tolist()
+                    "new_treatment": self.costs.tolist(),
                 },
                 "societal": {
                     "standard_care": (self.costs + 50).tolist(),
-                    "new_treatment": (self.costs + 50).tolist()
-                }
+                    "new_treatment": (self.costs + 50).tolist(),
+                },
             },
             "qalys": {
                 "standard_care": self.qalys.tolist(),
-                "new_treatment": self.qalys.tolist()
+                "new_treatment": self.qalys.tolist(),
             },
             "cycles": 10,
             "discount_rate": 0.03,
             "productivity_costs": {
                 "human_capital": {
                     "standard_care": [10, 20, 0],
-                    "new_treatment": [10, 20, 0]
+                    "new_treatment": [10, 20, 0],
                 },
                 "friction_cost": {
                     "standard_care": [5, 10, 0],
-                    "new_treatment": [5, 10, 0]
-                }
-            }
+                    "new_treatment": [5, 10, 0],
+                },
+            },
         }
 
     def test_markov_model_init(self):
@@ -71,7 +69,9 @@ class TestCEAModelCore(unittest.TestCase):
 
     def test_markov_model_run(self):
         model = MarkovModel(self.states, self.transition_matrix)
-        total_cost, total_qalys, trace = model.run(10, self.initial_pop, self.costs, self.qalys)
+        total_cost, total_qalys, trace = model.run(
+            10, self.initial_pop, self.costs, self.qalys
+        )
         self.assertGreater(total_cost, 0)
         self.assertGreater(total_qalys, 0)
         self.assertEqual(trace.shape[0], 11)  # 10 cycles + initial
@@ -92,7 +92,11 @@ class TestCEAModelCore(unittest.TestCase):
         self.assertIn("incremental_nmb", results)
 
     def test_run_cea_societal(self):
-        results = run_cea(self.model_params, perspective="societal", productivity_cost_method="human_capital")
+        results = run_cea(
+            self.model_params,
+            perspective="societal",
+            productivity_cost_method="human_capital",
+        )
         self.assertIn("cost_standard_care", results)
         self.assertIsInstance(results, dict)
 
@@ -100,7 +104,7 @@ class TestCEAModelCore(unittest.TestCase):
         params_with_subgroups = self.model_params.copy()
         params_with_subgroups["subgroups"] = {
             "Maori": {"initial_population": [500, 0, 0]},
-            "Non-Maori": {"initial_population": [500, 0, 0]}
+            "Non-Maori": {"initial_population": [500, 0, 0]},
         }
         results = run_cea(params_with_subgroups, perspective="health_system")
         # Subgroup results should be returned but not as dcea_equity_analysis
@@ -159,9 +163,12 @@ class TestCEAModelCore(unittest.TestCase):
     def test_generate_comparative_icer_table(self):
         hs_results = run_cea(self.model_params, perspective="health_system")
         soc_results = run_cea(self.model_params, perspective="societal")
-        df = generate_comparative_icer_table(hs_results, soc_results, "Test Intervention")
+        df = generate_comparative_icer_table(
+            hs_results, soc_results, "Test Intervention"
+        )
         self.assertIsInstance(df, pd.DataFrame)
         self.assertFalse(df.empty)
+
 
 if __name__ == "__main__":
     unittest.main()

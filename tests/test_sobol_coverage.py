@@ -16,7 +16,7 @@ class TestSobolCoverage(unittest.TestCase):
             "p1": {"distribution": "uniform", "params": {"low": 0, "high": 1}},
             "p2": {"distribution": "normal", "params": {"mean": 0, "std": 1}},
             "p3": {"distribution": "beta", "params": {"alpha": 1, "beta": 1}},
-            "p4": {"distribution": "gamma", "params": {"shape": 1, "scale": 1}}
+            "p4": {"distribution": "gamma", "params": {"shape": 1, "scale": 1}},
         }
         self.model_func = lambda params: params["p1"] + params["p2"]
 
@@ -24,18 +24,24 @@ class TestSobolCoverage(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_init(self):
-        analyzer = SobolAnalyzer(self.model_func, self.param_distributions, n_samples=10)
+        analyzer = SobolAnalyzer(
+            self.model_func, self.param_distributions, n_samples=10
+        )
         self.assertEqual(analyzer.n_samples, 10)
         self.assertEqual(len(analyzer.param_names), 4)
 
     def test_generate_sobol_sequence(self):
-        analyzer = SobolAnalyzer(self.model_func, self.param_distributions, n_samples=10)
+        analyzer = SobolAnalyzer(
+            self.model_func, self.param_distributions, n_samples=10
+        )
         seq = analyzer.generate_sobol_sequence(2, 10)
         self.assertEqual(seq.shape, (10, 2))
         self.assertTrue(np.all(seq >= 0) and np.all(seq <= 1))
 
     def test_sample_parameters(self):
-        analyzer = SobolAnalyzer(self.model_func, self.param_distributions, n_samples=10)
+        analyzer = SobolAnalyzer(
+            self.model_func, self.param_distributions, n_samples=10
+        )
         samples_01 = np.random.rand(10, 4)
         df = analyzer.sample_parameters(samples_01)
         self.assertEqual(df.shape, (10, 4))
@@ -45,7 +51,9 @@ class TestSobolCoverage(unittest.TestCase):
         self.assertIn("p4", df.columns)
 
     def test_saltelli_sampling(self):
-        analyzer = SobolAnalyzer(self.model_func, self.param_distributions, n_samples=10)
+        analyzer = SobolAnalyzer(
+            self.model_func, self.param_distributions, n_samples=10
+        )
         mat_A, mat_B, mats_AB = analyzer.saltelli_sampling()
         self.assertEqual(mat_A.shape, (10, 4))
         self.assertEqual(mat_B.shape, (10, 4))
@@ -53,27 +61,30 @@ class TestSobolCoverage(unittest.TestCase):
         self.assertEqual(mats_AB[0].shape, (10, 4))
 
     def test_evaluate_model(self):
-        analyzer = SobolAnalyzer(self.model_func, self.param_distributions, n_samples=10)
-        df = pd.DataFrame({
-            "p1": [1, 2],
-            "p2": [3, 4],
-            "p3": [0, 0],
-            "p4": [0, 0]
-        })
+        analyzer = SobolAnalyzer(
+            self.model_func, self.param_distributions, n_samples=10
+        )
+        df = pd.DataFrame({"p1": [1, 2], "p2": [3, 4], "p3": [0, 0], "p4": [0, 0]})
         outputs = analyzer.evaluate_model(df)
         self.assertTrue(np.array_equal(outputs, np.array([4, 6])))
 
         # Test tuple output handling
         def tuple_model(params):
-            return (100, 10) # cost, qaly -> NMB = 100 - 10*50000
-        analyzer_tuple = SobolAnalyzer(tuple_model, self.param_distributions, n_samples=2)
+            return (100, 10)  # cost, qaly -> NMB = 100 - 10*50000
+
+        analyzer_tuple = SobolAnalyzer(
+            tuple_model, self.param_distributions, n_samples=2
+        )
         outputs_tuple = analyzer_tuple.evaluate_model(df)
         self.assertEqual(outputs_tuple[0], 100 - 10 * 50000)
 
         # Test failure handling
         def failing_model(params):
             raise ValueError("Fail")
-        analyzer_fail = SobolAnalyzer(failing_model, self.param_distributions, n_samples=2)
+
+        analyzer_fail = SobolAnalyzer(
+            failing_model, self.param_distributions, n_samples=2
+        )
         outputs_fail = analyzer_fail.evaluate_model(df)
         self.assertTrue(np.isnan(outputs_fail[0]))
 
@@ -82,7 +93,7 @@ class TestSobolCoverage(unittest.TestCase):
         # Variances should be roughly equal
         params = {
             "x1": {"distribution": "uniform", "params": {"low": 0, "high": 1}},
-            "x2": {"distribution": "uniform", "params": {"low": 0, "high": 1}}
+            "x2": {"distribution": "uniform", "params": {"low": 0, "high": 1}},
         }
         model = lambda p: p["x1"] + p["x2"]
         analyzer = SobolAnalyzer(model, params, n_samples=100)
@@ -103,19 +114,22 @@ class TestSobolCoverage(unittest.TestCase):
         mock_subplots.return_value = (mock_fig, mock_ax)
 
         results = {
-            "indices": pd.DataFrame({
-                "parameter": ["p1", "p2"],
-                "first_order": [0.4, 0.5],
-                "total_order": [0.45, 0.55],
-                "interaction": [0.05, 0.05]
-            }),
+            "indices": pd.DataFrame(
+                {
+                    "parameter": ["p1", "p2"],
+                    "first_order": [0.4, 0.5],
+                    "total_order": [0.45, 0.55],
+                    "interaction": [0.05, 0.05],
+                }
+            ),
             "confidence_intervals": pd.DataFrame(),
-            "n_evaluations": 1000
+            "n_evaluations": 1000,
         }
         plot_sobol_indices(results, output_dir=self.test_dir)
 
         # Verify savefig was called on the figure object
         self.assertTrue(mock_fig.savefig.called)
+
 
 if __name__ == "__main__":
     unittest.main()

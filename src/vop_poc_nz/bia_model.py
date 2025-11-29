@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Union
 
 import pandas as pd
 
@@ -6,7 +6,7 @@ import pandas as pd
 def project_bia(
     population_size: int,
     eligible_prop: float,
-    uptake_by_year: List[float],
+    uptake_by_year: list[float],
     cost_per_patient: float,
     offset_cost_per_patient: float,
     implementation_cost_year1: float = 0.0,
@@ -32,7 +32,7 @@ def project_bia(
         DataFrame with year-by-year budget impact
     """
     years = list(range(1, horizon_years + 1))
-    out: List[dict[str, float]] = []
+    out: list[dict[str, float]] = []
     cumulative_discounted_net = 0.0
 
     for i, y in enumerate(years):
@@ -86,7 +86,7 @@ def bia_to_markdown_table(
         f"| Year | Treated | Gross cost ({currency} {base_year}) | Offsets ({currency} {base_year}) | Net cost ({currency} {base_year}) |\n"
         "|---:|---:|---:|---:|---:|"
     )
-    rows: List[str] = []
+    rows: list[str] = []
     for r in df.itertuples(index=False):
         year = to_int_safe(getattr(r, "year", 0))
         treated = to_int_safe(getattr(r, "treated", 0))

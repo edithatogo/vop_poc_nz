@@ -38,9 +38,13 @@ class TestDCEAEquityCoverage(unittest.TestCase):
 
     def test_calculate_atkinson_index(self):
         # Test epsilon=1 special case
-        self.assertGreaterEqual(calculate_atkinson_index([10, 20, 30], epsilon=1.0), 0.0)
+        self.assertGreaterEqual(
+            calculate_atkinson_index([10, 20, 30], epsilon=1.0), 0.0
+        )
         # Test epsilon!=1
-        self.assertGreaterEqual(calculate_atkinson_index([10, 20, 30], epsilon=0.5), 0.0)
+        self.assertGreaterEqual(
+            calculate_atkinson_index([10, 20, 30], epsilon=0.5), 0.0
+        )
 
     def test_apply_equity_weights(self):
         nhb = {"A": 100, "B": 200}
@@ -51,9 +55,13 @@ class TestDCEAEquityCoverage(unittest.TestCase):
     def test_run_dcea(self):
         subgroup_results = {
             "Group A": {"incremental_nmb": 100},
-            "Group B": {"incremental_nmb": 200}
+            "Group B": {"incremental_nmb": 200},
         }
-        results = run_dcea(subgroup_results, epsilon=0.5, equity_weights={"Group A": 1.0, "Group B": 1.0})
+        results = run_dcea(
+            subgroup_results,
+            epsilon=0.5,
+            equity_weights={"Group A": 1.0, "Group B": 1.0},
+        )
         self.assertIn("gini_coefficient", results)
         self.assertIn("atkinson_index", results)
         self.assertEqual(results["total_health_gain"], 300)
@@ -67,7 +75,7 @@ class TestDCEAEquityCoverage(unittest.TestCase):
             "atkinson_index": 0.1,
             "variance_of_net_health_benefits": 50,
             "distribution_of_net_health_benefits": {"A": 100, "B": 200},
-            "atkinson_epsilon": 0.5
+            "atkinson_epsilon": 0.5,
         }
         df = generate_dcea_results_table(dcea_results, "Intervention X")
         self.assertIsInstance(df, pd.DataFrame)
@@ -76,7 +84,7 @@ class TestDCEAEquityCoverage(unittest.TestCase):
     def test_calculate_inequality_aversion_sensitivity(self):
         subgroup_results = {
             "Group A": {"incremental_nmb": 100},
-            "Group B": {"incremental_nmb": 200}
+            "Group B": {"incremental_nmb": 200},
         }
         df = calculate_inequality_aversion_sensitivity(subgroup_results)
         self.assertIsInstance(df, pd.DataFrame)
@@ -88,7 +96,7 @@ class TestDCEAEquityCoverage(unittest.TestCase):
         dcea_results = {
             "societal": {
                 "distribution_of_net_health_benefits": {"A": 100, "B": 200},
-                "total_health_gain": 300
+                "total_health_gain": 300,
             }
         }
         plot_lorenz_curve(dcea_results, "Intervention X", output_dir=self.test_dir)
@@ -101,10 +109,15 @@ class TestDCEAEquityCoverage(unittest.TestCase):
     @patch("matplotlib.pyplot.savefig")
     def test_plot_equity_impact_plane(self, mock_savefig):
         dcea_results_dict = {
-            "health_system": {"total_health_gain": 100, "weighted_total_health_gain": 110},
-            "societal": {"total_health_gain": 120, "weighted_total_health_gain": 130}
+            "health_system": {
+                "total_health_gain": 100,
+                "weighted_total_health_gain": 110,
+            },
+            "societal": {"total_health_gain": 120, "weighted_total_health_gain": 130},
         }
-        plot_equity_impact_plane(dcea_results_dict, "Intervention X", output_dir=self.test_dir)
+        plot_equity_impact_plane(
+            dcea_results_dict, "Intervention X", output_dir=self.test_dir
+        )
         self.assertTrue(mock_savefig.called)
 
     @patch("matplotlib.pyplot.savefig")
@@ -112,12 +125,12 @@ class TestDCEAEquityCoverage(unittest.TestCase):
         all_dcea_results = {
             "Int A": {
                 "health_system": {"total_health_gain": 100},
-                "societal": {"total_health_gain": 120}
+                "societal": {"total_health_gain": 120},
             },
             "Int B": {
                 "health_system": {"total_health_gain": 200},
-                "societal": {"total_health_gain": 220}
-            }
+                "societal": {"total_health_gain": 220},
+            },
         }
         plot_comparative_equity_impact_plane(all_dcea_results, output_dir=self.test_dir)
         self.assertTrue(mock_savefig.called)
@@ -125,12 +138,14 @@ class TestDCEAEquityCoverage(unittest.TestCase):
     @patch("matplotlib.pyplot.savefig")
     def test_plot_probabilistic_equity_impact_plane(self, mock_savefig):
         prob_results = {
-            "Int A": pd.DataFrame({
-                "inc_nmb_hs": [100, 110],
-                "equity_weighted_nmb_hs": [105, 115],
-                "inc_nmb_soc": [120, 130],
-                "equity_weighted_nmb_soc": [125, 135]
-            })
+            "Int A": pd.DataFrame(
+                {
+                    "inc_nmb_hs": [100, 110],
+                    "equity_weighted_nmb_hs": [105, 115],
+                    "inc_nmb_soc": [120, 130],
+                    "equity_weighted_nmb_soc": [125, 135],
+                }
+            )
         }
         plot_probabilistic_equity_impact_plane(prob_results, output_dir=self.test_dir)
         self.assertTrue(mock_savefig.called)
@@ -138,14 +153,18 @@ class TestDCEAEquityCoverage(unittest.TestCase):
     @patch("matplotlib.pyplot.savefig")
     def test_plot_probabilistic_equity_impact_plane_with_delta(self, mock_savefig):
         prob_results = {
-            "Int A": pd.DataFrame({
-                "inc_nmb_hs": [100, 110],
-                "equity_weighted_nmb_hs": [105, 115],
-                "inc_nmb_soc": [120, 130],
-                "equity_weighted_nmb_soc": [125, 135]
-            })
+            "Int A": pd.DataFrame(
+                {
+                    "inc_nmb_hs": [100, 110],
+                    "equity_weighted_nmb_hs": [105, 115],
+                    "inc_nmb_soc": [120, 130],
+                    "equity_weighted_nmb_soc": [125, 135],
+                }
+            )
         }
-        plot_probabilistic_equity_impact_plane_with_delta(prob_results, output_dir=self.test_dir)
+        plot_probabilistic_equity_impact_plane_with_delta(
+            prob_results, output_dir=self.test_dir
+        )
         self.assertTrue(mock_savefig.called)
 
     @patch("matplotlib.pyplot.savefig")
@@ -157,11 +176,12 @@ class TestDCEAEquityCoverage(unittest.TestCase):
                 },
                 "societal": {
                     "distribution_of_net_health_benefits": {"G1": 15, "G2": 25}
-                }
+                },
             }
         }
         plot_combined_lorenz_curves(dcea_results_all, output_dir=self.test_dir)
         self.assertTrue(mock_savefig.called)
+
 
 if __name__ == "__main__":
     unittest.main()

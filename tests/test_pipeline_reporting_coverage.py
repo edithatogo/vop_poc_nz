@@ -18,44 +18,36 @@ class TestPipelineReportingCoverage(unittest.TestCase):
             "selected_interventions": {
                 "Intervention_A": {
                     "states": ["Healthy", "Sick"],
-                    "bia_population": {"total_population": 1000}
+                    "bia_population": {"total_population": 1000},
                 }
             },
             "intervention_results": {
                 "Intervention_A": {
                     "health_system": {
                         "trace_standard_care": np.array([[1.0, 0.0]]),
-                        "trace_new_treatment": np.array([[0.9, 0.1]])
+                        "trace_new_treatment": np.array([[0.9, 0.1]]),
                     },
                     "societal": {
                         "human_capital": {
-                            "inequality_sensitivity": pd.DataFrame({"epsilon": [0.5], "atkinson": [0.1]})
+                            "inequality_sensitivity": pd.DataFrame(
+                                {"epsilon": [0.5], "atkinson": [0.1]}
+                            )
                         }
                     },
-                    "discordance": {"metric": 100}
+                    "discordance": {"metric": 100},
                 }
             },
             "probabilistic_results": {
                 "Intervention_A": pd.DataFrame({"inc_nmb": [100, 200]})
             },
-            "dsa_analysis": {
-                "1_way": {"Intervention_A": {}},
-                "2_way": {},
-                "3_way": {}
-            },
+            "dsa_analysis": {"1_way": {"Intervention_A": {}}, "2_way": {}, "3_way": {}},
             "bia_results": {
-                "Intervention_A": pd.DataFrame({
-                    "year": [1, 2],
-                    "gross_cost": [100, 100],
-                    "net_cost": [80, 80]
-                })
+                "Intervention_A": pd.DataFrame(
+                    {"year": [1, 2], "gross_cost": [100, 100], "net_cost": [80, 80]}
+                )
             },
-            "voi_analysis": {
-                "Intervention_A": {}
-            },
-            "dcea_equity_analysis": {
-                "Intervention_A": {"societal": {}}
-            }
+            "voi_analysis": {"Intervention_A": {}},
+            "dcea_equity_analysis": {"Intervention_A": {"societal": {}}},
         }
 
     def tearDown(self):
@@ -66,7 +58,9 @@ class TestPipelineReportingCoverage(unittest.TestCase):
     @patch("vop_poc_nz.pipeline.reporting.plot_discordance_loss")
     @patch("vop_poc_nz.pipeline.reporting.plot_inequality_aversion_sensitivity")
     @patch("vop_poc_nz.pipeline.reporting.plot_combined_lorenz_curves")
-    @patch("vop_poc_nz.pipeline.reporting.plot_probabilistic_equity_impact_plane_with_delta")
+    @patch(
+        "vop_poc_nz.pipeline.reporting.plot_probabilistic_equity_impact_plane_with_delta"
+    )
     @patch("vop_poc_nz.pipeline.reporting.plot_probabilistic_equity_impact_plane")
     @patch("vop_poc_nz.pipeline.reporting.plot_comparative_equity_impact_plane")
     @patch("vop_poc_nz.pipeline.reporting.plot_markov_trace")
@@ -98,11 +92,20 @@ class TestPipelineReportingCoverage(unittest.TestCase):
         run_reporting_pipeline(self.results, self.test_dir)
 
         # Verify JSON dump
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, "complete_analysis_results.json")))
+        self.assertTrue(
+            os.path.exists(
+                os.path.join(self.test_dir, "complete_analysis_results.json")
+            )
+        )
 
         # Verify Report creation
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, "combined_report.md")))
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, "Intervention_A_report.md")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.test_dir, "combined_report.md"))
+        )
+        self.assertTrue(
+            os.path.exists(os.path.join(self.test_dir, "Intervention_A_report.md"))
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

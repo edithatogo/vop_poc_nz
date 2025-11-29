@@ -15,7 +15,7 @@ References:
 - Sobol' (2001) - Global sensitivity indices
 """
 
-from typing import Callable, Dict, List, Tuple
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -33,7 +33,7 @@ class SobolAnalyzer:
     def __init__(
         self,
         model_func: Callable,
-        param_distributions: Dict[str, Dict],
+        param_distributions: dict[str, dict],
         n_samples: int = 1000,
     ):
         """
@@ -113,7 +113,7 @@ class SobolAnalyzer:
 
     def saltelli_sampling(
         self,
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, List[pd.DataFrame]]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame, list[pd.DataFrame]]:
         """
         Generate Saltelli sample matrices for Sobol analysis.
 
@@ -165,7 +165,7 @@ class SobolAnalyzer:
 
         return np.array(outputs)
 
-    def calculate_sobol_indices(self) -> Dict[str, pd.DataFrame]:
+    def calculate_sobol_indices(self) -> dict[str, pd.DataFrame]:
         """
         Calculate Sobol sensitivity indices using Saltelli sampling.
 
@@ -264,7 +264,7 @@ class SobolAnalyzer:
 
 
 def plot_sobol_indices(
-    sobol_results: Dict,
+    sobol_results: dict,
     output_dir: str = "output/figures/",
     title: str = "Sobol Sensitivity Indices",
 ):

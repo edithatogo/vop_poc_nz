@@ -8,7 +8,7 @@ New visualization capabilities for enhanced analysis reporting:
 4. Multi-Intervention Radar Plot
 """
 
-from typing import Dict, List, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,9 +17,9 @@ import pandas as pd
 
 def plot_acceptability_frontier(
     ceac_data: pd.DataFrame,
-    wtp_range: List[float],
+    wtp_range: list[float],
     output_dir: str = "output/figures/",
-    intervention_names: Optional[List[str]] = None,
+    intervention_names: Optional[list[str]] = None,
 ):
     """
     Plot the cost-effectiveness acceptability frontier.
@@ -83,7 +83,7 @@ def plot_acceptability_frontier(
 
 def plot_population_evpi_timeline(
     evpi_per_person: float,
-    population_per_year: List[int],
+    population_per_year: list[int],
     time_horizon: int = 10,
     discount_rate: float = 0.03,
     output_dir: str = "output/figures/",
@@ -160,7 +160,7 @@ def plot_population_evpi_timeline(
 
 
 def plot_threshold_waterfall(
-    threshold_results: Dict[str, Dict],
+    threshold_results: dict[str, dict],
     output_dir: str = "output/figures/",
     base_decision: str = "Cost-Effective",
 ):
@@ -225,8 +225,8 @@ def plot_threshold_waterfall(
 
 
 def plot_intervention_radar(
-    intervention_results: Dict[str, Dict],
-    metrics: Optional[List[str]] = None,
+    intervention_results: dict[str, dict],
+    metrics: Optional[list[str]] = None,
     output_dir: str = "output/figures/",
     normalize: bool = True,
 ):

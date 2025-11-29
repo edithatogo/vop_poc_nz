@@ -10,12 +10,12 @@ Runs on HPV vaccination intervention to verify:
 
 import os
 
-from .pipeline.analysis import load_parameters
 from .perspective_value_dsa import (
     generate_perspective_value_dsa_table,
     perform_perspective_value_dsa,
     plot_perspective_value_dsa,
 )
+from .pipeline.analysis import load_parameters
 from .profiling import (
     print_profiling_report,
     profile_section,

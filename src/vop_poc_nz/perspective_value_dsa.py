@@ -6,7 +6,6 @@ Focuses on WTP threshold, discount rate, and equity weight variations.
 """
 
 import copy
-from typing import Dict, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,12 +20,12 @@ from .visualizations import apply_default_style, save_figure
 
 
 def perform_perspective_value_dsa(
-    model_params: Dict,
+    model_params: dict,
     intervention_name: str = "Intervention",
-    wtp_range: Tuple[float, float] = (25000, 75000),
+    wtp_range: tuple[float, float] = (25000, 75000),
     n_wtp_points: int = 20,
     n_psa_samples: int = 500,
-) -> Dict:
+) -> dict:
     """
     Perform DSA on Value of Perspective metrics across WTP threshold range.
 
@@ -115,7 +114,7 @@ def perform_perspective_value_dsa(
 
     # Loop over WTP thresholds
     for i, wtp in enumerate(wtp_thresholds):
-        print(f"  Progress: {i+1}/{n_wtp_points} (WTP=${wtp:,.0f})", end="\r")
+        print(f"  Progress: {i + 1}/{n_wtp_points} (WTP=${wtp:,.0f})", end="\r")
 
         # Run PSA for health system perspective
         psa_hs = ProbabilisticSensitivityAnalysis(
@@ -153,7 +152,7 @@ def perform_perspective_value_dsa(
 
 
 def plot_perspective_value_dsa(
-    dsa_results: Dict,
+    dsa_results: dict,
     output_dir: str = "output/figures/",
 ):
     """
@@ -306,7 +305,7 @@ def plot_perspective_value_dsa(
 
     plt.suptitle(
         f"Perspective Value Sensitivity Analysis: {intervention_name}\n"
-        f"WTP Range: ${wtp[0]/1000:.0f}k - ${wtp[-1]/1000:.0f}k",
+        f"WTP Range: ${wtp[0] / 1000:.0f}k - ${wtp[-1] / 1000:.0f}k",
         fontsize=14,
         fontweight="bold",
         y=0.995,
@@ -317,7 +316,7 @@ def plot_perspective_value_dsa(
     plt.close(fig)
 
 
-def generate_perspective_value_dsa_table(dsa_results: Dict) -> pd.DataFrame:
+def generate_perspective_value_dsa_table(dsa_results: dict) -> pd.DataFrame:
     """
     Generate summary table of perspective value DSA results.
 

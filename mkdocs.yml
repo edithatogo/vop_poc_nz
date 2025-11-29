@@ -1,0 +1,97 @@
+site_name: vop-poc-nz
+site_description: Distributional Cost-Effectiveness Analysis Framework for Aotearoa New Zealand
+site_url: https://edithatogo.github.io/vop_poc_nz/
+repo_url: https://github.com/edithatogo/vop_poc_nz
+repo_name: edithatogo/vop_poc_nz
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Tutorial: getting-started/tutorial.md
+  - User Guide:
+      - Cost-Effectiveness Analysis: guide/cea.md
+      - Distributional CEA: guide/dcea.md
+      - Value of Information: guide/voi.md
+      - Sensitivity Analysis: guide/sensitivity.md
+      - Budget Impact Analysis: guide/bia.md
+  - API Reference:
+      - CEA Core: api/cea_model_core.md
+      - DCEA: api/dcea_equity_analysis.md
+      - Value of Information: api/value_of_information.md
+      - DSA Analysis: api/dsa_analysis.md
+      - Sobol Analysis: api/sobol_analysis.md
+      - BIA Model: api/bia_model.md
+      - Visualizations: api/visualizations.md
+  - Methodology:
+      - Formulae: methodology/formulae.md
+      - CHEERS 2022: methodology/cheers.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/edithatogo/vop_poc_nz
+  version:
+    provider: mike

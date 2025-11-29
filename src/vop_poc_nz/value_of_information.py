@@ -9,12 +9,12 @@ to address reviewer feedback about methodology justification.
 import contextlib
 import logging
 import warnings
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 import numpy as np
 import pandas as pd
-# from scipy.stats import beta, gamma, norm, uniform  # Moved to local import
 
+# from scipy.stats import beta, gamma, norm, uniform  # Moved to local import
 from .validation import validate_psa_results
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class ProbabilisticSensitivityAnalysis:
     """
 
     def __init__(
-        self, model_func: Callable, parameters: Dict, wtp_threshold: float = 50000
+        self, model_func: Callable, parameters: dict, wtp_threshold: float = 50000
     ):
         """
         Initialize PSA with model function and parameter distributions.
@@ -42,7 +42,7 @@ class ProbabilisticSensitivityAnalysis:
         self.parameters = parameters
         self.wtp_threshold = wtp_threshold
 
-    def sample_parameters(self, n_samples: int = 10000) -> List[Dict]:
+    def sample_parameters(self, n_samples: int = 10000) -> list[dict]:
         """
         Sample parameters from their distributions for Monte Carlo simulation.
 
@@ -58,7 +58,7 @@ class ProbabilisticSensitivityAnalysis:
             for param_name, dist_info in self.parameters.items():
                 dist_type = dist_info["distribution"]
                 params = dist_info["params"]
-                
+
                 # Local import to avoid hard dependency if not sampling
                 from scipy.stats import beta, gamma, norm, uniform
 
@@ -97,19 +97,27 @@ class ProbabilisticSensitivityAnalysis:
         parameter_samples = self.sample_parameters(n_samples)
 
         # Initialize results dictionary with lists
-        results: Dict[str, List[Any]] = {
+        results: dict[str, list[Any]] = {
             "iteration": [],
             # Health System
-            "cost_sc_hs": [], "qaly_sc_hs": [],
-            "cost_nt_hs": [], "qaly_nt_hs": [],
-            "inc_cost_hs": [], "inc_qaly_hs": [],
-            "nmb_sc_hs": [], "nmb_nt_hs": [],
+            "cost_sc_hs": [],
+            "qaly_sc_hs": [],
+            "cost_nt_hs": [],
+            "qaly_nt_hs": [],
+            "inc_cost_hs": [],
+            "inc_qaly_hs": [],
+            "nmb_sc_hs": [],
+            "nmb_nt_hs": [],
             "inc_nmb_hs": [],
             # Societal
-            "cost_sc_soc": [], "qaly_sc_soc": [],
-            "cost_nt_soc": [], "qaly_nt_soc": [],
-            "inc_cost_soc": [], "inc_qaly_soc": [],
-            "nmb_sc_soc": [], "nmb_nt_soc": [],
+            "cost_sc_soc": [],
+            "qaly_sc_soc": [],
+            "cost_nt_soc": [],
+            "qaly_nt_soc": [],
+            "inc_cost_soc": [],
+            "inc_qaly_soc": [],
+            "nmb_sc_soc": [],
+            "nmb_nt_soc": [],
             "inc_nmb_soc": [],
             # Legacy/Default (aliased to Societal for backward compatibility if needed, or handled dynamically)
             "cost_effective": [],
@@ -262,7 +270,7 @@ class ProbabilisticSensitivityAnalysis:
         return df
 
     def calculate_ceac(
-        self, psa_results: pd.DataFrame, wtp_values: Optional[List[float]] = None
+        self, psa_results: pd.DataFrame, wtp_values: Optional[list[float]] = None
     ) -> pd.DataFrame:
         """
         Calculate Cost-Effectiveness Acceptability Curves (CEAC).
@@ -352,7 +360,9 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
 
     # EVPI = Expected value with perfect information - Expected value with current info
     expected_nmb_with_perfect_info = np.mean(max_nmb_per_sim)
-    logger.debug(f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}")
+    logger.debug(
+        f"DEBUG: Expected NMB with Perfect Info={expected_nmb_with_perfect_info}"
+    )
 
     evpi = expected_nmb_with_perfect_info - current_optimal_nmb
     logger.debug(f"DEBUG: Raw EVPI={evpi}")
@@ -367,12 +377,12 @@ def calculate_evpi(psa_results: pd.DataFrame, wtp_threshold: float = 50000) -> f
 
 def calculate_evppi(
     psa_results: pd.DataFrame,
-    parameter_group: List[str],
-    all_params: List[str],
-    wtp_thresholds: Optional[List[float]] = None,
+    parameter_group: list[str],
+    all_params: list[str],
+    wtp_thresholds: Optional[list[float]] = None,
     n_bootstrap: int = 100,
     perspective: str = "societal",
-) -> List[float]:
+) -> list[float]:
     """
     Calculate Expected Value of Partially Perfect Information (EVPPI) across WTP thresholds.
 
@@ -397,7 +407,7 @@ def calculate_evppi(
     if wtp_thresholds is None:
         wtp_thresholds = [float(x) for x in np.arange(0, 100000, 5000).tolist()]
 
-    evppi_values: List[float] = []
+    evppi_values: list[float] = []
 
     # Determine column suffixes based on perspective
     # run_psa output has: cost_sc_hs, qaly_sc_hs, cost_sc_soc, qaly_sc_soc
@@ -407,10 +417,18 @@ def calculate_evppi(
     suffix = "_hs" if perspective == "health_system" else "_soc"
 
     # Fallback to standard names if specific ones don't exist
-    col_c_sc = f"cost_sc{suffix}" if f"cost_sc{suffix}" in psa_results.columns else "cost_sc"
-    col_q_sc = f"qaly_sc{suffix}" if f"qaly_sc{suffix}" in psa_results.columns else "qaly_sc"
-    col_c_nt = f"cost_nt{suffix}" if f"cost_nt{suffix}" in psa_results.columns else "cost_nt"
-    col_q_nt = f"qaly_nt{suffix}" if f"qaly_nt{suffix}" in psa_results.columns else "qaly_nt"
+    col_c_sc = (
+        f"cost_sc{suffix}" if f"cost_sc{suffix}" in psa_results.columns else "cost_sc"
+    )
+    col_q_sc = (
+        f"qaly_sc{suffix}" if f"qaly_sc{suffix}" in psa_results.columns else "qaly_sc"
+    )
+    col_c_nt = (
+        f"cost_nt{suffix}" if f"cost_nt{suffix}" in psa_results.columns else "cost_nt"
+    )
+    col_q_nt = (
+        f"qaly_nt{suffix}" if f"qaly_nt{suffix}" in psa_results.columns else "qaly_nt"
+    )
 
     for wtp in wtp_thresholds:
         # Create parameter matrix from PSA results
@@ -419,7 +437,8 @@ def calculate_evppi(
         if not param_cols:
             warnings.warn(
                 f"No parameter columns found matching: {parameter_group}",
-                UserWarning, stacklevel=2,
+                UserWarning,
+                stacklevel=2,
             )
             evppi_values.append(0.0)
             continue
@@ -487,7 +506,7 @@ def calculate_value_of_perspective(
     psa_results_soc: pd.DataFrame,
     wtp_threshold: float = 50000.0,
     chosen_perspective: str = "health_system",
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Comprehensive Value of Perspective Analysis with multiple metrics.
 
@@ -605,7 +624,7 @@ def calculate_value_of_perspective(
 
 def explain_value_of_information_benefits(
     base_icer: float, wtp_threshold: float
-) -> Dict:
+) -> dict:
     """
     Explain the benefits of value-of-information analysis even when base-case ICER is below WTP.
 
@@ -671,10 +690,10 @@ def calculate_population_evpi(
 
 def generate_voi_report(
     psa_results: pd.DataFrame,
-    wtp_thresholds: Optional[List[float]] = None,
+    wtp_thresholds: Optional[list[float]] = None,
     target_population: int = 100000,
-    parameter_names: Optional[List[str]] = None,
-) -> Dict:
+    parameter_names: Optional[list[str]] = None,
+) -> dict:
     """
     Generate a comprehensive value-of-information report.
 
@@ -724,9 +743,12 @@ def generate_voi_report(
                     )
                     EVPPI_results[f"EVPPI_{group_name}{suffix}"] = evppi_vals
                 except Exception as e:
-                    logger.warning(f"Warning: EVPPI calculation failed for {group_name} ({perspective}): {e}")
-                    EVPPI_results[f"EVPPI_{group_name}{suffix}"] = [0.0] * len(wtp_thresholds)
-
+                    logger.warning(
+                        f"Warning: EVPPI calculation failed for {group_name} ({perspective}): {e}"
+                    )
+                    EVPPI_results[f"EVPPI_{group_name}{suffix}"] = [0.0] * len(
+                        wtp_thresholds
+                    )
 
     # Calculate basic statistics at WTP=50k
     mean_inc_cost = psa_results["inc_cost"].mean()

@@ -9,7 +9,6 @@ This module generates a 1-page Executive Summary (Markdown) synthesizing:
 
 import logging
 import os
-from typing import Dict
 
 import pandas as pd
 
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_policy_brief(
-    intervention_results: Dict,
+    intervention_results: dict,
     output_dir: str = "output/reports/",
     filename: str = "policy_brief.md",
 ):

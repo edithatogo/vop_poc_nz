@@ -33,8 +33,9 @@ from vop_poc_nz.visualizations import (
 # Skip entire module on CI to prevent timeouts due to heavy plotting
 pytestmark = pytest.mark.skipif(
     os.environ.get("CI") == "true",
-    reason="Too slow/resource intensive for CI environment"
+    reason="Too slow/resource intensive for CI environment",
 )
+
 
 @pytest.fixture()
 def base_params():
@@ -126,7 +127,9 @@ def test_comparative_dsa_plots(tmp_path):
     assert any(fig_dir.iterdir())
 
 
-@pytest.mark.skipif(os.environ.get("CI") == "true", reason="Too slow for CI environment")
+@pytest.mark.skipif(
+    os.environ.get("CI") == "true", reason="Too slow for CI environment"
+)
 def test_dsa_workflow_and_dashboard(tmp_path, base_params):
     figs = tmp_path / "dsa_workflow"
     figs.mkdir()

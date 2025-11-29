@@ -5,7 +5,7 @@ authors:
   - name: "Dylan A Mordaunt"
 repository-code: "https://github.com/edithatogo/vop_poc_nz"
 license: Apache-2.0
-version: "0.1.3"
+version: "0.1.4"
 abstract: |
   Canonical implementation of a health economic analysis with Distributional Cost-Effectiveness Analysis (DCEA),
   value of information methods, and global sensitivity analysis, incorporating societal perspective considerations.

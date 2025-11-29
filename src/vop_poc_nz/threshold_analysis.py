@@ -5,8 +5,6 @@ This module provides functions to perform threshold analysis to identify
 decision-switching points for cost-effectiveness analysis.
 """
 
-from typing import Dict
-
 import pandas as pd
 
 from .cea_model_core import run_cea
@@ -14,10 +12,10 @@ from .cea_model_core import run_cea
 
 def run_threshold_analysis(
     intervention_name: str,
-    base_params: Dict,
-    parameter_ranges: Dict,
+    base_params: dict,
+    parameter_ranges: dict,
     wtp_threshold: float = 50000,
-) -> Dict:
+) -> dict:
     """
     Run threshold analysis to identify decision-switching points.
 

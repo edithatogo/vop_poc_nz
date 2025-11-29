@@ -4,7 +4,7 @@ Validation utilities using pandera and pydantic for health economic analyses.
 
 import os
 import warnings
-from typing import Dict, List, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -33,9 +33,9 @@ def validate_psa_results(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class ParametersModel(BaseModel):
-    states: List[str] = Field(min_length=1)
+    states: list[str] = Field(min_length=1)
     cycles: int = Field(gt=0)
-    initial_population: List[int] = Field(min_length=1)
+    initial_population: list[int] = Field(min_length=1)
     discount_rate: float = Field(0.03, ge=0, le=1)
     costs: dict
     qalys: dict
@@ -45,7 +45,7 @@ class ParametersModel(BaseModel):
     productivity_loss_states: Optional[dict] = None
 
 
-def validate_transition_matrices(params: Dict) -> None:
+def validate_transition_matrices(params: dict) -> None:
     """Validate transition matrices for shape, non-negativity, and row sums."""
     states = params.get("states", [])
     tm = params.get("transition_matrices", {})
@@ -64,7 +64,7 @@ def validate_transition_matrices(params: Dict) -> None:
             )
 
 
-def validate_costs_and_qalys(params: Dict) -> None:
+def validate_costs_and_qalys(params: dict) -> None:
     """Ensure cost and QALY arrays are present and non-negative."""
     for perspective in ("health_system", "societal"):
         costs = params.get("costs", {}).get(perspective, {})

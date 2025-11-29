@@ -90,7 +90,9 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     try:
         with open(os.path.join(output_dir, "complete_analysis_results.json"), "w") as f:
             json.dump(results, f, cls=NumpyEncoder, indent=4)
-        print(f"Results saved to {os.path.join(output_dir, 'complete_analysis_results.json')}")
+        print(
+            f"Results saved to {os.path.join(output_dir, 'complete_analysis_results.json')}"
+        )
     except Exception as e:
         print(f"Warning: Could not save results to JSON: {e}")
 
@@ -111,7 +113,11 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
 
     # 1.5 Generate Tables
     logger.info("Generating tables...")
-    generate_all_tables(results, results.get("selected_interventions", {}), os.path.join(output_dir, "tables"))
+    generate_all_tables(
+        results,
+        results.get("selected_interventions", {}),
+        os.path.join(output_dir, "tables"),
+    )
 
     # 2. Generate Plots
     logger.info("Generating all plots...")
@@ -234,25 +240,35 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         if "health_system" in res:
             hs_res = res["health_system"]
             trace_data = {}
-            if "trace_standard_care" in hs_res and hs_res["trace_standard_care"] is not None:
+            if (
+                "trace_standard_care" in hs_res
+                and hs_res["trace_standard_care"] is not None
+            ):
                 logger.info(f"  Found trace_standard_care for {name}")
                 # Convert to DataFrame for plotting
                 # Need state names from params
                 params = results["selected_interventions"].get(name, {})
                 states = params.get("states", [])
                 if states:
-                    trace_data["standard_care"] = pd.DataFrame(hs_res["trace_standard_care"], columns=states)
+                    trace_data["standard_care"] = pd.DataFrame(
+                        hs_res["trace_standard_care"], columns=states
+                    )
                 else:
                     logger.warning(f"  States missing for {name}")
             else:
                 logger.warning(f"  trace_standard_care missing or None for {name}")
 
-            if "trace_new_treatment" in hs_res and hs_res["trace_new_treatment"] is not None:
+            if (
+                "trace_new_treatment" in hs_res
+                and hs_res["trace_new_treatment"] is not None
+            ):
                 logger.info(f"  Found trace_new_treatment for {name}")
                 params = results["selected_interventions"].get(name, {})
                 states = params.get("states", [])
                 if states:
-                    trace_data["new_treatment"] = pd.DataFrame(hs_res["trace_new_treatment"], columns=states)
+                    trace_data["new_treatment"] = pd.DataFrame(
+                        hs_res["trace_new_treatment"], columns=states
+                    )
             else:
                 logger.warning(f"  trace_new_treatment missing or None for {name}")
 
@@ -266,34 +282,30 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     equity_interventions = []
     for name, dcea_res in results.get("dcea_equity_analysis", {}).items():
         if dcea_res:
-            pass # Added to fix IndentationError
+            pass  # Added to fix IndentationError
     if equity_interventions:
         # compose_equity_dashboard(equity_interventions, output_dir=figures_dir)
-        pass # Added to fix IndentationError
+        pass  # Added to fix IndentationError
 
     # Comparative Equity Plot
     if results.get("dcea_equity_analysis"):
         plot_comparative_equity_impact_plane(
-            results["dcea_equity_analysis"],
-            output_dir=figures_dir
+            results["dcea_equity_analysis"], output_dir=figures_dir
         )
 
     # Probabilistic Equity Plot (Scatter)
     if results.get("probabilistic_results"):
         plot_probabilistic_equity_impact_plane(
-            results["probabilistic_results"],
-            output_dir=figures_dir
+            results["probabilistic_results"], output_dir=figures_dir
         )
         plot_probabilistic_equity_impact_plane_with_delta(
-            results["probabilistic_results"],
-            output_dir=figures_dir
+            results["probabilistic_results"], output_dir=figures_dir
         )
 
     # Combined Lorenz Curves
     if results.get("dcea_equity_analysis"):
         plot_combined_lorenz_curves(
-            results["dcea_equity_analysis"],
-            output_dir=figures_dir
+            results["dcea_equity_analysis"], output_dir=figures_dir
         )
 
     # Inequality Aversion Sensitivity Plots

@@ -5,14 +5,12 @@ This module provides functions to calculate and analyze decision discordance
 between different perspectives in cost-effectiveness analysis.
 """
 
-from typing import Dict
-
 from .cea_model_core import run_cea
 
 
 def calculate_decision_discordance(
-    intervention_name: str, params: Dict, wtp_threshold: float = 50000
-) -> Dict:
+    intervention_name: str, params: dict, wtp_threshold: float = 50000
+) -> dict:
     """
     Calculate decision discordance metrics.
 

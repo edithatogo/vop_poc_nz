@@ -7,14 +7,14 @@ population subgroups.
 """
 
 import os
-from typing import Dict, List, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 
-def calculate_gini(net_health_benefits: List[float]) -> float:
+def calculate_gini(net_health_benefits: list[float]) -> float:
     """Calculates the Gini coefficient for a list of net health benefits."""
     array = np.array(net_health_benefits, dtype=np.float64)
     # Gini coefficient calculation
@@ -34,7 +34,7 @@ def calculate_gini(net_health_benefits: List[float]) -> float:
 
 
 def calculate_atkinson_index(
-    net_health_benefits: List[float], epsilon: float = 0.5
+    net_health_benefits: list[float], epsilon: float = 0.5
 ) -> float:
     """Calculates the Atkinson index for a list of net health benefits."""
     array = np.array(net_health_benefits, dtype=np.float64)
@@ -48,7 +48,7 @@ def calculate_atkinson_index(
 
 
 def apply_equity_weights(
-    net_health_benefits: Dict[str, float], weights: Dict[str, float]
+    net_health_benefits: dict[str, float], weights: dict[str, float]
 ) -> float:
     """
     Calculates the equity-weighted total net health benefit.
@@ -68,10 +68,10 @@ def apply_equity_weights(
 
 
 def run_dcea(
-    subgroup_results: Dict,
+    subgroup_results: dict,
     epsilon: float = 0.5,
-    equity_weights: Optional[Dict[str, float]] = None,
-) -> Dict:
+    equity_weights: Optional[dict[str, float]] = None,
+) -> dict:
     """
     Performs a distributional cost-effectiveness analysis.
 
@@ -117,7 +117,7 @@ def run_dcea(
 
 
 def generate_dcea_results_table(
-    dcea_results: Dict, intervention_name: str
+    dcea_results: dict, intervention_name: str
 ) -> pd.DataFrame:
     """
     Generates a detailed summary table of DCEA results for manuscript inclusion.
@@ -199,7 +199,7 @@ def generate_dcea_results_table(
 
 
 def calculate_inequality_aversion_sensitivity(
-    subgroup_results: Dict, epsilon_range: List[float] = None
+    subgroup_results: dict, epsilon_range: list[float] = None
 ) -> pd.DataFrame:
     """
     Calculates DCEA metrics for a range of inequality aversion parameters (epsilon).
@@ -241,7 +241,7 @@ def calculate_inequality_aversion_sensitivity(
 
 
 def plot_lorenz_curve(
-    dcea_results: Dict, intervention_name: str, output_dir: str = "output/figures/"
+    dcea_results: dict, intervention_name: str, output_dir: str = "output/figures/"
 ):
     """
     Generates a Lorenz curve plot.
@@ -307,7 +307,7 @@ def plot_lorenz_curve(
 
 
 def plot_equity_impact_plane(
-    dcea_results_dict: Dict, intervention_name: str, output_dir: str = "output/figures/"
+    dcea_results_dict: dict, intervention_name: str, output_dir: str = "output/figures/"
 ):
     """
     Generates a comparative equity impact plane plot (Health System vs Societal).
@@ -363,16 +363,28 @@ def plot_equity_impact_plane(
 
         # Annotate quadrants
         ax.text(
-            0.05, 0.95, "Pro-Equity\n(Weighted > Unweighted)",
-            transform=ax.transAxes, ha="left", va="top", fontsize=10, color="green",
+            0.05,
+            0.95,
+            "Pro-Equity\n(Weighted > Unweighted)",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=10,
+            color="green",
         )
         ax.text(
-            0.95, 0.05, "Anti-Equity\n(Weighted < Unweighted)",
-            transform=ax.transAxes, ha="right", va="bottom", fontsize=10, color="red",
+            0.95,
+            0.05,
+            "Anti-Equity\n(Weighted < Unweighted)",
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=10,
+            color="red",
         )
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.85) # Make room for suptitle
+    plt.subplots_adjust(top=0.85)  # Make room for suptitle
 
     filename = f"equity_impact_plane_{intervention_name.lower().replace(' ', '_')}"
     plt.savefig(f"{output_dir}/{filename}.png", bbox_inches="tight")
@@ -381,7 +393,7 @@ def plot_equity_impact_plane(
 
 
 def plot_comparative_equity_impact_plane(
-    all_dcea_results: Dict, output_dir: str = "output/figures/"
+    all_dcea_results: dict, output_dir: str = "output/figures/"
 ):
     """
     Generates a single comparative equity impact plane for ALL interventions.
@@ -399,7 +411,7 @@ def plot_comparative_equity_impact_plane(
     )
 
     # Define styles for interventions
-    markers = ['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h']
+    markers = ["o", "s", "^", "D", "v", "<", ">", "p", "*", "h"]
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
 
     # Helper to plot a perspective
@@ -409,7 +421,14 @@ def plot_comparative_equity_impact_plane(
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
 
         # 45-degree line placeholder (will update limits later)
-        ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+        ax.plot(
+            [-1e9, 1e9],
+            [-1e9, 1e9],
+            "k-",
+            alpha=0.3,
+            zorder=0,
+            label="Equity Neutrality",
+        )
 
         # Plot points
         max_val = 0
@@ -432,10 +451,10 @@ def plot_comparative_equity_impact_plane(
                 label=name,
                 marker=markers[i % len(markers)],
                 color=colors[i % len(colors)],
-                edgecolor='white',
+                edgecolor="white",
                 linewidth=1.5,
                 alpha=0.9,
-                zorder=10
+                zorder=10,
             )
 
         # Set limits symmetric and large enough
@@ -449,8 +468,26 @@ def plot_comparative_equity_impact_plane(
         ax.grid(True, alpha=0.3)
 
         # Annotate quadrants
-        ax.text(0.05, 0.95, "Pro-Equity\n(Weighted > Unweighted)", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
-        ax.text(0.95, 0.05, "Anti-Equity\n(Weighted < Unweighted)", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+        ax.text(
+            0.05,
+            0.95,
+            "Pro-Equity\n(Weighted > Unweighted)",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            color="green",
+            fontsize=10,
+        )
+        ax.text(
+            0.95,
+            0.05,
+            "Anti-Equity\n(Weighted < Unweighted)",
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            color="red",
+            fontsize=10,
+        )
 
     plot_perspective(ax1, "health_system", "Health System")
     plot_perspective(ax2, "societal", "Societal")
@@ -460,20 +497,33 @@ def plot_comparative_equity_impact_plane(
     # Filter out the 'Equity Neutrality' line from legend if desired, or keep it
     # Let's keep distinct intervention labels
     by_label = dict(zip(labels, handles))
-    by_label.pop("Equity Neutrality", None) # Remove line from legend to focus on interventions
+    by_label.pop(
+        "Equity Neutrality", None
+    )  # Remove line from legend to focus on interventions
 
-    fig.legend(by_label.values(), by_label.keys(), loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.02),
+        ncol=3,
+        fontsize=12,
+    )
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
 
-    plt.savefig(f"{output_dir}/equity_impact_plane_comparative.png", bbox_inches="tight")
-    plt.savefig(f"{output_dir}/equity_impact_plane_comparative.pdf", bbox_inches="tight")
+    plt.savefig(
+        f"{output_dir}/equity_impact_plane_comparative.png", bbox_inches="tight"
+    )
+    plt.savefig(
+        f"{output_dir}/equity_impact_plane_comparative.pdf", bbox_inches="tight"
+    )
     plt.close()
 
 
 def plot_probabilistic_equity_impact_plane(
-    probabilistic_results: Dict[str, pd.DataFrame], output_dir: str = "output/figures/"
+    probabilistic_results: dict[str, pd.DataFrame], output_dir: str = "output/figures/"
 ):
     """
     Generates a probabilistic equity impact plane (Scatter Plot of PSA results).
@@ -496,7 +546,14 @@ def plot_probabilistic_equity_impact_plane(
     def plot_perspective(ax, perspective_suffix, title):
         ax.axhline(0, color="black", linestyle="--", linewidth=0.8)
         ax.axvline(0, color="black", linestyle="--", linewidth=0.8)
-        ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+        ax.plot(
+            [-1e9, 1e9],
+            [-1e9, 1e9],
+            "k-",
+            alpha=0.3,
+            zorder=0,
+            label="Equity Neutrality",
+        )
 
         max_val = 0
 
@@ -520,7 +577,7 @@ def plot_probabilistic_equity_impact_plane(
                 s=10,
                 alpha=0.1,
                 color=colors[i % len(colors)],
-                label=name if i < 10 else None # Avoid legend clutter if too many
+                label=name if i < 10 else None,  # Avoid legend clutter if too many
             )
 
             # Plot centroid
@@ -528,11 +585,11 @@ def plot_probabilistic_equity_impact_plane(
                 efficiency.mean(),
                 equity.mean(),
                 s=100,
-                marker='X',
-                edgecolor='white',
+                marker="X",
+                edgecolor="white",
                 linewidth=1.5,
                 color=colors[i % len(colors)],
-                zorder=10
+                zorder=10,
             )
 
         limit = max_val * 1.1 if max_val > 0 else 1000
@@ -545,8 +602,26 @@ def plot_probabilistic_equity_impact_plane(
         ax.grid(True, alpha=0.3)
 
         # Annotate
-        ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
-        ax.text(0.95, 0.05, "Anti-Equity", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+        ax.text(
+            0.05,
+            0.95,
+            "Pro-Equity",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            color="green",
+            fontsize=10,
+        )
+        ax.text(
+            0.95,
+            0.05,
+            "Anti-Equity",
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            color="red",
+            fontsize=10,
+        )
 
     plot_perspective(ax1, "hs", "Health System")
     plot_perspective(ax2, "soc", "Societal")
@@ -555,22 +630,40 @@ def plot_probabilistic_equity_impact_plane(
     handles = []
     labels = []
     for i, name in enumerate(probabilistic_results.keys()):
-        h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
+        h = plt.Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor=colors[i % len(colors)],
+            markersize=10,
+        )
         handles.append(h)
         labels.append(name)
 
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=12)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.02),
+        ncol=3,
+        fontsize=12,
+    )
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
 
-    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.png", bbox_inches="tight")
-    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic.pdf", bbox_inches="tight")
+    plt.savefig(
+        f"{output_dir}/equity_impact_plane_probabilistic.png", bbox_inches="tight"
+    )
+    plt.savefig(
+        f"{output_dir}/equity_impact_plane_probabilistic.pdf", bbox_inches="tight"
+    )
     plt.close()
 
 
 def plot_probabilistic_equity_impact_plane_with_delta(
-    probabilistic_results: Dict[str, pd.DataFrame], output_dir: str = "output/figures/"
+    probabilistic_results: dict[str, pd.DataFrame], output_dir: str = "output/figures/"
 ):
     """
     Generates a probabilistic equity impact plane with Delta subplot.
@@ -594,36 +687,59 @@ def plot_probabilistic_equity_impact_plane_with_delta(
 
         # Only plot 45-degree line for HS and Soc, not necessarily for Delta (though maybe relevant)
         if perspective_idx < 2:
-            ax.plot([-1e9, 1e9], [-1e9, 1e9], "k-", alpha=0.3, zorder=0, label="Equity Neutrality")
+            ax.plot(
+                [-1e9, 1e9],
+                [-1e9, 1e9],
+                "k-",
+                alpha=0.3,
+                zorder=0,
+                label="Equity Neutrality",
+            )
 
         max_val = 0
 
         for i, (_name, df) in enumerate(probabilistic_results.items()):
-            if perspective_idx == 0: # HS
+            if perspective_idx == 0:  # HS
                 eff_col = "inc_nmb_hs"
                 eq_col = "equity_weighted_nmb_hs"
-            elif perspective_idx == 1: # Soc
+            elif perspective_idx == 1:  # Soc
                 eff_col = "inc_nmb_soc"
                 eq_col = "equity_weighted_nmb_soc"
-            else: # Delta
+            else:  # Delta
                 # Calculate delta
                 eff_hs: pd.Series = df.get("inc_nmb_hs", pd.Series(0, index=df.index))  # type: ignore[assignment]
-                eq_hs: pd.Series = df.get("equity_weighted_nmb_hs", pd.Series(0, index=df.index))  # type: ignore[assignment]
+                eq_hs: pd.Series = df.get(
+                    "equity_weighted_nmb_hs", pd.Series(0, index=df.index)
+                )  # type: ignore[assignment]
                 eff_soc: pd.Series = df.get("inc_nmb_soc", pd.Series(0, index=df.index))  # type: ignore[assignment]
-                eq_soc: pd.Series = df.get("equity_weighted_nmb_soc", pd.Series(0, index=df.index))  # type: ignore[assignment]
+                eq_soc: pd.Series = df.get(
+                    "equity_weighted_nmb_soc", pd.Series(0, index=df.index)
+                )  # type: ignore[assignment]
 
                 efficiency = eff_soc - eff_hs
                 equity = eq_soc - eq_hs
 
                 # Skip check below as we constructed series
                 # But check if original cols existed
-                if "inc_nmb_hs" not in df.columns: continue
+                if "inc_nmb_hs" not in df.columns:
+                    continue
 
                 # Plot
                 max_val = max(max_val, efficiency.abs().max(), equity.abs().max())
 
-                ax.scatter(efficiency, equity, s=10, alpha=0.1, color=colors[i % len(colors)])
-                ax.scatter(efficiency.mean(), equity.mean(), s=100, marker='X', edgecolor='white', linewidth=1.5, color=colors[i % len(colors)], zorder=10)
+                ax.scatter(
+                    efficiency, equity, s=10, alpha=0.1, color=colors[i % len(colors)]
+                )
+                ax.scatter(
+                    efficiency.mean(),
+                    equity.mean(),
+                    s=100,
+                    marker="X",
+                    edgecolor="white",
+                    linewidth=1.5,
+                    color=colors[i % len(colors)],
+                    zorder=10,
+                )
                 continue
 
             if eff_col not in df.columns or eq_col not in df.columns:
@@ -649,11 +765,11 @@ def plot_probabilistic_equity_impact_plane_with_delta(
                 efficiency.mean(),
                 equity.mean(),
                 s=100,
-                marker='X',
-                edgecolor='white',
+                marker="X",
+                edgecolor="white",
                 linewidth=1.5,
                 color=colors[i % len(colors)],
-                zorder=10
+                zorder=10,
             )
 
         limit = max_val * 1.1 if max_val > 0 else 1000
@@ -672,8 +788,26 @@ def plot_probabilistic_equity_impact_plane_with_delta(
 
         # Annotate
         if perspective_idx < 2:
-            ax.text(0.05, 0.95, "Pro-Equity", transform=ax.transAxes, ha="left", va="top", color="green", fontsize=10)
-            ax.text(0.95, 0.05, "Anti-Equity", transform=ax.transAxes, ha="right", va="bottom", color="red", fontsize=10)
+            ax.text(
+                0.05,
+                0.95,
+                "Pro-Equity",
+                transform=ax.transAxes,
+                ha="left",
+                va="top",
+                color="green",
+                fontsize=10,
+            )
+            ax.text(
+                0.95,
+                0.05,
+                "Anti-Equity",
+                transform=ax.transAxes,
+                ha="right",
+                va="bottom",
+                color="red",
+                fontsize=10,
+            )
 
     plot_perspective(axes[0], 0, "Health System")
     plot_perspective(axes[1], 1, "Societal")
@@ -683,20 +817,38 @@ def plot_probabilistic_equity_impact_plane_with_delta(
     handles = []
     labels = []
     for i, name in enumerate(probabilistic_results.keys()):
-        h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i % len(colors)], markersize=10)
+        h = plt.Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor=colors[i % len(colors)],
+            markersize=10,
+        )
         handles.append(h)
         labels.append(name)
 
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(labels), fontsize=12)
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.02),
+        ncol=len(labels),
+        fontsize=12,
+    )
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
 
-    plt.savefig(f"{output_dir}/equity_impact_plane_probabilistic_with_delta.png", bbox_inches="tight")
+    plt.savefig(
+        f"{output_dir}/equity_impact_plane_probabilistic_with_delta.png",
+        bbox_inches="tight",
+    )
     plt.close()
 
+
 def plot_combined_lorenz_curves(
-    dcea_results_all: Dict[str, Dict], output_dir: str = "output/figures/"
+    dcea_results_all: dict[str, dict], output_dir: str = "output/figures/"
 ):
     """
     Plot combined Lorenz curves for all interventions across perspectives.
@@ -725,9 +877,19 @@ def plot_combined_lorenz_curves(
 
     for perspective_idx, ax in enumerate(axes):
         # Equality line
-        ax.plot([0, 1], [0, 1], color="black", linestyle="--", linewidth=2, label="Line of Equality", zorder=1)
+        ax.plot(
+            [0, 1],
+            [0, 1],
+            color="black",
+            linestyle="--",
+            linewidth=2,
+            label="Line of Equality",
+            zorder=1,
+        )
 
-        for i, (intervention_name, dcea_results_dict) in enumerate(dcea_results_all.items()):
+        for i, (intervention_name, dcea_results_dict) in enumerate(
+            dcea_results_all.items()
+        ):
             if perspective_idx < 2:
                 # HS or Societal
                 perspective_key = perspectives[perspective_idx]
@@ -737,10 +899,15 @@ def plot_combined_lorenz_curves(
 
                 dcea_results = dcea_results_dict[perspective_key]
 
-                if not dcea_results or "distribution_of_net_health_benefits" not in dcea_results:
+                if (
+                    not dcea_results
+                    or "distribution_of_net_health_benefits" not in dcea_results
+                ):
                     continue
 
-                nhb_list = sorted(dcea_results["distribution_of_net_health_benefits"].values())
+                nhb_list = sorted(
+                    dcea_results["distribution_of_net_health_benefits"].values()
+                )
 
                 if len(nhb_list) == 0:
                     continue
@@ -766,11 +933,14 @@ def plot_combined_lorenz_curves(
                     alpha=0.7,
                     color=colors[i % len(colors)],
                     label=intervention_name,
-                    zorder=3
+                    zorder=3,
                 )
             else:
                 # Delta subplot
-                if "health_system" not in dcea_results_dict or "societal" not in dcea_results_dict:
+                if (
+                    "health_system" not in dcea_results_dict
+                    or "societal" not in dcea_results_dict
+                ):
                     continue
 
                 hs_results = dcea_results_dict["health_system"]
@@ -779,7 +949,10 @@ def plot_combined_lorenz_curves(
                 if not hs_results or not soc_results:
                     continue
 
-                if "distribution_of_net_health_benefits" not in hs_results or "distribution_of_net_health_benefits" not in soc_results:
+                if (
+                    "distribution_of_net_health_benefits" not in hs_results
+                    or "distribution_of_net_health_benefits" not in soc_results
+                ):
                     continue
 
                 # Get distributions
@@ -820,12 +993,14 @@ def plot_combined_lorenz_curves(
                     alpha=0.7,
                     color=colors[i % len(colors)],
                     label=intervention_name,
-                    zorder=3
+                    zorder=3,
                 )
 
         ax.set_xlabel("Cumulative Share of Population", fontsize=12)
         ax.set_ylabel("Cumulative Share of Net Health Benefit", fontsize=12)
-        ax.set_title(perspective_titles[perspective_idx], fontsize=14, fontweight="bold")
+        ax.set_title(
+            perspective_titles[perspective_idx], fontsize=14, fontweight="bold"
+        )
         ax.grid(True, alpha=0.3)
         ax.set_xlim(0, 1)
 
@@ -842,11 +1017,24 @@ def plot_combined_lorenz_curves(
             unique_labels.append(l)
             unique_handles.append(h)
 
-    fig.legend(unique_handles, unique_labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=len(dcea_results_all)+1, fontsize=11)
+    fig.legend(
+        unique_handles,
+        unique_labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.02),
+        ncol=len(dcea_results_all) + 1,
+        fontsize=11,
+    )
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, bottom=0.15)
 
-    plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.png", bbox_inches="tight", dpi=300)
-    plt.savefig(f"{output_dir}/lorenz_curves_combined_with_delta.pdf", bbox_inches="tight")
+    plt.savefig(
+        f"{output_dir}/lorenz_curves_combined_with_delta.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+    plt.savefig(
+        f"{output_dir}/lorenz_curves_combined_with_delta.pdf", bbox_inches="tight"
+    )
     plt.close()

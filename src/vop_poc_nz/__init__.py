@@ -8,22 +8,31 @@ value of information methods and global sensitivity analysis.
 
 from __future__ import annotations
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Research Team"
 
 # Core CEA functionality
+# Budget Impact Analysis
+from vop_poc_nz.bia_model import calculate_budget_impact
 from vop_poc_nz.cea_model_core import (
     MarkovModel,
-    run_cea,
     create_parameters_table,
+    run_cea,
 )
 
 # DCEA equity analysis
 from vop_poc_nz.dcea_equity_analysis import (
-    calculate_gini,
     calculate_atkinson_index,
+    calculate_gini,
     run_dcea,
 )
+
+# Sensitivity Analysis
+from vop_poc_nz.dsa_analysis import run_dsa, run_two_way_dsa
+from vop_poc_nz.sobol_analysis import SobolAnalyzer
+
+# Validation
+from vop_poc_nz.validation import validate_psa_results
 
 # Value of Information
 from vop_poc_nz.value_of_information import (
@@ -32,37 +41,27 @@ from vop_poc_nz.value_of_information import (
     calculate_evppi,
 )
 
-# Sensitivity Analysis
-from vop_poc_nz.dsa_analysis import run_dsa, run_two_way_dsa
-from vop_poc_nz.sobol_analysis import SobolAnalyzer
-
-# Budget Impact Analysis
-from vop_poc_nz.bia_model import calculate_budget_impact
-
-# Validation
-from vop_poc_nz.validation import validate_psa_results
-
 __all__ = [
-    # Version
-    "__version__",
     # CEA
     "MarkovModel",
-    "run_cea",
-    "create_parameters_table",
-    # DCEA
-    "calculate_gini",
-    "calculate_atkinson_index",
-    "run_dcea",
     # VOI
     "ProbabilisticSensitivityAnalysis",
+    "SobolAnalyzer",
+    # Version
+    "__version__",
+    "calculate_atkinson_index",
+    # BIA
+    "calculate_budget_impact",
     "calculate_evpi",
     "calculate_evppi",
+    # DCEA
+    "calculate_gini",
+    "create_parameters_table",
+    "run_cea",
+    "run_dcea",
     # Sensitivity
     "run_dsa",
     "run_two_way_dsa",
-    "SobolAnalyzer",
-    # BIA
-    "calculate_budget_impact",
     # Validation
     "validate_psa_results",
 ]

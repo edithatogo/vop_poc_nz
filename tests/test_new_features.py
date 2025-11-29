@@ -12,7 +12,10 @@ import pandas as pd
 
 from vop_poc_nz.bia_model import bia_to_markdown_table, project_bia
 from vop_poc_nz.discordance_analysis import calculate_decision_discordance
-from vop_poc_nz.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
+from vop_poc_nz.dsa_analysis import (
+    perform_comprehensive_two_way_dsa,
+    perform_three_way_dsa,
+)
 from vop_poc_nz.reporting import generate_comprehensive_report
 from vop_poc_nz.threshold_analysis import run_threshold_analysis
 

@@ -193,7 +193,9 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     n_models = len(model_names)
 
     # Create figure: 2 rows, n_models columns
-    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 12), dpi=1200, sharey=False)
+    fig, axes = plt.subplots(
+        2, n_models, figsize=(5 * n_models, 12), dpi=1200, sharey=False
+    )
 
     # Ensure axes is always 2D array (2, n_models)
     if n_models == 1:
@@ -242,7 +244,7 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
                     color="skyblue",
                     alpha=0.7,
                     edgecolor="black",
-                    linewidth=0.5
+                    linewidth=0.5,
                 )
 
             ax.axvline(base_nmb, color="black", linestyle="--", linewidth=1)
@@ -257,14 +259,18 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
 
             # Title for each subplot
             if row == 0:
-                ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=12, fontweight="bold")
+                ax.set_title(
+                    f"{model_name}\n({perspective_titles[row]})",
+                    fontsize=12,
+                    fontweight="bold",
+                )
             else:
                 ax.set_title(f"({perspective_titles[row]})", fontsize=12)
 
             ax.grid(True, alpha=0.3)
 
             # Format x-axis as currency
-            ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('${x:,.0f}'))
+            ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
             plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
 
     plt.tight_layout()
@@ -275,9 +281,7 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     )
 
 
-def perform_comprehensive_two_way_dsa(
-    models, wtp_threshold=50000, n_points=20
-):
+def perform_comprehensive_two_way_dsa(models, wtp_threshold=50000, n_points=20):
     """
     Perform comprehensive two-way DSA for all interventions.
     """
@@ -450,7 +454,11 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
             # Title
             if row == 0:
-                ax.set_title(f"{model_name}\n({perspective_titles[row]})", fontsize=11, fontweight="bold")
+                ax.set_title(
+                    f"{model_name}\n({perspective_titles[row]})",
+                    fontsize=11,
+                    fontweight="bold",
+                )
             else:
                 ax.set_title(f"({perspective_titles[row]})", fontsize=11)
 
@@ -460,12 +468,14 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
 
             # Set tick labels (simplified for readability)
             # X-axis
-            x_ticks = np.linspace(0, len(param2_range)-1, 5, dtype=int)
+            x_ticks = np.linspace(0, len(param2_range) - 1, 5, dtype=int)
             ax.set_xticks(x_ticks)
-            ax.set_xticklabels([f"{param2_range[i]:.1f}" for i in x_ticks], fontsize=8, rotation=45)
+            ax.set_xticklabels(
+                [f"{param2_range[i]:.1f}" for i in x_ticks], fontsize=8, rotation=45
+            )
 
             # Y-axis
-            y_ticks = np.linspace(0, len(param1_range)-1, 5, dtype=int)
+            y_ticks = np.linspace(0, len(param1_range) - 1, 5, dtype=int)
             ax.set_yticks(y_ticks)
             ax.set_yticklabels([f"{param1_range[i]:.1f}" for i in y_ticks], fontsize=8)
 
@@ -493,9 +503,7 @@ def compose_dsa_dashboard(output_dir="data/data_outputs/figures/"):
     compose_dashboard(images, output_dir=output_dir, filename_base="dashboard_dsa")
 
 
-def perform_three_way_dsa(
-    models, wtp_threshold=50000, n_points=10
-):
+def perform_three_way_dsa(models, wtp_threshold=50000, n_points=10):
     """
     Perform three-way deterministic sensitivity analysis.
     """
@@ -647,7 +655,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         p3_slices = [
             unique_p3[0],  # First (min)
             unique_p3[n_p3 // 2],  # Middle (median index)
-            unique_p3[-1]  # Last (max)
+            unique_p3[-1],  # Last (max)
         ]
 
         fig = plt.figure(figsize=(5 * len(p3_slices), 5), dpi=1200)
@@ -668,7 +676,9 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
                 tolerance = 0.05
 
             # Find points near this p3 slice
-            mask = (points[:, 2] >= p3_slice - tolerance) & (points[:, 2] <= p3_slice + tolerance)
+            mask = (points[:, 2] >= p3_slice - tolerance) & (
+                points[:, 2] <= p3_slice + tolerance
+            )
             if np.sum(mask) > 10:  # pragma: no cover - requires dense grids
                 slice_points = points[mask]
                 slice_values = values[mask]

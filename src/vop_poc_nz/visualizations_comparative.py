@@ -8,15 +8,13 @@ Functions for comparing multiple interventions side-by-side on the same plot:
 4. Equity impact comparison
 """
 
-from typing import Dict, List
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 
 def plot_comparative_cash_flow(
-    bia_results: Dict[str, pd.DataFrame],
+    bia_results: dict[str, pd.DataFrame],
     output_dir: str = "output/figures/",
     discount: bool = True,
 ):
@@ -70,7 +68,7 @@ def plot_comparative_cash_flow(
     # Format y-axis as currency
     ax.yaxis.set_major_formatter(
         plt.FuncFormatter(
-            lambda x, p: f"${x/1e6:.1f}M" if abs(x) >= 1e6 else f"${x/1e3:.0f}K"
+            lambda x, p: f"${x / 1e6:.1f}M" if abs(x) >= 1e6 else f"${x / 1e3:.0f}K"
         )
     )
 
@@ -80,7 +78,7 @@ def plot_comparative_cash_flow(
 
 
 def plot_icer_ladder(
-    intervention_results: Dict[str, Dict],
+    intervention_results: dict[str, dict],
     wtp_threshold: float = 50000,
     output_dir: str = "output/figures/",
     perspective: str = "societal",
@@ -183,7 +181,7 @@ def plot_icer_ladder(
     ax.set_xlabel("Incremental QALYs", fontsize=12)
     ax.set_ylabel("Incremental Cost ($)", fontsize=12)
     ax.set_title(
-        f'ICER Ladder: {perspective.replace("_", " ").title()} Perspective',
+        f"ICER Ladder: {perspective.replace('_', ' ').title()} Perspective",
         fontsize=14,
         fontweight="bold",
     )
@@ -196,10 +194,10 @@ def plot_icer_ladder(
 
 
 def plot_nmb_comparison(
-    intervention_results: Dict[str, Dict],
+    intervention_results: dict[str, dict],
     wtp_threshold: float = 50000,
     output_dir: str = "output/figures/",
-    perspectives: List[str] = None,
+    perspectives: list[str] = None,
 ):
     """
     Bar chart comparing Net Monetary Benefit across interventions and perspectives.
@@ -263,7 +261,9 @@ def plot_nmb_comparison(
             ax.text(
                 bar.get_x() + bar.get_width() / 2.0,
                 height,
-                f"${height/1e3:.0f}K" if abs(height) < 1e6 else f"${height/1e6:.1f}M",
+                f"${height / 1e3:.0f}K"
+                if abs(height) < 1e6
+                else f"${height / 1e6:.1f}M",
                 ha="center",
                 va="bottom" if height > 0 else "top",
                 fontsize=8,
@@ -289,7 +289,7 @@ def plot_nmb_comparison(
 
 
 def plot_equity_impact_comparison(
-    intervention_results: Dict[str, Dict], output_dir: str = "output/figures/"
+    intervention_results: dict[str, dict], output_dir: str = "output/figures/"
 ):
     """
     Compare equity impact (Atkinson index) across interventions.
@@ -395,7 +395,7 @@ def plot_equity_impact_comparison(
         ax2.text(
             bar.get_x() + bar.get_width() / 2.0,
             height,
-            f"${height/1e6:.1f}M" if abs(height) >= 1e6 else f"${height/1e3:.0f}K",
+            f"${height / 1e6:.1f}M" if abs(height) >= 1e6 else f"${height / 1e3:.0f}K",
             ha="center",
             va="bottom" if height > 0 else "top",
             fontsize=9,
@@ -408,8 +408,8 @@ def plot_equity_impact_comparison(
 
 
 def plot_comprehensive_intervention_summary(
-    intervention_results: Dict[str, Dict],
-    bia_results: Dict[str, pd.DataFrame],
+    intervention_results: dict[str, dict],
+    bia_results: dict[str, pd.DataFrame],
     wtp_threshold: float = 50000,
     output_dir: str = "output/figures/",
 ):
@@ -464,9 +464,7 @@ def plot_comprehensive_intervention_summary(
         nmb_values.append(nmb)
 
     colors_nmb = ["g" if nmb > 0 else "r" for nmb in nmb_values]
-    ax2.barh(
-        interventions, nmb_values, color=colors_nmb, alpha=0.7, edgecolor="black"
-    )
+    ax2.barh(interventions, nmb_values, color=colors_nmb, alpha=0.7, edgecolor="black")
     ax2.axvline(x=0, color="k", linestyle="-", linewidth=1)
     ax2.set_xlabel(f"NMB @ ${wtp_threshold:,}/QALY")
     ax2.set_title("Net Monetary Benefit", fontweight="bold")
