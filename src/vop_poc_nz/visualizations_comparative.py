@@ -31,7 +31,7 @@ def plot_comparative_cash_flow(
     from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
+    fig, ax = plt.subplots(figsize=(12, 7), dpi=1200)
 
     colors = plt.cm.tab10(np.linspace(0, 1, len(bia_results)))
 
@@ -99,7 +99,7 @@ def plot_icer_ladder(
     from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
-    fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
+    fig, ax = plt.subplots(figsize=(10, 8), dpi=1200)
 
     # Extract data
     interventions = []
@@ -217,7 +217,7 @@ def plot_nmb_comparison(
     if perspectives is None:
         perspectives = ["health_system", "societal"]
 
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
+    fig, ax = plt.subplots(figsize=(12, 7), dpi=1200)
 
     interventions = list(intervention_results.keys())
     x = np.arange(len(interventions))
@@ -301,7 +301,7 @@ def plot_equity_impact_comparison(
     from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), dpi=1200)
 
     interventions = []
     atkinson_indices = []
@@ -425,7 +425,7 @@ def plot_comprehensive_intervention_summary(
     from .visualizations import apply_default_style, save_figure
 
     apply_default_style()
-    fig = plt.figure(figsize=(16, 12), dpi=300)
+    fig = plt.figure(figsize=(16, 12), dpi=1200)
     gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
 
     # Panel 1: Budget impact

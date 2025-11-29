@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-11-29
+
+### Added
+
+- **Enhanced Snakefile Template**
+  - `configfile` directive for parameters.yaml integration
+  - Output versioning with configurable version tag
+  - Logging support with `tee` for all rules
+  - `discordance_loss.png` output in workflow
+  - `clean_all` rule to remove all outputs
+  - Test rule with coverage reporting
+
+### Changed
+
+- **Publication Quality Figures**
+  - Increased default DPI from 300 to 1200 for all visualizations
+  - Updated DSA plots (tornado, heatmaps, 3D surfaces)
+  - Updated comparative visualizations (cash flow, ICER ladder, NMB, equity)
+
 ## [0.1.2] - 2025-11-29
 
 ### Added

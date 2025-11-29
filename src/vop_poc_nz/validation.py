@@ -20,7 +20,7 @@ PSAResultsSchema = DataFrameSchema(
         "cost_sc": Column(float),
         "cost_nt": Column(float),
     },
-    strict=True,
+    strict=False,
     coerce=True,
 )
 

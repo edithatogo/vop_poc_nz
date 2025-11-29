@@ -8,7 +8,7 @@ value of information methods and global sensitivity analysis.
 
 from __future__ import annotations
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "Research Team"
 
 # Core CEA functionality

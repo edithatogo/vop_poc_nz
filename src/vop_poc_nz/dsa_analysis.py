@@ -193,7 +193,7 @@ def plot_one_way_dsa_tornado(dsa_results, output_dir="data/data_outputs/figures/
     n_models = len(model_names)
 
     # Create figure: 2 rows, n_models columns
-    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 12), dpi=300, sharey=False)
+    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 12), dpi=1200, sharey=False)
 
     # Ensure axes is always 2D array (2, n_models)
     if n_models == 1:
@@ -411,7 +411,7 @@ def plot_two_way_dsa_heatmaps(dsa_results, output_dir="data/data_outputs/figures
     n_models = len(model_names)
 
     # Create figure: 2 rows, n_models columns
-    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 10), dpi=300)
+    fig, axes = plt.subplots(2, n_models, figsize=(5 * n_models, 10), dpi=1200)
 
     # Ensure axes is always 2D array (2, n_models)
     if n_models == 1:
@@ -650,7 +650,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
             unique_p3[-1]  # Last (max)
         ]
 
-        fig = plt.figure(figsize=(5 * len(p3_slices), 5), dpi=300)
+        fig = plt.figure(figsize=(5 * len(p3_slices), 5), dpi=1200)
         fig.suptitle(
             f"Three-Way Deterministic Sensitivity Analysis: {model_name}\nNMB at $50,000/QALY (Societal Perspective)",
             fontsize=14,

@@ -46,7 +46,7 @@ except ImportError:  # pragma: no cover - optional dependency
     PLOTNINE_AVAILABLE = False
 
 # Shared plotting helpers and defaults
-DEFAULT_DPI = 300
+DEFAULT_DPI = 1200
 DEFAULT_FORMATS = ("png", "pdf", "svg")
 
 
