@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/edithatogo/vop_poc_nz/compare/v0.1.3...v0.2.0) (2025-11-29)
+
+
+### Features
+
+* add mkdocs documentation, release-please, and conda-forge recipe ([fc5f9d7](https://github.com/edithatogo/vop_poc_nz/commit/fc5f9d769c07b8a8d39e8072c9798fc0832d6fb1))
+
+
+### Bug Fixes
+
+* Update release workflow to use twine with token secrets ([0a94486](https://github.com/edithatogo/vop_poc_nz/commit/0a944866ec081680e2809aa19f59293398705292))
+
 ## [Unreleased]
 
 ## [0.1.3] - 2025-11-29
