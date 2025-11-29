@@ -3,6 +3,7 @@ site_description: Distributional Cost-Effectiveness Analysis Framework for Aotea
 site_url: https://edithatogo.github.io/vop_poc_nz/
 repo_url: https://github.com/edithatogo/vop_poc_nz
 repo_name: edithatogo/vop_poc_nz
+docs_dir: docs_src
 
 theme:
   name: material
@@ -44,26 +45,12 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
-      - Tutorial: getting-started/tutorial.md
-  - User Guide:
-      - Cost-Effectiveness Analysis: guide/cea.md
-      - Distributional CEA: guide/dcea.md
-      - Value of Information: guide/voi.md
-      - Sensitivity Analysis: guide/sensitivity.md
-      - Budget Impact Analysis: guide/bia.md
   - API Reference:
-      - CEA Core: api/cea_model_core.md
-      - DCEA: api/dcea_equity_analysis.md
+      - CEA Core: api/cea_model.md
+      - DCEA: api/dcea.md
       - Value of Information: api/value_of_information.md
-      - DSA Analysis: api/dsa_analysis.md
-      - Sobol Analysis: api/sobol_analysis.md
-      - BIA Model: api/bia_model.md
-      - Visualizations: api/visualizations.md
-  - Methodology:
-      - Formulae: methodology/formulae.md
-      - CHEERS 2022: methodology/cheers.md
-  - Contributing: contributing.md
-  - Changelog: changelog.md
+      - Sensitivity Analysis: api/sensitivity.md
+      - Visualizations: api/visualization.md
 
 markdown_extensions:
   - admonition
