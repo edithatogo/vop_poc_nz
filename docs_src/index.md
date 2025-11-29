@@ -3,6 +3,8 @@
 [![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
 [![PyPI](https://img.shields.io/pypi/v/vop-poc-nz)](https://pypi.org/project/vop-poc-nz/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17759272.svg)](https://doi.org/10.5281/zenodo.17759272)
+[![OSF](https://img.shields.io/badge/OSF-unq76-blue)](https://osf.io/unq76)
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/edithatogo/vop_poc_nz/blob/main/LICENSE)
 
@@ -51,6 +53,13 @@ print(f"Value of Perspective: ${discordance['loss_from_discordance']:,.0f}")
 
 - [Getting Started](getting-started/installation.md)
 - [API Reference](api/cea_model.md)
+
+## Citation
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17759272.svg)](https://doi.org/10.5281/zenodo.17759272)
+
+- **Zenodo**: [10.5281/zenodo.17759272](https://doi.org/10.5281/zenodo.17759272)
+- **OSF**: [osf.io/unq76](https://osf.io/unq76)
 
 ## License
 

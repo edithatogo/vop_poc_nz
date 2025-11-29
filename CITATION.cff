@@ -1,11 +1,31 @@
 cff-version: 1.2.0
-title: "Proof-of-Concept Value of Perspective Framework"
+title: "Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation"
 message: "If you use this software, please cite it using the metadata from this file."
+type: software
 authors:
-  - name: "Dylan A Mordaunt"
-repository-code: "https://github.com/edithatogo/vop_poc_nz"
+  - family-names: Mordaunt
+    given-names: Dylan A
+    orcid: https://orcid.org/0000-0002-7778-3409
+repository-code: https://github.com/edithatogo/vop_poc_nz
+url: https://osf.io/unq76
 license: Apache-2.0
-version: "0.1.4"
-abstract: |
-  Canonical implementation of a health economic analysis with Distributional Cost-Effectiveness Analysis (DCEA),
-  value of information methods, and global sensitivity analysis, incorporating societal perspective considerations.
+version: 0.1.5
+date-released: 2024-11-29
+doi: 10.5281/zenodo.17759272
+keywords:
+  - health economics
+  - cost-effectiveness analysis
+  - distributional cost-effectiveness
+  - value of information
+  - decision discordance
+  - societal perspective
+  - health system perspective
+  - QALY
+  - New Zealand
+abstract: >-
+  A proof-of-concept framework for quantifying the Value of Perspective (VoP)
+  in health economic evaluation. Uses published economic evaluations from
+  Aotearoa New Zealand to measure decision impact when choosing between
+  health system and societal perspectives. VoP quantifies the potential loss
+  from decision discordance—when different analytical perspectives yield
+  conflicting cost-effectiveness conclusions.

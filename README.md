@@ -3,6 +3,8 @@
 [![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
 [![PyPI](https://img.shields.io/pypi/v/vop-poc-nz)](https://pypi.org/project/vop-poc-nz/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17759272.svg)](https://doi.org/10.5281/zenodo.17759272)
+[![OSF](https://img.shields.io/badge/OSF-unq76-blue)](https://osf.io/unq76)
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -164,13 +166,20 @@ Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 If you use this framework in your research, please cite:
 
 ```bibtex
-@software{vop_poc_nz_2024,
-  title={Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation},
-  author={Mordaunt, Dylan A},
-  year={2024},
-  url={https://github.com/edithatogo/vop_poc_nz}
+@software{mordaunt_2024_17759272,
+  author       = {Mordaunt, Dylan A},
+  title        = {Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation},
+  year         = 2024,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.17759272},
+  url          = {https://doi.org/10.5281/zenodo.17759272}
 }
 ```
+
+### Research Data & Materials
+
+- **Zenodo Archive**: [10.5281/zenodo.17759272](https://doi.org/10.5281/zenodo.17759272) - Citable software archive with DOI
+- **OSF Project**: [osf.io/unq76](https://osf.io/unq76) - Supplementary materials and data
 
 ## Acknowledgments
 
