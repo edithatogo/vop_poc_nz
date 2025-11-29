@@ -1,0 +1,8 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CITATION.cff
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+recursive-include src/vop_poc_nz *.yaml
+include src/vop_poc_nz/py.typed

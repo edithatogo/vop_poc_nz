@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.cea_model_core import run_cea
-from src.dcea_equity_analysis import run_dcea
+from vop_poc_nz.cea_model_core import run_cea
+from vop_poc_nz.dcea_equity_analysis import run_dcea
 
 
 def test_dcea_integration_logic():

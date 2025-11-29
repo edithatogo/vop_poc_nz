@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from src import visualizations as viz
+import vop_poc_nz.visualizations as viz
 
 OUTPUT_DIR = "output/test_figures"
 

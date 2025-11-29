@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install hatch twine anaconda-client
+
+      - name: Build distributions
+        run: hatch build
+
+      - name: Verify distributions
+        run: python -m twine check dist/*
+
+      - name: Smoke test from TestPyPI
+        env:
+          PIP_NO_CACHE_DIR: "true"
+        run: |
+          python -m venv /tmp/testpypi-env
+          source /tmp/testpypi-env/bin/activate
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple vop-poc-nz
+          python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
+
+      - name: Publish to TestPyPI
+        run: hatch publish --repo testpypi --no-prompt -u __token__ -a "${{ secrets.TEST_PYPI_TOKEN }}" dist/*
+
+      - name: Publish to PyPI
+        run: hatch publish --no-prompt -u __token__ -a "${{ secrets.PYPI_TOKEN }}" dist/*
+
+      - name: Publish to Anaconda
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          ANACONDA_USER: ${{ secrets.ANACONDA_USERNAME }}
+        run: |
+          anaconda --token "$ANACONDA_API_TOKEN" upload --user "$ANACONDA_USER" --label main dist/*.whl
+
+      - name: Attach artifacts to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*

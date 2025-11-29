@@ -13,14 +13,14 @@ import pytest
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
-from src.cea_model_core import (
+from vop_poc_nz.cea_model_core import (
     MarkovModel,
     _calculate_cer,
     _calculate_icer,
     run_cea,
 )
-from src.dcea_equity_analysis import calculate_atkinson_index, calculate_gini
-from src.value_of_information import calculate_evpi
+from vop_poc_nz.dcea_equity_analysis import calculate_atkinson_index, calculate_gini
+from vop_poc_nz.value_of_information import calculate_evpi
 
 
 # Alias for consistency with test names
@@ -40,13 +40,19 @@ calculate_gini_coefficient = calculate_gini
 def test_icer_sign_property(inc_cost, inc_qalys):
     """ICER sign should match incremental cost sign when QALYs are positive."""
     icer = _calculate_icer(inc_cost, inc_qalys)
+    tol = 1e-12
     
     if inc_cost > 0:
-        assert icer > 0, "Positive cost with positive QALY should give positive ICER"
+        # Allow tiny underflow to zero when cost is extremely small.
+        assert icer > 0 or math.isclose(icer, 0.0, abs_tol=tol), (
+            "Positive cost with positive QALY should give positive ICER"
+        )
     elif inc_cost < 0:
-        assert icer < 0, "Negative cost with positive QALY should give negative ICER"
+        assert icer < 0 or math.isclose(icer, 0.0, abs_tol=tol), (
+            "Negative cost with positive QALY should give negative ICER"
+        )
     else:
-        assert icer == 0, "Zero cost should give zero ICER"
+        assert math.isclose(icer, 0.0, abs_tol=tol), "Zero cost should give zero ICER"
 
 
 @settings(max_examples=100, deadline=None)

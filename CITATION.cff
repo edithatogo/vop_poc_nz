@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Proof-of-Concept Value of Perspective Framework"
+message: "If you use this software, please cite it using the metadata from this file."
+authors:
+  - name: "Dylan A Mordaunt"
+repository-code: "https://github.com/edithatogo/vop_poc_nz"
+license: Apache 2.0
+version: "0.1.0"
+abstract: |
+  Canonical implementation of a health economic analysis with Distributional Cost-Effectiveness Analysis (DCEA),
+  value of information methods, and global sensitivity analysis, incorporating societal perspective considerations.

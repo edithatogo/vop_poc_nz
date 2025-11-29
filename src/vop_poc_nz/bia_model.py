@@ -67,6 +67,12 @@ def project_bia(
     return pd.DataFrame(out)
 
 
+def calculate_budget_impact(*args, **kwargs) -> pd.DataFrame:
+    """Compatibility alias for the legacy public API."""
+
+    return project_bia(*args, **kwargs)
+
+
 def bia_to_markdown_table(
     df: pd.DataFrame, currency: str = "NZD", base_year: str = "2023"
 ) -> str:

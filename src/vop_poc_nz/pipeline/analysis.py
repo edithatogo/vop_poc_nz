@@ -7,9 +7,10 @@ including CEA, DCEA, VOI, and DSA. It separates the "math" from the "reporting".
 
 import copy
 import logging
-import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
+
+from importlib import resources
 
 import numpy as np
 import pandas as pd
@@ -33,23 +34,23 @@ from ..value_of_information import (
 logger = logging.getLogger(__name__)
 
 
-def load_parameters(filepath: str = "src/parameters.yaml") -> Dict:
-    """Load parameters from a YAML file."""
-    # Path relative to project root (assuming run from root)
-    if os.path.exists(filepath):
-        with open(filepath) as f:
-            return yaml.safe_load(f)
+def load_parameters(filepath: Optional[str] = None) -> Dict:
+    """Load model parameters from a YAML file.
 
-    # Fallback for running from src/pipeline
-    project_root = Path(__file__).parent.parent.parent
-    full_path = project_root / filepath
-    if full_path.exists():
-        with open(full_path) as f:
-            return yaml.safe_load(f)
+    If ``filepath`` is ``None`` the bundled ``parameters.yaml`` shipped with the
+    package is loaded using ``importlib.resources``. When ``filepath`` is
+    provided the path is resolved relative to the current working directory.
+    """
 
-    raise FileNotFoundError(
-        f"Could not find parameters file at {filepath} or {full_path}"
-    )
+    if filepath:
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"Parameters file not found: {filepath}")
+        with path.open() as handle:
+            return yaml.safe_load(handle)
+
+    with resources.files("vop_poc_nz").joinpath("parameters.yaml").open("r") as handle:
+        return yaml.safe_load(handle)
 
 
 

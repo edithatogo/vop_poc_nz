@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 
-from src.visualizations_comparative import (
+from vop_poc_nz.visualizations_comparative import (
     plot_comparative_cash_flow,
     plot_comprehensive_intervention_summary,
     plot_equity_impact_comparison,
@@ -69,9 +69,9 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    @patch("src.visualizations.save_figure")
-    @patch("src.visualizations_comparative.plt")
-    @patch("src.visualizations.apply_default_style")
+    @patch("vop_poc_nz.visualizations.save_figure")
+    @patch("vop_poc_nz.visualizations_comparative.plt")
+    @patch("vop_poc_nz.visualizations.apply_default_style")
     def test_plot_comparative_cash_flow(self, mock_style, mock_plt, mock_save):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -83,9 +83,9 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         # Test nominal
         plot_comparative_cash_flow(self.bia_results, self.test_dir, discount=False)
 
-    @patch("src.visualizations.save_figure")
-    @patch("src.visualizations_comparative.plt")
-    @patch("src.visualizations.apply_default_style")
+    @patch("vop_poc_nz.visualizations.save_figure")
+    @patch("vop_poc_nz.visualizations_comparative.plt")
+    @patch("vop_poc_nz.visualizations.apply_default_style")
     def test_plot_icer_ladder(self, mock_style, mock_plt, mock_save):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -97,9 +97,9 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         # Test fallback to top-level results (Int_B structure)
         plot_icer_ladder(self.intervention_results, output_dir=self.test_dir, perspective="health_system")
 
-    @patch("src.visualizations.save_figure")
-    @patch("src.visualizations_comparative.plt")
-    @patch("src.visualizations.apply_default_style")
+    @patch("vop_poc_nz.visualizations.save_figure")
+    @patch("vop_poc_nz.visualizations_comparative.plt")
+    @patch("vop_poc_nz.visualizations.apply_default_style")
     def test_plot_nmb_comparison(self, mock_style, mock_plt, mock_save):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -108,9 +108,9 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         plot_nmb_comparison(self.intervention_results, output_dir=self.test_dir)
         self.assertTrue(mock_save.called)
 
-    @patch("src.visualizations.save_figure")
-    @patch("src.visualizations_comparative.plt")
-    @patch("src.visualizations.apply_default_style")
+    @patch("vop_poc_nz.visualizations.save_figure")
+    @patch("vop_poc_nz.visualizations_comparative.plt")
+    @patch("vop_poc_nz.visualizations.apply_default_style")
     def test_plot_equity_impact_comparison(self, mock_style, mock_plt, mock_save):
         mock_fig = MagicMock()
         mock_ax = MagicMock()
@@ -122,9 +122,9 @@ class TestVisualizationsComparativeCoverage(unittest.TestCase):
         # Test no equity data
         plot_equity_impact_comparison({"Int_C": {}}, output_dir=self.test_dir)
 
-    @patch("src.visualizations.save_figure")
-    @patch("src.visualizations_comparative.plt")
-    @patch("src.visualizations.apply_default_style")
+    @patch("vop_poc_nz.visualizations.save_figure")
+    @patch("vop_poc_nz.visualizations_comparative.plt")
+    @patch("vop_poc_nz.visualizations.apply_default_style")
     def test_plot_comprehensive_intervention_summary(self, mock_style, mock_plt, mock_save):
         mock_fig = MagicMock()
         mock_ax = MagicMock()

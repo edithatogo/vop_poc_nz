@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 
-from src.sobol_analysis import SobolAnalyzer, plot_sobol_indices
+from vop_poc_nz.sobol_analysis import SobolAnalyzer, plot_sobol_indices
 
 
 class TestSobolCoverage(unittest.TestCase):

@@ -154,7 +154,7 @@ class TestDSAAnalysisCoverage:
 
     def test_perform_one_way_dsa_with_yaml_ranges(self, sample_models_with_dsa_ranges):
         """Test one-way DSA with YAML-defined parameter ranges."""
-        from src.dsa_analysis import perform_one_way_dsa
+        from vop_poc_nz.dsa_analysis import perform_one_way_dsa
 
         results = perform_one_way_dsa(
             sample_models_with_dsa_ranges, wtp_threshold=50000, n_points=3
@@ -165,7 +165,7 @@ class TestDSAAnalysisCoverage:
 
     def test_perform_one_way_dsa_extended_parameters(self, sample_models_with_extended_dsa_ranges):
         """Test one-way DSA with extended parameters covering all branches."""
-        from src.dsa_analysis import perform_one_way_dsa
+        from vop_poc_nz.dsa_analysis import perform_one_way_dsa
 
         results = perform_one_way_dsa(
             sample_models_with_extended_dsa_ranges, wtp_threshold=50000, n_points=3
@@ -184,7 +184,7 @@ class TestDSAAnalysisCoverage:
 
     def test_perform_one_way_dsa_default_ranges(self, sample_models):
         """Test one-way DSA with default parameter ranges (no YAML)."""
-        from src.dsa_analysis import perform_one_way_dsa
+        from vop_poc_nz.dsa_analysis import perform_one_way_dsa
 
         results = perform_one_way_dsa(sample_models, wtp_threshold=50000, n_points=3)
         assert "test_intervention" in results
@@ -194,7 +194,7 @@ class TestDSAAnalysisCoverage:
 
     def test_plot_one_way_dsa_tornado_empty(self):
         """Test tornado plot with empty results."""
-        from src.dsa_analysis import plot_one_way_dsa_tornado
+        from vop_poc_nz.dsa_analysis import plot_one_way_dsa_tornado
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Should handle empty gracefully
@@ -203,7 +203,7 @@ class TestDSAAnalysisCoverage:
 
     def test_plot_one_way_dsa_tornado_single_model(self, sample_models):
         """Test tornado plot with a single model."""
-        from src.dsa_analysis import perform_one_way_dsa, plot_one_way_dsa_tornado
+        from vop_poc_nz.dsa_analysis import perform_one_way_dsa, plot_one_way_dsa_tornado
 
         results = perform_one_way_dsa(sample_models, wtp_threshold=50000, n_points=3)
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -212,7 +212,7 @@ class TestDSAAnalysisCoverage:
 
     def test_perform_two_way_dsa(self, sample_models):
         """Test two-way DSA."""
-        from src.dsa_analysis import perform_comprehensive_two_way_dsa
+        from vop_poc_nz.dsa_analysis import perform_comprehensive_two_way_dsa
 
         # Rename key to match expected pattern
         models_with_name = {"HPV_Test": sample_models["test_intervention"]}
@@ -226,7 +226,7 @@ class TestDSAAnalysisCoverage:
 
     def test_plot_two_way_dsa_heatmap(self, sample_models):
         """Test two-way DSA heatmap plotting."""
-        from src.dsa_analysis import (
+        from vop_poc_nz.dsa_analysis import (
             perform_comprehensive_two_way_dsa,
             plot_two_way_dsa_heatmaps,
         )
@@ -261,7 +261,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_ce_plane_basic(self, sample_psa_df):
         """Test basic CE plane plotting."""
-        from src.visualizations import plot_cost_effectiveness_plane
+        from vop_poc_nz.visualizations import plot_cost_effectiveness_plane
 
         all_results = {"Test_Model": sample_psa_df}
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -270,7 +270,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_ceac_basic(self, sample_psa_df):
         """Test CEAC plotting."""
-        from src.visualizations import plot_ceac
+        from vop_poc_nz.visualizations import plot_ceac
 
         all_results = {"Test_Model": sample_psa_df}
         wtp_thresholds = [10000, 30000, 50000, 70000]
@@ -281,7 +281,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_evpi_basic(self, sample_psa_df):
         """Test EVPI curve plotting."""
-        from src.visualizations import plot_evpi
+        from vop_poc_nz.visualizations import plot_evpi
 
         all_results = {"Test_Model": sample_psa_df}
         wtp_thresholds = [10000, 30000, 50000, 70000]
@@ -292,7 +292,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_ceaf_basic(self, sample_psa_df):
         """Test CEAF curve plotting."""
-        from src.visualizations import plot_ceaf
+        from vop_poc_nz.visualizations import plot_ceaf
 
         all_results = {"Test_Model": sample_psa_df}
         wtp_thresholds = [10000, 30000, 50000, 70000]
@@ -303,7 +303,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_net_benefit_curves(self, sample_psa_df):
         """Test net benefit curves plotting."""
-        from src.visualizations import plot_net_benefit_curves
+        from vop_poc_nz.visualizations import plot_net_benefit_curves
 
         all_results = {"Test_Model": sample_psa_df}
         wtp_thresholds = [10000, 30000, 50000, 70000]
@@ -314,7 +314,7 @@ class TestVisualizationsCoverage:
 
     def test_plot_value_of_perspective(self, sample_psa_df):
         """Test value of perspective plotting."""
-        from src.visualizations import plot_value_of_perspective
+        from vop_poc_nz.visualizations import plot_value_of_perspective
 
         all_results = {"Test_Model": sample_psa_df}
         wtp_thresholds = [10000, 30000, 50000, 70000]
@@ -343,7 +343,7 @@ class TestValueOfInformationCoverage:
 
     def test_calculate_evpi_edge_cases(self, sample_psa_results):
         """Test EVPI with edge cases."""
-        from src.value_of_information import calculate_evpi
+        from vop_poc_nz.value_of_information import calculate_evpi
 
         # Test with very high WTP (all should be cost-effective)
         evpi_high = calculate_evpi(sample_psa_results, wtp_threshold=1000000)
@@ -355,7 +355,7 @@ class TestValueOfInformationCoverage:
 
     def test_psa_sample_lognormal(self):
         """Test PSA with lognormal distribution."""
-        from src.value_of_information import ProbabilisticSensitivityAnalysis
+        from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
         def model_func(params, intervention_type="standard_care"):
             return params.get("cost", 1000), params.get("qaly", 10)
@@ -370,7 +370,7 @@ class TestValueOfInformationCoverage:
 
     def test_psa_unknown_distribution(self):
         """Test PSA raises error for unknown distribution."""
-        from src.value_of_information import ProbabilisticSensitivityAnalysis
+        from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
         def model_func(params, intervention_type="standard_care"):
             return 1000, 10
@@ -385,7 +385,7 @@ class TestValueOfInformationCoverage:
 
     def test_psa_dual_perspective_model(self):
         """Test PSA with dual-perspective model (4-value returns)."""
-        from src.value_of_information import ProbabilisticSensitivityAnalysis
+        from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
         def dual_perspective_model(params, intervention_type="standard_care"):
             """Model returning 4 values: cost_hs, qaly_hs, cost_soc, qaly_soc."""
@@ -422,7 +422,7 @@ class TestValueOfInformationCoverage:
 
     def test_psa_dual_perspective_with_extras(self):
         """Test PSA with 5-value model returns (dual perspective + extras)."""
-        from src.value_of_information import ProbabilisticSensitivityAnalysis
+        from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
         def model_with_extras(params, intervention_type="standard_care"):
             """Model returning 5 values: cost_hs, qaly_hs, cost_soc, qaly_soc, extras."""
@@ -453,7 +453,7 @@ class TestPipelineAnalysisCoverage:
 
     def test_import_pipeline_analysis(self):
         """Test that pipeline analysis module imports."""
-        from src.pipeline import analysis
+        from vop_poc_nz.pipeline import analysis
 
         assert hasattr(analysis, "__name__")
 
@@ -463,7 +463,7 @@ class TestValidationCoverage:
 
     def test_validate_psa_results_valid(self):
         """Test validation with valid columns."""
-        from src.validation import validate_psa_results
+        from vop_poc_nz.validation import validate_psa_results
 
         # DataFrame with required columns
         df = pd.DataFrame({
@@ -481,7 +481,7 @@ class TestValidationCoverage:
         """Test validation with missing columns."""
         from pandera.errors import SchemaError
 
-        from src.validation import validate_psa_results
+        from vop_poc_nz.validation import validate_psa_results
 
         # DataFrame missing required columns - should raise
         df = pd.DataFrame({"random_col": [1, 2, 3]})
@@ -491,7 +491,7 @@ class TestValidationCoverage:
 
     def test_validate_transition_matrices_valid(self):
         """Test transition matrix validation with valid data."""
-        from src.validation import validate_transition_matrices
+        from vop_poc_nz.validation import validate_transition_matrices
 
         valid_params = {
             "states": ["A", "B"],
@@ -505,7 +505,7 @@ class TestValidationCoverage:
 
     def test_validate_transition_matrices_invalid_sum(self):
         """Test transition matrix validation with invalid row sums."""
-        from src.validation import validate_transition_matrices
+        from vop_poc_nz.validation import validate_transition_matrices
 
         invalid_params = {
             "states": ["A", "B"],
@@ -519,7 +519,7 @@ class TestValidationCoverage:
 
     def test_validate_transition_matrices_non_square(self):
         """Test transition matrix validation with non-square matrix."""
-        from src.validation import validate_transition_matrices
+        from vop_poc_nz.validation import validate_transition_matrices
 
         invalid_params = {
             "states": ["A", "B", "C"],  # 3 states
@@ -533,7 +533,7 @@ class TestValidationCoverage:
 
     def test_validate_transition_matrices_negative_entries(self):
         """Test transition matrix validation with negative entries."""
-        from src.validation import validate_transition_matrices
+        from vop_poc_nz.validation import validate_transition_matrices
 
         invalid_params = {
             "states": ["A", "B"],
@@ -547,7 +547,7 @@ class TestValidationCoverage:
 
     def test_validate_costs_and_qalys_valid(self):
         """Test costs and QALYs validation with valid data."""
-        from src.validation import validate_costs_and_qalys
+        from vop_poc_nz.validation import validate_costs_and_qalys
 
         valid_params = {
             "costs": {
@@ -570,7 +570,7 @@ class TestValidationCoverage:
 
     def test_validate_costs_and_qalys_negative_qalys(self):
         """Test validation raises for negative QALYs."""
-        from src.validation import validate_costs_and_qalys
+        from vop_poc_nz.validation import validate_costs_and_qalys
 
         invalid_params = {
             "costs": {
@@ -589,7 +589,7 @@ class TestValidationCoverage:
 
     def test_validate_costs_and_qalys_negative_costs_warning(self):
         """Test validation warns for negative costs (interpreted as savings)."""
-        from src.validation import validate_costs_and_qalys
+        from vop_poc_nz.validation import validate_costs_and_qalys
 
         params_with_savings = {
             "costs": {
@@ -643,7 +643,7 @@ class TestClusterAnalysisCoverage:
 
     def test_cluster_analysis_init(self, sample_all_results, sample_models):
         """Test ClusterAnalysis initialization."""
-        from src.cluster_analysis import ClusterAnalysis
+        from vop_poc_nz.cluster_analysis import ClusterAnalysis
 
         analyzer = ClusterAnalysis(sample_all_results, sample_models)
         assert analyzer is not None
@@ -651,7 +651,7 @@ class TestClusterAnalysisCoverage:
 
     def test_cluster_analysis_prepare_data(self, sample_all_results, sample_models):
         """Test prepare_clustering_data method."""
-        from src.cluster_analysis import ClusterAnalysis
+        from vop_poc_nz.cluster_analysis import ClusterAnalysis
 
         analyzer = ClusterAnalysis(sample_all_results, sample_models)
         # This method prints output, so just check it doesn't crash
@@ -664,7 +664,7 @@ class TestClusterAnalysisCoverage:
 
     def test_cluster_analysis_with_uniform_data(self, sample_models):
         """Test clustering when all data points are identical (triggers fallback)."""
-        from src.cluster_analysis import ClusterAnalysis
+        from vop_poc_nz.cluster_analysis import ClusterAnalysis
 
         # Create uniform data that might trigger the fallback clustering path
         n = 50
@@ -687,7 +687,7 @@ class TestSobolAnalysisCoverage:
 
     def test_sobol_with_minimal_samples(self):
         """Test Sobol analysis with minimal samples."""
-        from src.sobol_analysis import SobolAnalyzer
+        from vop_poc_nz.sobol_analysis import SobolAnalyzer
 
         def simple_model(params):
             return params.get("x", 0) + params.get("y", 0)
@@ -709,7 +709,7 @@ class TestHypothesisPropertyTests:
     def test_icer_calculation_properties(self):
         """Test ICER calculation mathematical properties."""
 
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         # Simple model for testing
         base_params = {
@@ -746,7 +746,7 @@ class TestHypothesisPropertyTests:
 
     def test_discount_rate_bounds(self):
         """Test that discount rates between 0 and 1 produce valid results."""
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         base_params = {
             "states": ["A", "B"],
@@ -789,7 +789,7 @@ class TestCEAModelValidationBranches:
 
     def test_missing_health_system_costs(self):
         """Test validation when health_system costs are missing."""
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         invalid_params = {
             "states": ["A", "B"],
@@ -816,7 +816,7 @@ class TestCEAModelValidationBranches:
 
     def test_missing_costs_intervention(self):
         """Test validation when costs are missing for an intervention."""
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         invalid_params = {
             "states": ["A", "B"],
@@ -846,7 +846,7 @@ class TestCEAModelValidationBranches:
 
     def test_missing_qalys_intervention(self):
         """Test validation when QALYs are missing for an intervention."""
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         invalid_params = {
             "states": ["A", "B"],
@@ -876,7 +876,7 @@ class TestCEAModelValidationBranches:
 
     def test_friction_cost_with_list_societal_costs(self):
         """Test friction cost calculation when societal costs are a list (not dict)."""
-        from src.cea_model_core import run_cea
+        from vop_poc_nz.cea_model_core import run_cea
 
         # This is a valid params configuration where societal costs are lists
         # which triggers the isinstance check in _calculate_friction_cost

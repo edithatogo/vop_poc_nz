@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.value_of_information import (
+from vop_poc_nz.value_of_information import (
     ProbabilisticSensitivityAnalysis,
     calculate_evpi,
     calculate_evppi,
