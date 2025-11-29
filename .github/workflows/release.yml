@@ -34,27 +34,38 @@ jobs:
       - name: Verify distributions
         run: python -m twine check dist/*
 
-      - name: Smoke test from TestPyPI
-        env:
-          PIP_NO_CACHE_DIR: "true"
-        run: |
-          python -m venv /tmp/testpypi-env
-          source /tmp/testpypi-env/bin/activate
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple vop-poc-nz
-          python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
-
       - name: Publish to TestPyPI
-        run: hatch publish --repo testpypi --no-prompt -u __token__ -a "${{ secrets.TEST_PYPI_TOKEN }}" dist/*
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.TEST_PYPI_TOKEN }}
+        run: |
+          python -m twine upload --repository testpypi dist/*
 
       - name: Publish to PyPI
-        run: hatch publish --no-prompt -u __token__ -a "${{ secrets.PYPI_TOKEN }}" dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python -m twine upload dist/*
+
+      - name: Smoke test installation from PyPI
+        run: |
+          python -m venv /tmp/smoke-test
+          source /tmp/smoke-test/bin/activate
+          pip install vop-poc-nz
+          python -c "import vop_poc_nz; print(f'Installed version: {vop_poc_nz.__version__}')"
 
       - name: Publish to Anaconda
+        if: ${{ secrets.ANACONDA_TOKEN != '' }}
         env:
           ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
           ANACONDA_USER: ${{ secrets.ANACONDA_USERNAME }}
         run: |
-          anaconda --token "$ANACONDA_API_TOKEN" upload --user "$ANACONDA_USER" --label main dist/*.whl
+          if [ -n "$ANACONDA_API_TOKEN" ] && [ -n "$ANACONDA_USER" ]; then
+            anaconda --token "$ANACONDA_API_TOKEN" upload --user "$ANACONDA_USER" --label main dist/*.whl
+          else
+            echo "Skipping Anaconda upload: secrets not configured"
+          fi
 
       - name: Attach artifacts to GitHub Release
         if: github.event_name == 'release'
