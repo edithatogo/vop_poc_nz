@@ -3,7 +3,7 @@
 ## Current State
 - Tests: 52 files collected, all previous non-equity smoke tests passing; latest failing test was fixed; coverage gate temporarily lowered to `fail_under=40` (pyproject).
 - Coverage: ~41% last successful run; still far from 95%. Large untested areas: `visualizations.py`, `main_analysis.py`, `dcea_analysis.py`, `dsa_analysis.py`, `dcea_equity_analysis.py`, `value_of_information.py`, `cluster_analysis.py`, `reporting.py`, branches in `cea_model_core.py`.
-- Typing: mypy timeouts on big modules; typing unverified (typing to be addressed later). 
+- Typing: mypy timeouts on big modules; typing unverified (typing to be addressed later).
 - New smoke tests added: `tests/test_smoke_coverage.py`, `tests/test_additional_smoke.py`, `tests/test_visualizations_extra.py`, `tests/test_visualizations_equity.py`, `tests/test_dcea_equity_smoke.py`, and `tests/conftest.py` for PYTHONPATH.
 
 ## Next Steps (Short Term)

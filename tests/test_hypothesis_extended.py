@@ -45,20 +45,22 @@ def test_icer_sign_property(inc_cost, inc_qalys):
 
     if inc_cost > 0:
         # Allow tiny underflow to zero when cost is extremely small.
-        assert icer > 0 or math.isclose(icer, 0.0, abs_tol=tol), (
-            "Positive cost with positive QALY should give positive ICER"
-        )
+        assert icer > 0 or math.isclose(
+            icer, 0.0, abs_tol=tol
+        ), "Positive cost with positive QALY should give positive ICER"
     elif inc_cost < 0:
-        assert icer < 0 or math.isclose(icer, 0.0, abs_tol=tol), (
-            "Negative cost with positive QALY should give negative ICER"
-        )
+        assert icer < 0 or math.isclose(
+            icer, 0.0, abs_tol=tol
+        ), "Negative cost with positive QALY should give negative ICER"
     else:
         assert math.isclose(icer, 0.0, abs_tol=tol), "Zero cost should give zero ICER"
 
 
 @settings(max_examples=100, deadline=None)
 @given(
-    cost=st.floats(min_value=0.001, max_value=1e6, allow_nan=False, allow_infinity=False),
+    cost=st.floats(
+        min_value=0.001, max_value=1e6, allow_nan=False, allow_infinity=False
+    ),
     qalys=st.floats(
         min_value=0.001, max_value=100, allow_nan=False, allow_infinity=False
     ),
@@ -75,9 +77,9 @@ def test_icer_scaling_invariance(cost, qalys, multiplier):
     icer1 = _calculate_icer(cost, qalys)
     icer2 = _calculate_icer(cost * multiplier, qalys * multiplier)
 
-    assert math.isclose(icer1, icer2, rel_tol=1e-9), (
-        f"ICER should be scale-invariant: {icer1} vs {icer2}"
-    )
+    assert math.isclose(
+        icer1, icer2, rel_tol=1e-9
+    ), f"ICER should be scale-invariant: {icer1} vs {icer2}"
 
 
 @settings(max_examples=100, deadline=None)
@@ -130,9 +132,9 @@ def test_cer_icer_relationship(cost, qalys):
     cer = _calculate_cer(cost, qalys)
     icer = _calculate_icer(cost - 0, qalys - 0)  # Compared to zero baseline
 
-    assert math.isclose(cer, icer, rel_tol=1e-9), (
-        f"CER should equal ICER with zero baseline: {cer} vs {icer}"
-    )
+    assert math.isclose(
+        cer, icer, rel_tol=1e-9
+    ), f"CER should equal ICER with zero baseline: {cer} vs {icer}"
 
 
 # =============================================================================
@@ -168,9 +170,9 @@ def test_markov_population_conservation(p_stay):
     for cycle_pop in population_trace:
         total = sum(cycle_pop)
         # Allow small numerical tolerance
-        assert math.isclose(total, 1000, rel_tol=1e-6), (
-            f"Population should be conserved: {total}"
-        )
+        assert math.isclose(
+            total, 1000, rel_tol=1e-6
+        ), f"Population should be conserved: {total}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -197,9 +199,9 @@ def test_markov_absorbing_state_monotonic(p_transition, cycles):
     dead_over_time = [trace[1] for trace in population_trace]
     for i in range(1, len(dead_over_time)):
         # Allow small numerical tolerance
-        assert dead_over_time[i] >= dead_over_time[i - 1] - 1e-6, (
-            f"Absorbing state population should be monotonic: {dead_over_time}"
-        )
+        assert (
+            dead_over_time[i] >= dead_over_time[i - 1] - 1e-6
+        ), f"Absorbing state population should be monotonic: {dead_over_time}"
 
 
 # =============================================================================
@@ -236,9 +238,9 @@ def test_gini_perfect_equality(n, value):
     equal_values = np.array([value] * n)
     gini = calculate_gini_coefficient(equal_values)
 
-    assert math.isclose(gini, 0, abs_tol=1e-9), (
-        f"Gini should be 0 for equal distribution: {gini}"
-    )
+    assert math.isclose(
+        gini, 0, abs_tol=1e-9
+    ), f"Gini should be 0 for equal distribution: {gini}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -253,9 +255,9 @@ def test_gini_maximum_inequality(n):
 
     # For large n, Gini approaches 1
     expected_max = (n - 1) / n
-    assert gini >= expected_max - 0.01, (
-        f"Gini should approach {expected_max} for maximum inequality: {gini}"
-    )
+    assert (
+        gini >= expected_max - 0.01
+    ), f"Gini should approach {expected_max} for maximum inequality: {gini}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -278,9 +280,9 @@ def test_gini_scale_invariance(values, multiplier):
     gini_scaled = calculate_gini_coefficient(scaled)
 
     # Allow small numerical tolerance due to floating point arithmetic
-    assert math.isclose(gini_original, gini_scaled, rel_tol=1e-6, abs_tol=1e-9), (
-        f"Gini should be scale-invariant: {gini_original} vs {gini_scaled}"
-    )
+    assert math.isclose(
+        gini_original, gini_scaled, rel_tol=1e-6, abs_tol=1e-9
+    ), f"Gini should be scale-invariant: {gini_original} vs {gini_scaled}"
 
 
 # =============================================================================
@@ -330,9 +332,9 @@ def test_atkinson_perfect_equality(n, value, epsilon):
     equal_values = np.array([value] * n)
     atkinson = calculate_atkinson_index(equal_values, epsilon=epsilon)
 
-    assert math.isclose(atkinson, 0, abs_tol=1e-9), (
-        f"Atkinson should be 0 for equal distribution: {atkinson}"
-    )
+    assert math.isclose(
+        atkinson, 0, abs_tol=1e-9
+    ), f"Atkinson should be 0 for equal distribution: {atkinson}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -355,9 +357,9 @@ def test_atkinson_epsilon_ordering(values):
     atkinson_high = calculate_atkinson_index(arr, epsilon=1.5)
 
     # Higher epsilon penalizes inequality more
-    assert atkinson_high >= atkinson_low - 1e-9, (
-        f"Higher epsilon should give >= Atkinson: {atkinson_low} vs {atkinson_high}"
-    )
+    assert (
+        atkinson_high >= atkinson_low - 1e-9
+    ), f"Higher epsilon should give >= Atkinson: {atkinson_low} vs {atkinson_high}"
 
 
 # =============================================================================
@@ -408,9 +410,9 @@ def test_evpi_zero_when_dominated(n):
 
     evpi = calculate_evpi(psa_df, wtp_threshold=50000)
 
-    assert math.isclose(evpi, 0, abs_tol=1e-9), (
-        f"EVPI should be 0 when one option dominates: {evpi}"
-    )
+    assert math.isclose(
+        evpi, 0, abs_tol=1e-9
+    ), f"EVPI should be 0 when one option dominates: {evpi}"
 
 
 # =============================================================================
@@ -481,9 +483,9 @@ def test_discounting_decreases_value(value, rate, years):
     """Discounted value should be less than nominal value (for positive rate)."""
     discounted = value / ((1 + rate) ** years)
 
-    assert discounted < value, (
-        f"Discounted value {discounted} should be < nominal {value}"
-    )
+    assert (
+        discounted < value
+    ), f"Discounted value {discounted} should be < nominal {value}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -499,9 +501,9 @@ def test_discounting_at_year_zero(value, rate):
     """Discounting at year 0 should equal the original value."""
     discounted = value / ((1 + rate) ** 0)
 
-    assert math.isclose(discounted, value, rel_tol=1e-9), (
-        f"Year 0 discounting should preserve value: {discounted} vs {value}"
-    )
+    assert math.isclose(
+        discounted, value, rel_tol=1e-9
+    ), f"Year 0 discounting should preserve value: {discounted} vs {value}"
 
 
 @settings(max_examples=50, deadline=None)
@@ -522,6 +524,6 @@ def test_discounting_monotonic(value, rate, y1, y2):
     discounted_y1 = value / ((1 + rate) ** y1)
     discounted_y2 = value / ((1 + rate) ** y2)
 
-    assert discounted_y2 < discounted_y1, (
-        f"Further discounting should give smaller value: {discounted_y2} vs {discounted_y1}"
-    )
+    assert (
+        discounted_y2 < discounted_y1
+    ), f"Further discounting should give smaller value: {discounted_y2} vs {discounted_y1}"

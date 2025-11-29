@@ -11,35 +11,35 @@ graph TB
         VOI[Value of Information<br/>calculate_evpi<br/>calculate_evppi]
         DSA[Sensitivity Analysis<br/>one_way_dsa<br/>two_way_dsa<br/>three_way_dsa]
     end
-    
+
     subgraph "Supporting Analysis"
         BIA[Budget Impact<br/>project_bia<br/>bia_to_markdown]
         DISC[Discordance Analysis<br/>perspective_comparison]
         THRESH[Threshold Analysis<br/>run_threshold_analysis]
         CLUSTER[Cluster Analysis<br/>ClusterAnalysis]
     end
-    
+
     subgraph "Pipeline & Orchestration"
         MAIN[Main Analysis<br/>run_corrected_analysis]
         PIPE[Pipeline Analysis<br/>run_analysis_pipeline]
         REPORT[Reporting<br/>generate_comprehensive_report]
     end
-    
+
     subgraph "Visualization & Output"
         VIZ[Visualizations<br/>plot_ceac, plot_lorenz<br/>plot_cluster_analysis]
         VIZEXT[Visualizations Extended<br/>plot_acceptability_frontier<br/>population_evpi_timeline]
         DASH[Dashboards<br/>compose_dashboard<br/>compose_equity_dashboard]
     end
-    
+
     subgraph "Data & Validation"
         PARAMS[Parameters YAML<br/>intervention definitions<br/>subgroup specifications]
         VALID[Validation<br/>validate_transition_matrices<br/>validate_psa_results]
     end
-    
+
     %% Dependencies
     PARAMS -->|load| MAIN
     PARAMS -->|load| PIPE
-    
+
     MAIN --> CEA
     MAIN --> DCEA
     MAIN --> VOI
@@ -47,33 +47,33 @@ graph TB
     MAIN --> BIA
     MAIN --> DISC
     MAIN --> THRESH
-    
+
     PIPE --> CEA
     PIPE --> DCEA
     PIPE --> VOI
     PIPE --> DSA
-    
+
     CEA -->|subgroup_results| DCEA
     CEA -->|model_output| VOI
     CEA -.->|validates| VALID
-    
+
     VOI -->|psa_data| DSA
     DCEA -->|equity_metrics| REPORT
-    
+
     CEA --> VIZ
     DCEA --> VIZ
     VOI --> VIZ
     DSA --> VIZ
     BIA --> VIZ
     CLUSTER --> VIZ
-    
+
     VIZ --> DASH
     VIZEXT --> DASH
-    
+
     REPORT --> DASH
     MAIN --> REPORT
     PIPE --> REPORT
-    
+
     style CEA fill:#e1f5ff
     style DCEA fill:#fff3e0
     style VOI fill:#e8f5e9

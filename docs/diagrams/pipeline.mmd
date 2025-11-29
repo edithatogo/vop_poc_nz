@@ -8,84 +8,84 @@ flowchart TD
     START([Start Analysis Pipeline])
     LOAD[Load Parameters<br/>from parameters.yaml]
     VALIDATE{Valid<br/>Parameters?}
-    
+
     CEA_LOOP[For each intervention...]
     CEA_HS[Run CEA<br/>Health System Perspective]
     CEA_SOC[Run CEA<br/>Societal Perspective<br/>Human Capital & Friction Cost]
-    
+
     CHECK_SUBGRP{Subgroups<br/>Defined?}
     RUN_DCEA[Run DCEA<br/>Equity Analysis<br/>Calculate Gini & Atkinson]
     SENS_EPSILON[Inequality Aversion<br/>Sensitivity Analysis<br/>ε ∈ [0, 10]]
-    
+
     DISC[Calculate Discordance<br/>Between Perspectives]
     PARAM_TABLE[Generate Parameters Table<br/>Sources & Assumptions]
-    
+
     CEA_DONE{All<br/>Interventions<br/>Complete?}
-    
+
     AGGREGATE[Aggregate Results<br/>Comparative ICER Table]
-    
+
     VOI_START[VOI Analysis]
     PSA[Run PSA<br/>Monte Carlo<br/>n=1000]
     EVPI[Calculate EVPI<br/>Per WTP Threshold]
     EVPPI[Calculate EVPPI<br/>By Parameter Group]
-    
+
     DSA_START[DSA Analysis]
     DSA1[One-Way DSA<br/>Tornado Diagrams]
     DSA2[Two-Way DSA<br/>Heatmaps]
     DSA3[Three-Way DSA<br/>3D Surfaces]
-    
+
     BIA[Budget Impact Analysis<br/>5-Year Projection<br/>With Discounting]
-    
+
     THRESH[Threshold Analysis<br/>Decision-Critical Parameters]
-    
+
     VIZ[Generate Visualizations<br/>CE Planes, Lorenz Curves<br/>CEAC/CEAF, Dashboards]
-    
+
     REPORT[Generate Reports<br/>Combined Markdown<br/>Policy Brief<br/>CHEERS Compliance]
-    
+
     SAVE[Save Outputs<br/>Tables: CSV<br/>Figures: PNG/PDF/SVG<br/>Reports: Markdown]
-    
+
     END([Analysis Complete])
-    
+
     %% Flow
     START --> LOAD
     LOAD --> VALIDATE
     VALIDATE -->|No| ERROR[Error: Fix Parameters]
     ERROR --> END
     VALIDATE -->|Yes| CEA_LOOP
-    
+
     CEA_LOOP --> CEA_HS
     CEA_HS --> CEA_SOC
     CEA_SOC --> CHECK_SUBGRP
-    
+
     CHECK_SUBGRP -->|Yes| RUN_DCEA
     RUN_DCEA --> SENS_EPSILON
     SENS_EPSILON --> DISC
-    
+
     CHECK_SUBGRP -->|No| DISC
-    
+
     DISC --> PARAM_TABLE
     PARAM_TABLE --> CEA_DONE
-    
+
     CEA_DONE -->|No| CEA_LOOP
     CEA_DONE -->|Yes| AGGREGATE
-    
+
     AGGREGATE --> VOI_START
     VOI_START --> PSA
     PSA --> EVPI
     EVPI --> EVPPI
-    
+
     EVPPI --> DSA_START
     DSA_START --> DSA1
     DSA1 --> DSA2
     DSA2 --> DSA3
-    
+
     DSA3 --> BIA
     BIA --> THRESH
     THRESH --> VIZ
     VIZ --> REPORT
     REPORT --> SAVE
     SAVE --> END
-    
+
     %% Styling
     style START fill:#c8e6c9
     style END fill:#ffccbc

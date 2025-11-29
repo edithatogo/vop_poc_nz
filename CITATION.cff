@@ -5,11 +5,11 @@ type: software
 authors:
   - family-names: Mordaunt
     given-names: Dylan A
-    orcid: https://orcid.org/0000-0002-7778-3409
+    orcid: https://orcid.org/0000-0002-9775-0603
 repository-code: https://github.com/edithatogo/vop_poc_nz
 url: https://osf.io/unq76
 license: Apache-2.0
-version: 0.1.7
+version: 0.1.8
 date-released: 2024-11-29
 doi: 10.5281/zenodo.17759272
 keywords:

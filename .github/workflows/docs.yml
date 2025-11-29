@@ -31,22 +31,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin
           pip install -e .
-      
+
       - name: Build documentation
         run: mkdocs build
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
