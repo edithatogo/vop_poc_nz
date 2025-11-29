@@ -167,10 +167,12 @@ extend-ignore = [
     "C901",   # Function too complex (acceptable for analysis functions)
     "B007",   # Unused loop control variable (underscore prefix is optional)
     "RUF013", # PEP 484 implicit Optional (legacy code pattern)
+    "RUF015", # Prefer next(iter()) (stylistic preference)
+    "RUF043", # Regex pattern in pytest.raises match (intentional regex)
+    "RUF059", # Unused unpacked variable (acceptable for tuple unpacking)
     "SIM102", # Nested if statements (sometimes clearer)
     "SIM105", # Use contextlib.suppress (not always clearer)
     "E731",   # Lambda assignment (acceptable for simple callbacks)
-    "RUF015", # Prefer next(iter()) (stylistic preference)
 ]
 
 [tool.ruff.lint.mccabe]
