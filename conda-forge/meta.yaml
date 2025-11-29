@@ -1,10 +1,10 @@
 # Conda-forge Recipe for vop-poc-nz
-# 
+#
 # To submit to conda-forge:
 # 1. Fork https://github.com/conda-forge/staged-recipes
 # 2. Copy this file to recipes/vop-poc-nz/meta.yaml
 # 3. Submit a pull request
-# 
+#
 # Documentation: https://conda-forge.org/docs/maintainer/adding_pkgs.html
 
 {% set name = "vop-poc-nz" %}
