@@ -144,17 +144,19 @@ def teardown_module(module):
             os.rmdir(OUTPUT_DIR)
 
 
-def test_visual_regression_hash():
+def test_visual_regression_hash(tmp_path):
     # simple deterministic plot and hash check for CE plane density
+    # Uses tmp_path fixture for CI compatibility
+    output_dir = str(tmp_path)
     inc_costs = [0, 1]
     inc_qalys = [0, 1]
     viz.plot_density_ce_plane(
-        inc_costs, inc_qalys, output_dir=OUTPUT_DIR, intervention_label="hashTest"
+        inc_costs, inc_qalys, output_dir=output_dir, intervention_label="hashTest"
     )
     target = None
-    for f in os.listdir(OUTPUT_DIR):
+    for f in os.listdir(output_dir):
         if f.startswith("density_ce_plane_hashtest") and f.endswith(".png"):
-            target = os.path.join(OUTPUT_DIR, f)
+            target = os.path.join(output_dir, f)
             break
     assert target is not None
     import hashlib

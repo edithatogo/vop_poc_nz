@@ -21,6 +21,7 @@ repos:
         exclude: ^(output/|htmlcov/|data_outputs/)
       - id: check-yaml
         args: [--unsafe]  # Allow custom YAML tags
+        exclude: ^conda-forge/
       - id: check-added-large-files
         args: [--maxkb=1000]
       - id: check-merge-conflict
@@ -42,7 +43,7 @@ repos:
     rev: 1.7.10
     hooks:
       - id: bandit
-        args: [-c, pyproject.toml, -r, src/, -ll]  # Only medium and above
+        args: [-c, pyproject.toml, -r, src/, --severity-level, medium]
         additional_dependencies: ["bandit[toml]"]
         exclude: ^tests/
 
