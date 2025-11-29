@@ -114,18 +114,18 @@ def test_equity_efficiency_plane():
 
 
 def test_dashboard_composer_with_existing(tmp_path):
-    # create dummy image
-    img_path = os.path.join(OUTPUT_DIR, "dummy.png")
+    # create dummy image in tmp_path for isolation
     import matplotlib.pyplot as plt
 
+    img_path = str(tmp_path / "dummy.png")
     fig, ax = plt.subplots()
     ax.plot([0, 1], [0, 1])
     fig.savefig(img_path)
     plt.close(fig)
     viz.compose_dashboard(
-        [img_path], output_dir=OUTPUT_DIR, filename_base="dash_exists"
+        [img_path], output_dir=str(tmp_path), filename_base="dash_exists"
     )
-    assert any(f.startswith("dash_exists") for f in os.listdir(OUTPUT_DIR))
+    assert any(f.startswith("dash_exists") for f in os.listdir(tmp_path))
 
 
 def test_dashboard_composer_skips_missing():
