@@ -242,8 +242,9 @@ exclude = [
 ]
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["scikit-learn", "seaborn", "statsmodels", "tox", "mutmut", "deptry", "vulture", "memray", "viztracer", "pytest", "pytest-cov", "ruff", "mypy", "pyright", "pydantic", "pandera", "hypothesis", "pre-commit", "great-tables"]
-DEP001 = ["vop_poc_nz"]
+DEP002 = ["scikit-learn", "seaborn", "statsmodels", "tox", "mutmut", "deptry", "vulture", "memray", "viztracer", "pytest", "pytest-cov", "ruff", "mypy", "pyright", "pydantic", "pandera", "hypothesis", "pre-commit", "great-tables", "Jinja2", "tabulate", "scienceplots", "openpyxl"]
+DEP001 = ["vop_poc_nz", "psutil", "graphviz"]
+DEP003 = ["yaml", "PIL"]
 
 [tool.vulture]
 exclude = ["notebooks", "tests", "output", "build", "dist", ".venv"]
