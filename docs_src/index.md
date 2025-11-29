@@ -1,4 +1,4 @@
-# Health Economic Analysis: Distributional Cost-Effectiveness Framework
+# Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation
 
 [![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
@@ -6,16 +6,31 @@
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://github.com/edithatogo/vop_poc_nz/blob/main/LICENSE)
 
-Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
+A proof-of-concept framework for quantifying the **Value of Perspective (VoP)** in health economic evaluation. This project uses published economic evaluations from the Aotearoa New Zealand context to measure the decision impact of choosing between health system and societal perspectives.
 
-## Features
+## The Value of Perspective Concept
 
-- **Cost-Effectiveness Analysis (CEA)** - Validated Markov cohort models with proper discounting
-- **Distributional CEA (DCEA)** - Equity analysis using Gini and Atkinson indices
-- **Value of Information (VOI)** - EVPI/EVPPI for research prioritization
-- **Global Sensitivity Analysis** - Sobol variance-based methods
-- **Budget Impact Analysis (BIA)** - Multi-year projections with discounting
-- **Comprehensive Reporting** - CHEERS 2022 compliant outputs
+The **Value of Perspective (VoP)** quantifies the potential loss from decision discordance—when different analytical perspectives yield conflicting cost-effectiveness conclusions:
+
+- **Health System Perspective**: Direct healthcare costs only
+- **Societal Perspective**: Additionally includes productivity losses, caregiver burden, and broader costs
+
+VoP serves as both:
+
+1. **A trigger threshold**: Identifying when perspective choice materially affects recommendations
+2. **A quantitative measure**: Expressing opportunity cost in monetary terms (NZ$/QALY lost)
+
+## Key Features
+
+| Category | Feature | Description |
+|----------|---------|-------------|
+| **Core Analysis** | Cost-Effectiveness Analysis | Markov models with discounting |
+| | Perspective Comparison | Health system vs societal ICERs |
+| | Value of Perspective | Quantified loss from discordance |
+| **Equity** | Distributional CEA | Gini, Atkinson indices |
+| **Uncertainty** | EVPI/EVPPI | Value of information analysis |
+| | Sobol Analysis | Global sensitivity indices |
+| **Reporting** | CHEERS 2022 | Standards compliance |
 
 ## Quick Start
 
@@ -24,28 +39,19 @@ pip install vop-poc-nz
 ```
 
 ```python
-from vop_poc_nz import run_cea, run_dcea, calculate_evpi
+from vop_poc_nz import run_cea
+from vop_poc_nz.discordance_analysis import calculate_decision_discordance
 
-# Load your parameters
-import yaml
-with open("parameters.yaml") as f:
-    params = yaml.safe_load(f)
-
-# Run CEA
-results = run_cea(params["intervention"], perspective="societal")
-
-# Check if cost-effective
-if results["icer"] < 50000:
-    print(f"Cost-effective: ICER = ${results['icer']:,.0f}/QALY")
+# Compare perspectives
+discordance = calculate_decision_discordance("Intervention", params, wtp_threshold=50000)
+print(f"Value of Perspective: ${discordance['loss_from_discordance']:,.0f}")
 ```
 
 ## Documentation
 
 - [Getting Started](getting-started/installation.md)
-- [User Guide](guide/cea.md)
-- [API Reference](api/cea_model_core.md)
-- [Methodology](methodology/formulae.md)
+- [API Reference](api/cea_model.md)
 
 ## License
 
-Apache License 2.0 - see [LICENSE](https://github.com/edithatogo/vop_poc_nz/blob/main/LICENSE) for details.
+Apache License 2.0
