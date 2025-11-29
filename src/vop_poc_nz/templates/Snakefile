@@ -1,0 +1,76 @@
+"""
+Snakemake workflow for Health Economic Analysis Pipeline.
+
+This workflow manages the execution of the DCEA analysis using the vop-poc-nz package.
+It supports versioning via an output directory parameter.
+
+Usage:
+    snakemake -c1                              # Run with 1 core
+    snakemake -c1 --config version=v1.0        # Run with version tag
+    snakemake -c1 -n                           # Dry run (preview)
+
+Prerequisites:
+    pip install vop-poc-nz snakemake
+"""
+
+# Configuration
+VERSION = config.get("version", "latest")
+OUTPUT_DIR = f"output/{VERSION}"
+
+# Default target: run full pipeline
+rule all:
+    input:
+        f"{OUTPUT_DIR}/reports/policy_brief.md",
+        f"{OUTPUT_DIR}/combined_report.md",
+        f"{OUTPUT_DIR}/figures/dashboard_ce_voi_societal.png"
+
+# Run the full analysis pipeline
+rule run_analysis:
+    output:
+        directory(f"{OUTPUT_DIR}/figures"),
+        directory(f"{OUTPUT_DIR}/reports"),
+        f"{OUTPUT_DIR}/reports/policy_brief.md",
+        f"{OUTPUT_DIR}/combined_report.md",
+        f"{OUTPUT_DIR}/figures/dashboard_ce_voi_societal.png"
+    params:
+        output_dir = OUTPUT_DIR
+    shell:
+        "vop-poc-nz run --output-dir {params.output_dir}"
+
+# Run analysis only (skip reporting)
+rule analysis_only:
+    output:
+        f"{OUTPUT_DIR}/results.pkl"
+    params:
+        output_dir = OUTPUT_DIR
+    shell:
+        "vop-poc-nz run --output-dir {params.output_dir} --skip-reporting"
+
+# Generate reports from existing results
+rule reports_only:
+    input:
+        f"{OUTPUT_DIR}/results.pkl"
+    output:
+        f"{OUTPUT_DIR}/reports/policy_brief.md"
+    params:
+        output_dir = OUTPUT_DIR
+    shell:
+        "vop-poc-nz report --results-file {input} --output-dir {params.output_dir}"
+
+# Clean outputs
+rule clean:
+    shell:
+        "rm -rf {OUTPUT_DIR}"
+
+# Quality checks
+rule lint:
+    shell:
+        "ruff check ."
+
+rule format:
+    shell:
+        "ruff format ."
+
+rule test:
+    shell:
+        "pytest -v"

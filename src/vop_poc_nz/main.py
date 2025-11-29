@@ -8,6 +8,7 @@ This script orchestrates the full analysis workflow:
 Usage:
     vop-poc-nz run --output-dir output
     vop-poc-nz report --results-file output/results.pkl
+    vop-poc-nz init                            # Scaffold Snakefile + parameters
     vop-poc-nz --version
 """
 
@@ -15,7 +16,9 @@ import argparse
 import logging
 import os
 import pickle
+import shutil
 import sys
+from importlib import resources
 
 import matplotlib
 
@@ -65,6 +68,51 @@ def cmd_report(args):
     logging.info("Reporting completed successfully.")
 
 
+def cmd_init(args):
+    """Initialize a new project with Snakefile and parameters template."""
+    target_dir = args.directory
+
+    files_to_copy = [
+        ("templates/Snakefile", "Snakefile"),
+        ("parameters.yaml.template", "parameters.yaml"),
+    ]
+
+    created = []
+    skipped = []
+
+    for src_name, dest_name in files_to_copy:
+        dest_path = os.path.join(target_dir, dest_name)
+
+        if os.path.exists(dest_path) and not args.force:
+            skipped.append(dest_name)
+            continue
+
+        # Read from package resources
+        try:
+            with resources.files("vop_poc_nz").joinpath(src_name).open("r") as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"Warning: Template {src_name} not found in package", file=sys.stderr)
+            continue
+
+        os.makedirs(target_dir, exist_ok=True)
+        with open(dest_path, "w") as f:
+            f.write(content)
+        created.append(dest_name)
+
+    if created:
+        print(f"Created: {', '.join(created)}")
+    if skipped:
+        print(f"Skipped (already exists): {', '.join(skipped)}")
+        print("Use --force to overwrite existing files.")
+
+    if created or not skipped:
+        print(f"\nNext steps:")
+        print(f"  1. Edit parameters.yaml with your intervention data")
+        print(f"  2. Run: snakemake -c1")
+        print(f"  Or use: vop-poc-nz run")
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="vop-poc-nz",
@@ -72,6 +120,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  vop-poc-nz init                      Initialize project with Snakefile
   vop-poc-nz run                       Run full analysis pipeline
   vop-poc-nz run --output-dir results  Save outputs to 'results/' directory
   vop-poc-nz run --skip-reporting      Run analysis only, skip report generation
@@ -85,6 +134,24 @@ For more information, visit: https://github.com/edithatogo/vop_poc_nz
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # 'init' subcommand
+    init_parser = subparsers.add_parser(
+        "init", help="Initialize project with Snakefile and parameters template"
+    )
+    init_parser.add_argument(
+        "directory",
+        nargs="?",
+        default=".",
+        help="Directory to initialize (default: current directory)",
+    )
+    init_parser.add_argument(
+        "--force",
+        "-f",
+        action="store_true",
+        help="Overwrite existing files",
+    )
+    init_parser.set_defaults(func=cmd_init)
 
     # 'run' subcommand
     run_parser = subparsers.add_parser(

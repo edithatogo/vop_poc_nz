@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-11-29
+
+### Added
+
+- **Project Scaffolding**
+  - `vop-poc-nz init` - Initialize project with Snakefile and parameters template
+  - `--force` flag to overwrite existing files
+  - Bundled Snakefile template for Snakemake workflow integration
+
 ## [0.1.1] - 2025-11-29
 
 ### Added
