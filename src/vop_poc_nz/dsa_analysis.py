@@ -637,7 +637,7 @@ def plot_three_way_dsa_3d(dsa_results, output_dir="data/data_outputs/figures/"):
         data = dsa_results[model_name]
 
         # Create 3D grid
-        p1_grid, p2_grid, p3_grid = np.meshgrid(
+        _p1_grid, _p2_grid, p3_grid = np.meshgrid(
             data["p1_range"], data["p2_range"], data["p3_range"], indexing="ij"
         )
 
