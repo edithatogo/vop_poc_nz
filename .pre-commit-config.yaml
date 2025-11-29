@@ -43,8 +43,9 @@ repos:
     rev: 1.7.10
     hooks:
       - id: bandit
-        args: [-c, pyproject.toml, -r, src/, --severity-level, medium]
+        args: [-c, pyproject.toml, --severity-level, medium]
         additional_dependencies: ["bandit[toml]"]
+        files: ^src/
         exclude: ^tests/
 
   # Notebook linting

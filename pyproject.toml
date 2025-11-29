@@ -168,6 +168,7 @@ extend-ignore = [
     "B007",   # Unused loop control variable (underscore prefix is optional)
     "RUF013", # PEP 484 implicit Optional (legacy code pattern)
     "RUF015", # Prefer next(iter()) (stylistic preference)
+    "RUF059", # Unused unpacked variable (acceptable for matplotlib returns)
     "SIM102", # Nested if statements (sometimes clearer)
     "SIM105", # Use contextlib.suppress (not always clearer)
     "E731",   # Lambda assignment (acceptable for simple callbacks)
