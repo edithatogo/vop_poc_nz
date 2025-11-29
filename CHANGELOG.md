@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9](https://github.com/edithatogo/vop_poc_nz/compare/v0.1.8...v0.1.9) (2025-11-29)
+
+
+### Bug Fixes
+
+* extend deptry ignore rules for optional and transitive dependencies ([aac67bb](https://github.com/edithatogo/vop_poc_nz/commit/aac67bb638f8ae9580f5babc95c69c5ce395c6e3))
+* final CI fixes ([5ed5b11](https://github.com/edithatogo/vop_poc_nz/commit/5ed5b1150fea2035aea79ef53b6aba193422a0c6))
+* format tests and exclude .tox from deptry ([9d8bf6b](https://github.com/edithatogo/vop_poc_nz/commit/9d8bf6b96023e3d68212bd04428e3f2dc305ef3c))
+* ignore RUF043 regex metacharacter warnings in tests ([50fa721](https://github.com/edithatogo/vop_poc_nz/commit/50fa7212901d9f6ea448e2fcbb6241867ef2bd7d))
+* resolve remaining CI failures ([c12615b](https://github.com/edithatogo/vop_poc_nz/commit/c12615b3f8226c9599eca3317547956ce3d033bc))
+* resolve remaining CI lint and pre-commit issues ([e7c211f](https://github.com/edithatogo/vop_poc_nz/commit/e7c211fa1021c85861e7fcba4b6ee77119a99379))
+* update ruff hook id to ruff-check for v0.14+ ([eeb0cbf](https://github.com/edithatogo/vop_poc_nz/commit/eeb0cbfa2d576df1d30b458e0b4c3bdca27478aa))
+* use tox dash prefix to ignore vulture exit code ([1e51da9](https://github.com/edithatogo/vop_poc_nz/commit/1e51da93ce5513e33c0eba5f7023f7aac7c97b0c))
+
+
+### CI/CD
+
+* fix pre-commit and tox lint issues ([11ecbe5](https://github.com/edithatogo/vop_poc_nz/commit/11ecbe56d5ca348ceb1633300057a5524e176f9e))
+
 ## [Unreleased]
 
 ## [0.1.3] - 2025-11-29
