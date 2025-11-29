@@ -15,3 +15,7 @@ pytest-xdist
 tabulate
 pip-audit
 bandit
+# Type stubs for better mypy support
+pandas-stubs
+types-PyYAML
+types-tabulate

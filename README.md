@@ -1,8 +1,10 @@
 # Health Economic Analysis: Distributional Cost-Effectiveness Framework
 
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
-[![Python](https://img.shields.io/badge/python-3.8+-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-green)]()
+[![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
+[![Python](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
 
@@ -221,15 +223,17 @@ pytest tests/test_dcea_equity_smoke.py
 pytest -v
 ```
 
-Test coverage: **64/64 tests passing** (100% pass rate)
+Test coverage: **163 tests passing** with **95%+ coverage**
 
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
-1. Linting (`ruff check`)
-2. Formatting (`ruff format --check`)
-3. Unit tests (`pytest`)
-4. Coverage reporting
+1. **Testing**: Multi-version Python matrix (3.10-3.13)
+2. **Linting**: `ruff check` and `ruff format --check`
+3. **Type checking**: `mypy` with strict settings
+4. **Coverage**: Uploaded to Codecov with 95% target
+5. **Security**: `pip-audit` and `bandit` scanning
+6. **Pre-commit**: Validates all hooks pass
 
 ## Contributing
 
