@@ -135,3 +135,11 @@ debug_output_*.txt
 # Archives
 *.zip
 *.tar.gz
+
+# Virtual Environments
+.venv/
+.venv_ci_sim/
+.venv_repro/
+.qoder/
+.snakemake/
+.benchmarks/

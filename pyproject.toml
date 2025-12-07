@@ -65,6 +65,19 @@ Repository = "https://github.com/edithatogo/vop_poc_nz"
 [tool.hatch.build.targets.wheel]
 packages = ["src/vop_poc_nz"]
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.venv",
+  "/.venv_ci_sim",
+  "/.venv_repro",
+  "/.tox",
+  "/output",
+  "/data",
+  "/.qoder",
+  "/.snakemake",
+  "/.benchmarks",
+]
+
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
