@@ -72,5 +72,5 @@ snakemake output/cea_results.csv
 ## Next Steps
 
 - [API Reference](../api/cea_model.md) - Detailed documentation
-- [Tutorial Notebook](tutorials/index.md) - Step-by-step guide
-- [Examples](examples/index.md) - Real-world use cases
+- [Tutorial Notebook](../tutorials/index.md) - Step-by-step guide
+- [Examples](../examples/index.md) - Real-world use cases
