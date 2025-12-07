@@ -1,0 +1,28 @@
+classDiagram
+    class MarkovModel {
+        +states: list
+        +transition_matrices: dict
+        +run(cycles, initial_pop, costs, qalys)
+    }
+
+    class ValueOfInformation {
+        +calculate_evpi(psa_results)
+        +calculate_evppi(psa_results, parameter_groups)
+        +calculate_evop(societal_results, hs_results)
+    }
+
+    class DCEA {
+        +calculate_equity_impact(subgroup_results, epsilon)
+        +calculate_nmb_eq(nmb_distribution, epsilon)
+    }
+
+    class ReportingPipeline {
+        +run_analysis_pipeline(config)
+        +generate_figures(results)
+        +generate_tables(results)
+    }
+
+    ReportingPipeline --> MarkovModel : orchestrates
+    ReportingPipeline --> ValueOfInformation : uses
+    ReportingPipeline --> DCEA : uses
+    MarkovModel <|-- CohortSimulation

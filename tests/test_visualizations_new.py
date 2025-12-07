@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 
-import vop_poc_nz.visualizations as viz
+from src import visualizations as viz
 
 OUTPUT_DIR = "output/test_figures"
 
@@ -114,18 +114,18 @@ def test_equity_efficiency_plane():
 
 
 def test_dashboard_composer_with_existing(tmp_path):
-    # create dummy image in tmp_path for isolation
+    # create dummy image
+    img_path = os.path.join(OUTPUT_DIR, "dummy.png")
     import matplotlib.pyplot as plt
 
-    img_path = str(tmp_path / "dummy.png")
     fig, ax = plt.subplots()
     ax.plot([0, 1], [0, 1])
     fig.savefig(img_path)
     plt.close(fig)
     viz.compose_dashboard(
-        [img_path], output_dir=str(tmp_path), filename_base="dash_exists"
+        [img_path], output_dir=OUTPUT_DIR, filename_base="dash_exists"
     )
-    assert any(f.startswith("dash_exists") for f in os.listdir(tmp_path))
+    assert any(f.startswith("dash_exists") for f in os.listdir(OUTPUT_DIR))
 
 
 def test_dashboard_composer_skips_missing():
@@ -144,19 +144,17 @@ def teardown_module(module):
             os.rmdir(OUTPUT_DIR)
 
 
-def test_visual_regression_hash(tmp_path):
+def test_visual_regression_hash():
     # simple deterministic plot and hash check for CE plane density
-    # Uses tmp_path fixture for CI compatibility
-    output_dir = str(tmp_path)
     inc_costs = [0, 1]
     inc_qalys = [0, 1]
     viz.plot_density_ce_plane(
-        inc_costs, inc_qalys, output_dir=output_dir, intervention_label="hashTest"
+        inc_costs, inc_qalys, output_dir=OUTPUT_DIR, intervention_label="hashTest"
     )
     target = None
-    for f in os.listdir(output_dir):
+    for f in os.listdir(OUTPUT_DIR):
         if f.startswith("density_ce_plane_hashtest") and f.endswith(".png"):
-            target = os.path.join(output_dir, f)
+            target = os.path.join(OUTPUT_DIR, f)
             break
     assert target is not None
     import hashlib

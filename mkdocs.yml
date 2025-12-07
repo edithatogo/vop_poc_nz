@@ -51,6 +51,12 @@ nav:
       - Value of Information: api/value_of_information.md
       - Sensitivity Analysis: api/sensitivity.md
       - Visualizations: api/visualization.md
+      - Comparative Visualizations: api/visualizations_comparative.md
+      - Extended Visualizations: api/visualizations_extended.md
+      - Budget Impact Analysis: api/bia_model.md
+      - Reporting: api/reporting.md
+      - Validation: api/validation.md
+      - Main Analysis: api/main_analysis.md
 
 markdown_extensions:
   - admonition

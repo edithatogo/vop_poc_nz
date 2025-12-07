@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{thumbpdf,lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Plainauthor}[1]{}
+\newcommand{\Plaintitle}[1]{}
+\newcommand{\Shorttitle}[1]{}
+\newcommand{\Plainkeywords}[1]{}
+\newcommand{\Address}[1]{}
+\newcommand{\Email}[1]{\texttt{#1}}
+\newcommand{\myabstract}{}
+\newcommand{\Abstract}[1]{\renewcommand{\myabstract}{#1}}
+\newcommand{\mykeywords}{}
+\newcommand{\Keywords}[1]{\renewcommand{\mykeywords}{#1}}
+\newcommand{\Title}[1]{\title{#1}}
+
+\author{Dylan A. Mordaunt\\Victoria University of Wellington}
+\Title{Supplement B: Guide to Equity Weights}
+\Abstract{
+  This supplement provides a guide to the normative assumptions embedded in the Distributional Cost-Effectiveness Analysis (DCEA), specifically the derivation and interpretation of equity weights.
+}
+\Keywords{equity, DCEA, Atkinson index, ethics}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\myabstract
+\end{abstract}
+
+\section{The Normative Basis of Equity Weights}
+
+The \pkg{vop\_poc\_nz} package uses the Atkinson social welfare function to operationalize equity.
+This approach assumes that society has a preference for reducing health inequality, quantified by the inequality aversion parameter, $\epsilon$.
+
+\subsection{Inequality Aversion Parameter ($\epsilon$)}
+
+The parameter $\epsilon$ determines the curvature of the social welfare function.
+\begin{itemize}
+    \item $\epsilon = 0$: \textbf{Utilitarian}. A QALY is a QALY, regardless of who receives it. Equity weights are all 1.0.
+    \item $\epsilon = 0.5$: \textbf{Mild Aversion}. Society is willing to sacrifice a small amount of total health to improve the health of the worst-off.
+    \item $\epsilon = 1.0$: \textbf{Moderate Aversion}. The value of a health gain is inversely proportional to the recipient's current health status.
+    \item $\epsilon > 10$: \textbf{Rawlsian (Maximin)}. Society prioritizes the worst-off group almost exclusively.
+\end{itemize}
+
+\section{Derivation of Weights}
+
+The equity weight $w_g$ for subgroup $g$ is calculated as:
+\begin{equation}
+w_g = \left( \frac{H_{ref}}{H_g} \right)^\epsilon
+\end{equation}
+where $H_{ref}$ is the reference health level (typically the population mean or the best-off group).
+
+Table~\ref{tab:weights} illustrates how weights change with $\epsilon$ for hypothetical subgroups.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Subgroup & Baseline Health ($H_g$) & $\epsilon=0$ & $\epsilon=0.5$ & $\epsilon=1.0$ \\
+\midrule
+High SES (Ref) & 0.90 & 1.00 & 1.00 & 1.00 \\
+Middle SES & 0.80 & 1.00 & 1.06 & 1.13 \\
+Low SES & 0.70 & 1.00 & 1.13 & 1.29 \\
+\bottomrule
+\end{tabular}
+\caption{Sensitivity of Equity Weights to Inequality Aversion ($H_{ref}=0.90$).}
+\label{tab:weights}
+\end{table}
+
+\end{document}

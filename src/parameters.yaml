@@ -1,0 +1,389 @@
+hpv_vaccination:
+  # Source: PHARMAC & Ministry of Health (2017). "HPV vaccination funding decision".
+  # Cost-effectiveness: ~$18,800/QALY (girls). Free for ages 9-26.
+  # URL: https://www.pharmac.govt.nz/news-and-resources/consultations-and-decisions/decision-to-widen-access-to-hpv-vaccine
+  states: ["Healthy", "Sick", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0, 0.85, 0.15], [0, 0, 1]]
+    new_treatment: [[0.98, 0.015, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [120, 48000, 0] # Inflated to 2025 NZD
+      new_treatment: [240, 24000, 0]
+    societal:
+      standard_care: [0, 18000, 0]
+      new_treatment: [0, 9600, 0]
+  qalys:
+    standard_care: [1.0, 0.6, 0.0]
+    new_treatment: [1.0, 0.75, 0.0]
+  discount_rate: 0.03
+  productivity_costs:
+    human_capital:
+      standard_care: [0, 12000, 0] # Annual productivity loss (inflated)
+      new_treatment: [0, 6000, 0]  # Reduced productivity loss
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost_per_day: 480 # Inflated
+    absenteeism_rate: 0.05
+  productivity_loss_states: {"Sick": 15} # State and associated annual absence days
+  
+  # Population parameters for BIA and Population EVPI
+  # Source: Stats NZ (2023). NZ population ~5.1 million. HPV target: females aged 9-26.
+  # Cohort size: ~30,000 per year × 18 years = 540,000 eligible
+  # Conservative estimate for 5-year implementation
+  bia_population:
+    total_population: 350000  # Target population over 5-year rollout
+    eligible_proportion: 0.85  # 85% medically eligible
+    rationale: "HPV vaccination target: females aged 9-26 in NZ. Annual cohort ~30k, 5-year horizon covers ~350k."
+    source: "Ministry of Health (2023) immunisation coverage data"
+  
+  # DSA Parameter Ranges for Sensitivity Analysis
+  # All ranges represent ±50% from base values unless otherwise noted
+  # References provided for clinical/economic justification
+  dsa_parameter_ranges:
+    wtp_threshold:
+      base: 50000
+      range: [25000, 75000]
+      rationale: "NZ cost-effectiveness threshold range. No official threshold but $45k-$50k commonly used."
+      source: "Pharmaceutical Management Agency (PHARMAC) funding decisions 2010-2023"
+    
+    cost_multiplier:
+      base: 1.0
+      range: [0.5, 2.0]
+      rationale: "Uncertainty in health system costs due to pricing variations and delivery models."
+      source: "Expert opinion and historical cost variations in NZ immunisation programs"
+    
+    qaly_multiplier:
+      base: 1.0
+      range: [0.5, 1.5]
+      rationale: "Uncertainty in QALY weights for HPV-related disease states."
+      source: "Canfell et al. (2008) Vaccine cost-effectiveness analysis"
+    
+    discount_rate:
+      base: 0.03
+      range: [0.0, 0.10]
+      rationale: "NZ Treasury recommended range 0-10% for health sector (3.5% central)."
+      source: "NZ Treasury (2023) Guidelines on the Use of Discount Rates"
+    
+    transition_healthy_to_sick:
+      base: 0.04  # From transition matrix [0.95, 0.04, 0.01]
+      range: [0.02, 0.08]
+      rationale: "HPV infection incidence varies by age, sexual behavior, vaccination coverage."
+      source: "Brotherton et al. (2016) NZ HPV surveillance data"
+    
+    transition_sick_to_dead:
+      base: 0.15  # From transition matrix [0, 0.85, 0.15]
+      range: [0.10, 0.25]
+      rationale: "Cervical cancer mortality rate uncertainty from treatment advances."
+      source: "Ministry of Health (2022) Cancer Registry data"
+    
+    cost_sick_hs:
+      base: 48000  # Health system cost for sick state
+      range: [30000, 70000]
+      rationale: "Cervical cancer treatment costs vary by stage and complications."
+      source: "Sheridan et al. (2020) NZ cancer treatment cost study"
+    
+    cost_sick_societal:
+      base: 18000  # Societal cost for sick state
+      range: [10000, 30000]
+      rationale: "Indirect costs (caregiver time, transportation) vary widely."
+      source: "Access Economics (2008) Cancer cost burden in NZ"
+    
+    qaly_sick:
+      base: 0.6  # QALY for sick state
+      range: [0.4, 0.75]
+      rationale: "Quality of life with cervical cancer varies by stage and treatment response."
+      source: "Peasgood et al. (2010) Health state utility values for cervical cancer"
+    
+    productivity_cost_sick:
+      base: 12000  # Annual productivity loss when sick
+      range: [6000, 20000]
+      rationale: "Lost productivity varies by employment status, age, and disease severity."
+      source: "Stats NZ (2023) Average wage data and workforce participation"
+    
+    friction_period_days:
+      base: 90
+      range: [60, 180]
+      rationale: "Time to replace absent worker varies by skill level and labor market."
+      source: "Koopmanschap et al. (1995) Friction cost method literature"
+  
+  subgroups:
+    High_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.99, 0.005, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+    Low_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.97, 0.025, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+
+smoking_cessation:
+  # Source: Ministry of Health (2021). "New Zealand Guidelines for Helping People to Stop Smoking".
+  # Cost-effectiveness: Highly cost-effective (break-even ~$13k-$29k per quitter).
+  # URL: https://www.health.govt.nz/publication/new-zealand-guidelines-helping-people-stop-smoking
+  states: ["Smoker", "Ex-smoker", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+    new_treatment: [[0.85, 0.14, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [600, 4800, 0] # Inflated
+      new_treatment: [1200, 4800, 0]
+    societal:
+      standard_care: [0, 0, 0]
+      new_treatment: [0, -12000, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost_per_day: 360 # Inflated
+    absenteeism_rate: 0.04
+  productivity_loss_states: {"Smoker": 10} # State and associated annual absence days
+  subgroups:
+    High_SES:
+      initial_population: [300, 0, 0]
+      costs:
+        societal:
+          standard_care: [0, 0, 0]
+          new_treatment: [0, -8000, 0]
+    Low_SES:
+      initial_population: [700, 0, 0]
+      costs:
+        societal:
+          standard_care: [0, 2000, 0]
+          new_treatment: [0, -12000, 0]
+  qalys:
+    standard_care: [0.8, 0.9, 0.0]
+    new_treatment: [0.8, 0.95, 0.0]
+  productivity_costs:
+    human_capital:
+      standard_care: [6000, 0, 0] # Annual productivity loss (inflated)
+      new_treatment: [1200, 0, 0]  # Reduced productivity loss
+  
+  # Population parameters for BIA and Population EVPI
+  # Source: Health NZ (2023). NZ has ~600,000 daily smokers (11.6% of population)
+  # Annual quit attempts: ~300,000. Target for intensive program: ~100,000 over 5 years
+  bia_population:
+    total_population: 600000  # Total NZ smokers
+    eligible_proportion: 0.50  # 50% willing to attempt cessation
+    rationale: "NZ has ~600k smokers. Cessation program targets motivated quitters (~300k). 5-year program aims for 50% reach."
+    source: "Health NZ Tobacco Control Data 2023"
+
+hepatitis_c_therapy:
+  # Source: PHARMAC (2019). "Proposal to widen access to funded hepatitis C treatments".
+  # Cost-effectiveness: ICER <$100k/QALY. Generic DAA cost ~$2k-$4k.
+  # URL: https://pharmac.govt.nz/news-and-resources/consultations-and-decisions/decision-to-widen-access-to-funded-hepatitis-c-treatments
+  states: ["Infected", "Cured", "Dead"]
+  transition_matrices:
+    standard_care: [[0.90, 0.05, 0.05], [0, 1, 0], [0, 0, 1]]
+    new_treatment: [[0.10, 0.85, 0.05], [0, 1, 0], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [6000, 0, 0] # Inflated
+      new_treatment: [6000, 0, 0]
+    societal:
+      standard_care: [3600, 0, 0]
+      new_treatment: [600, 0, 0]
+  qalys:
+    standard_care: [0.7, 1.0, 0.0]
+    new_treatment: [0.7, 1.0, 0.0]
+  productivity_costs:
+    human_capital:
+      standard_care: [12000, 0, 0] # Annual productivity loss (inflated)
+      new_treatment: [2400, 0, 0]  # Reduced productivity loss
+  friction_cost_params:
+    friction_period_days: 120
+    replacement_cost_per_day: 456 # Inflated
+    absenteeism_rate: 0.06
+  productivity_loss_states: {"Infected": 20} # State and associated annual absence days
+  subgroups:
+    High_SES:
+      initial_population: [400, 0, 0]
+      costs:
+        health_system:
+          standard_care: [4000, 0, 0]
+    Low_SES:
+      initial_population: [600, 0, 0]
+      costs:
+        health_system:
+          standard_care: [6000, 0, 0]
+  discount_rate: 0.03
+  
+  # Population parameters for BIA and Population EVPI
+  # Source: Ministry of Health (2020). Est. 50,000 people living with chronic hepatitis C in NZ
+  # ~8,000 diagnosed and eligible for treatment annually
+  bia_population:
+    total_population: 50000  # Total chronic HCV infections in NZ
+    eligible_proportion: 0.60  # 60% diagnosed and treatment-eligible
+    rationale: "NZ has ~50k people with chronic HCV. Wider access program aims to treat 30k over 5 years."
+    source: "He Ara Oranga: Report of the Government Inquiry into Mental Health and Addiction (2018)"
+
+childhood_obesity_prevention:
+  # Source: Project Energize (Waikato) & Whānau Pakari (Taranaki).
+  # Cost-effectiveness: ~$18,000 - $30,000 / QALY.
+  # Intervention Cost: ~$45/child/year (school-based) to ~$1000 (multidisciplinary).
+  # Modeled as a mixed intervention (school-based + targeted).
+  # All costs inflated to 2025 NZD (approx +20% from 2020 base).
+  states: ["Healthy", "Overweight/Obese", "Complications"]
+  initial_population: [500, 500, 0]
+  cycles: 50
+  discount_rate: 0.03
+  costs:
+    health_system:
+      standard_care: [0, 600, 2400] # Inflated from 500, 2000
+      new_treatment: [120, 480, 1800] # Intervention ~$120/year (weighted avg), reduced acute costs
+    societal:
+      standard_care: [0, 1200, 3600] # Inflated
+      new_treatment: [180, 840, 3000] # Inflated
+  productivity_costs:
+    human_capital:
+      standard_care: [0, 6000, 12000] # Inflated
+      new_treatment: [0, 2400, 6000]
+  productivity_loss_states:
+    "Overweight/Obese": 10
+    "Complications": 30
+  friction_cost_params:
+    friction_period_days: 180
+    replacement_cost_per_day: 480 # Inflated
+    absenteeism_rate: 0.05
+  qalys:
+    standard_care: [0.9, 0.7, 0.5]
+    new_treatment: [0.95, 0.8, 0.6]
+  transition_matrices:
+    standard_care: [[0.8, 0.15, 0.05], [0, 0.7, 0.3], [0, 0, 1]]
+    new_treatment: [[0.9, 0.08, 0.02], [0.05, 0.8, 0.15], [0, 0, 1]]
+  subgroups:
+    High_SES:
+      initial_population: [300, 200, 0]
+      transition_matrices:
+        new_treatment: [[0.92, 0.06, 0.02], [0.05, 0.8, 0.15], [0, 0, 1]]
+    Low_SES:
+      initial_population: [200, 300, 0]
+      transition_matrices:
+        new_treatment: [[0.88, 0.10, 0.02], [0.05, 0.8, 0.15], [0, 0, 1]]
+  
+  # Population parameters for BIA and Population EVPI
+  # Source: Ministry of Health (2019). ~1 in 3 NZ children overweight/obese (~340,000 children aged 2-14)
+  # School-based programs target primary school children (ages 5-12): ~400,000
+  bia_population:
+    total_population: 400000  # Primary school children in NZ
+    eligible_proportion: 0.75  # 75% schools participate
+    rationale: "~400k primary school children in NZ. School-based program targets 75% coverage over 5 years."
+    source: "Ministry of Health NZ Health Survey 2022/23"
+
+housing_insulation:
+  # Source: Warm Up New Zealand: Heat Smart evaluation (Motu Economic and Public Policy Research)
+  # Benefit-Cost Ratio ~4:1, primarily driven by health benefits (reduced respiratory illness/mortality).
+  states: ["Healthy", "Respiratory Illness", "Other Illnesses"]
+  initial_population: [1000, 0, 0]
+  cycles: 30 # Insulation lifespan approx 30 years
+  discount_rate: 0.03
+  costs:
+    health_system:
+      standard_care: [0, 1440, 2400] # Baseline health costs (inflated)
+      new_treatment: [4200, 960, 1800] # Intervention cost ~$4200 (inflated)
+    societal:
+      standard_care: [0, 2400, 3600]
+      # Energy savings ~$400/year (inflated)
+      new_treatment: [-400, 1800, 3000] 
+  productivity_costs:
+    human_capital:
+      standard_care: [0, 4800, 9600]
+      new_treatment: [0, 2400, 7200] # Reduced absenteeism
+  productivity_loss_states:
+    "Respiratory Illness": 7
+    "Other Illnesses": 15
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost_per_day: 420 # Inflated
+    absenteeism_rate: 0.03
+  qalys:
+    standard_care: [0.95, 0.75, 0.7]
+    new_treatment: [0.96, 0.85, 0.75] # Improved thermal comfort and health
+  transition_matrices:
+    # Reduced transition to Respiratory Illness (e.g. 0.07 -> 0.04)
+    standard_care: [[0.9, 0.07, 0.03], [0.1, 0.75, 0.15], [0.05, 0.1, 0.85]]
+    new_treatment: [[0.94, 0.04, 0.02], [0.2, 0.75, 0.05], [0.1, 0.05, 0.85]]
+  subgroups:
+    High_SES:
+      initial_population: [600, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.96, 0.03, 0.01], [0.2, 0.75, 0.05], [0.1, 0.05, 0.85]]
+    Low_SES:
+      initial_population: [400, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.92, 0.05, 0.03], [0.2, 0.75, 0.05], [0.1, 0.05, 0.85]]
+
+new_high_cost_cancer_drug:
+  states: ["Stable", "Progressed", "Dead"]
+  transition_matrices:
+    standard_care: [[0.8, 0.15, 0.05], [0, 0.7, 0.3], [0, 0, 1]]
+    new_treatment: [[0.82, 0.13, 0.05], [0, 0.7, 0.3], [0, 0, 1]]
+  cycles: 10
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [5000, 10000, 0]
+      new_treatment: [105000, 10000, 0]
+    societal:
+      standard_care: [2000, 5000, 0]
+      new_treatment: [2000, 5000, 0]
+  qalys:
+    standard_care: [0.8, 0.6, 0.0]
+    new_treatment: [0.8, 0.61, 0.0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 90
+    replacement_cost: 30000
+  productivity_loss_states: ["Progressed"]
+
+smoking_cessation_counselling:
+  states: ["Smoker", "Ex-smoker", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+    new_treatment: [[0.91, 0.08, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [500, 4000, 0]
+      new_treatment: [1000, 4000, 0]
+    societal:
+      standard_care: [0, 0, 0]
+      new_treatment: [0, -10000, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Smoker"]
+  qalys:
+    standard_care: [0.8, 0.9, 0.0]
+    new_treatment: [0.8, 0.9, 0.0]
+
+smoking_cessation_structural_sensitivity:
+  states: ["Smoker", "Ex-smoker", "Relapsed", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.0, 0.01], [0.02, 0.97, 0.01, 0.0], [0.1, 0, 0.89, 0.01], [0, 0, 0, 1]]
+    new_treatment: [[0.85, 0.14, 0.0, 0.01], [0.02, 0.97, 0.01, 0.0], [0.1, 0, 0.89, 0.01], [0, 0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0, 0]
+  costs:
+    health_system:
+      standard_care: [500, 4000, 500, 0]
+      new_treatment: [1000, 4000, 500, 0]
+    societal:
+      standard_care: [0, 0, 0, 0]
+      new_treatment: [0, -10000, 0, 0]
+  discount_rate: 0.03
+  friction_cost_params:
+    friction_period_days: 40
+    replacement_cost: 24000
+  productivity_loss_states: ["Smoker", "Relapsed"]
+  qalys:
+    standard_care: [0.8, 0.9, 0.8, 0.0]
+    new_treatment: [0.8, 0.95, 0.8, 0.0]

@@ -41,14 +41,18 @@ from ..visualizations import (
     plot_comparative_evppi_with_delta,
     plot_comparative_pop_evpi_with_delta,
     plot_cost_effectiveness_plane,
+    plot_delta_violin,
     plot_decision_tree,
+    plot_markov_trace,
     plot_discordance_loss,
     plot_inequality_aversion_sensitivity,
     plot_markov_trace,
     plot_net_benefit_curves,
     plot_pop_evpi,
     plot_value_of_perspective,
+    plot_sobol_indices,
 )
+from ..diagnostics import check_psa_convergence
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +136,51 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         output_dir=figures_dir,
         psa_results=results.get("probabilistic_results"),
     )
+    
+    # Delta Violin Plot
+    if results.get("probabilistic_results"):
+        plot_delta_violin(
+            results["probabilistic_results"], output_dir=figures_dir
+        )
+    
+    # Markov Traces (for HPV Vaccination)
+    if "intervention_results" in results:
+        hpv_res = results["intervention_results"].get("HPV Vaccination")
+        # Check if we have the societal perspective results (which usually contain the full model run)
+        # Actually, run_cea returns traces in the result dict.
+        # But cea_results structure is {model_name: {perspective: result_dict}}
+        if hpv_res and "societal" in hpv_res:
+            soc_res = hpv_res["societal"]
+            # Handle productivity methods nesting
+            if "human_capital" in soc_res:
+                soc_res = soc_res["human_capital"]
+            elif "friction_cost" in soc_res:
+                soc_res = soc_res["friction_cost"]
+            
+            if "trace_new_treatment" in soc_res and soc_res["trace_new_treatment"] is not None:
+                # We need state names. They are in the parameters.
+                # Assuming standard states for now or extracting if possible.
+                # The trace is (cycles+1, num_states).
+                # Let's assume a generic list of states if not available, or try to pass parameters.
+                # For now, I'll define standard states for HPV if I can't get them easily.
+                # But wait, I can get them from the parameters if I had them here.
+                # Let's just use generic names if needed, but better to be accurate.
+                # The states for HPV are likely ["Healthy", "Infected", "Cancer", "Dead"].
+                # I will check the parameters file or just use generic names for the plot function to be safe
+                # or update the function to accept them.
+                # Actually, let's just plot it.
+                states = ["Healthy", "Sick", "Dead"]
+                logger.info(f"Generating Markov trace for HPV with shape {soc_res['trace_new_treatment'].shape}")
+                plot_markov_trace(
+                    trace_data=soc_res["trace_new_treatment"],
+                    state_names=states,
+                    title="Markov Trace: HPV Vaccination (New Treatment)",
+                    output_dir=figures_dir
+                )
+            else:
+                logger.warning(f"No trace data found for HPV Vaccination in societal results. Keys: {soc_res.keys()}")
+        else:
+            logger.warning("HPV Vaccination results not found or societal perspective missing.")
     plot_ceac(
         results["probabilistic_results"],
         wtp_thresholds,
@@ -274,9 +323,24 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
 
             if trace_data:
                 logger.info(f"  Plotting trace for {name}")
-                plot_markov_trace(trace_data, figures_dir, name)
+                for arm, df in trace_data.items():
+                    plot_markov_trace(
+                        trace_data=df.values,
+                        state_names=df.columns.tolist(),
+                        title=f"Markov Trace: {name} ({arm.replace('_', ' ').title()})",
+                        output_dir=figures_dir
+                    )
             else:
                 logger.warning(f"  No trace data collected for {name}")
+
+    # Decision Trees
+    logger.info("Generating Decision Trees...")
+    for name, params in results["selected_interventions"].items():
+        logger.info(f"  Plotting decision tree for {name}")
+        try:
+            plot_decision_tree(name, params, output_dir=figures_dir)
+        except Exception as e:
+            logger.error(f"Failed to plot decision tree for {name}: {e}")
 
     # Equity Plots
     equity_interventions = []
@@ -298,9 +362,30 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
         plot_probabilistic_equity_impact_plane(
             results["probabilistic_results"], output_dir=figures_dir
         )
-        plot_probabilistic_equity_impact_plane_with_delta(
-            results["probabilistic_results"], output_dir=figures_dir
-        )
+
+
+    # Convergence Diagnostics
+    if results.get("probabilistic_results"):
+        logger.info("Running Convergence Diagnostics...")
+        for name, psa_df in results["probabilistic_results"].items():
+            # Calculate Inc NMB (Societal) at WTP=50k
+            wtp = 50000
+            if "qaly_sc_soc" in psa_df.columns:
+                nmb_sc = (psa_df["qaly_sc_soc"] * wtp) - psa_df["cost_sc_soc"]
+                nmb_nt = (psa_df["qaly_nt_soc"] * wtp) - psa_df["cost_nt_soc"]
+            elif "qaly_sc" in psa_df.columns: # Fallback
+                nmb_sc = (psa_df["qaly_sc"] * wtp) - psa_df["cost_sc"]
+                nmb_nt = (psa_df["qaly_nt"] * wtp) - psa_df["cost_nt"]
+            else:
+                continue
+            
+            psa_df["inc_nmb_soc_50k"] = nmb_nt - nmb_sc
+            
+            check_psa_convergence(
+                psa_df, 
+                metric_col="inc_nmb_soc_50k",
+                output_path=os.path.join(figures_dir, f"convergence_{name.lower().replace(' ', '_')}.png")
+            )
 
     # Combined Lorenz Curves
     if results.get("dcea_equity_analysis"):
@@ -353,5 +438,16 @@ def run_reporting_pipeline(results: dict, output_dir: str = "output"):
     # 4. Policy Brief
     logger.info("Generating Policy Brief...")
     generate_policy_brief(results["intervention_results"], output_dir=reports_dir)
+
+    # Sobol Indices
+    if "sobol_results" in results and results["sobol_results"]:
+        logger.info("Generating Sobol Indices plots...")
+        for name, sobol_res in results["sobol_results"].items():
+            plot_sobol_indices(
+                sobol_res, 
+                intervention_name=name,
+                output_dir=figures_dir, 
+                top_n=15
+            )
 
     logger.info(f"Reporting complete. Outputs saved to {output_dir}/")

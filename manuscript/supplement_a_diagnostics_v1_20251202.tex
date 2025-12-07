@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{thumbpdf,lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Plainauthor}[1]{}
+\newcommand{\Plaintitle}[1]{}
+\newcommand{\Shorttitle}[1]{}
+\newcommand{\Plainkeywords}[1]{}
+\newcommand{\Address}[1]{}
+\newcommand{\Email}[1]{\texttt{#1}}
+\newcommand{\myabstract}{}
+\newcommand{\Abstract}[1]{\renewcommand{\myabstract}{#1}}
+\newcommand{\mykeywords}{}
+\newcommand{\Keywords}[1]{\renewcommand{\mykeywords}{#1}}
+\newcommand{\Title}[1]{\title{#1}}
+
+\author{Dylan A. Mordaunt\\Victoria University of Wellington}
+\Title{Supplement A: Mathematical Proofs and Diagnostics}
+\Abstract{
+  This supplement provides the detailed mathematical derivation of the Value of Perspective (VoP) metric and presents convergence diagnostics for the probabilistic sensitivity analysis (PSA) simulations.
+}
+\Keywords{VoP, convergence, diagnostics}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\myabstract
+\end{abstract}
+
+\section{Mathematical Derivation of Value of Perspective}
+
+The Value of Perspective (VoP) is derived from the principles of Value of Information (VOI) analysis.
+Let $\theta$ be the vector of uncertain parameters.
+Let $d \in D$ be the set of possible decisions (e.g., fund, do not fund).
+Let $NB(d, \theta, P)$ be the net benefit of decision $d$ given parameters $\theta$ under perspective $P$.
+
+We assume the societal perspective ($P_{soc}$) represents the true social welfare.
+The optimal decision under the societal perspective, $d^*_{soc}(\theta)$, maximizes the expected net benefit:
+\begin{equation}
+d^*_{soc} = \arg\max_{d} E_{\theta}[NB(d, \theta, P_{soc})]
+\end{equation}
+
+However, decision-makers often operate under a restricted health system perspective ($P_{hs}$).
+The decision chosen under this perspective, $d^*_{hs}$, is:
+\begin{equation}
+d^*_{hs} = \arg\max_{d} E_{\theta}[NB(d, \theta, P_{hs})]
+\end{equation}
+
+The \emph{Value of Perspective} is the expected opportunity loss incurred by making the decision $d^*_{hs}$ instead of $d^*_{soc}$, evaluated from the societal perspective:
+\begin{equation}
+VoP = E_{\theta}[NB(d^*_{soc}, \theta, P_{soc})] - E_{\theta}[NB(d^*_{hs}, \theta, P_{soc})]
+\end{equation}
+
+If $d^*_{soc} = d^*_{hs}$, the VoP is zero. If the perspectives lead to different decisions, the VoP quantifies the societal benefit foregone.
+
+\section{Convergence Diagnostics}
+
+To ensure the stability of the VoP and other probabilistic metrics, we monitored the convergence of the Incremental Net Monetary Benefit (INMB) over the 1,000 PSA iterations.
+Figure~\ref{fig:convergence} displays the running mean and 95\% confidence intervals for the INMB of the \emph{HPV Vaccination} case study (Societal Perspective).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/convergence_hpv_vaccination.png}
+\caption{Convergence of Incremental Net Monetary Benefit (Societal Perspective) for HPV Vaccination. The running mean stabilizes after approximately 500 iterations.}
+\label{fig:convergence}
+\end{figure}
+
+Similar convergence was observed for all other interventions (plots available upon request).
+
+\end{document}

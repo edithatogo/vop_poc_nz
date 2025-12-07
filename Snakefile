@@ -13,8 +13,12 @@ configfile: "src/parameters.yaml"
 
 # Default output directory if not specified
 # Output directory configuration
-VERSION = config.get("version", "latest")
-OUTPUT_DIR = f"output/{VERSION}"
+# Output directory configuration
+if "output_dir" in config:
+    OUTPUT_DIR = config["output_dir"]
+else:
+    VERSION = config.get("version", "latest")
+    OUTPUT_DIR = f"output/{VERSION}"
 
 rule all:
     input:
@@ -34,7 +38,7 @@ rule run_analysis:
     params:
         output_dir = OUTPUT_DIR
     shell:
-        "python -m src.main --output-dir {params.output_dir}"
+        "vop-poc-nz run --output-dir {params.output_dir} --parameters src/parameters.yaml"
 
 rule clean:
     shell:

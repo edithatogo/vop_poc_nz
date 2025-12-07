@@ -1,0 +1,151 @@
+\documentclass{article}
+\usepackage{thumbpdf,lmodern}
+\usepackage{verbatim}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Plainauthor}[1]{}
+\newcommand{\Plaintitle}[1]{}
+\newcommand{\Shorttitle}[1]{}
+\newcommand{\Plainkeywords}[1]{}
+\newcommand{\Address}[1]{}
+\newcommand{\Email}[1]{\texttt{#1}}
+\newcommand{\myabstract}{}
+\newcommand{\Abstract}[1]{\renewcommand{\myabstract}{#1}}
+\newcommand{\mykeywords}{}
+\newcommand{\Keywords}[1]{\renewcommand{\mykeywords}{#1}}
+\newcommand{\Title}[1]{\title{#1}}
+
+\author{Dylan A. Mordaunt\\Victoria University of Wellington}
+\Title{Supplement C: Data Dictionary and Parameters}
+\Abstract{
+  This supplement contains the full parameter set used for the five case studies presented in the manuscript.
+  The parameters are defined in YAML format, which is directly ingestible by the \pkg{vop\_poc\_nz} package.
+}
+\Keywords{parameters, reproducibility, YAML}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\myabstract
+\end{abstract}
+
+\section{Model Parameters}
+
+The following YAML configuration defines the transition matrices, costs, utilities, and subgroup characteristics for the five interventions:
+\begin{enumerate}
+    \item HPV Vaccination
+    \item Smoking Cessation
+    \item Hepatitis C Therapy
+    \item Childhood Obesity Prevention
+    \item Housing Insulation
+\end{enumerate}
+
+\begin{verbatim}
+hpv_vaccination:
+  states: ["Healthy", "Sick", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0, 0.85, 0.15], [0, 0, 1]]
+    new_treatment: [[0.98, 0.015, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [120, 48000, 0]
+      new_treatment: [240, 24000, 0]
+    societal:
+      standard_care: [0, 18000, 0]
+      new_treatment: [0, 9600, 0]
+  qalys:
+    standard_care: [1.0, 0.6, 0.0]
+    new_treatment: [1.0, 0.75, 0.0]
+  discount_rate: 0.03
+  productivity_costs:
+    human_capital:
+      standard_care: [0, 12000, 0]
+      new_treatment: [0, 6000, 0]
+  subgroups:
+    High_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.99, 0.005, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+    Low_SES:
+      initial_population: [500, 0, 0]
+      transition_matrices:
+        new_treatment: [[0.97, 0.025, 0.005], [0, 0.92, 0.08], [0, 0, 1]]
+
+smoking_cessation:
+  states: ["Smoker", "Ex-smoker", "Dead"]
+  transition_matrices:
+    standard_care: [[0.95, 0.04, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+    new_treatment: [[0.85, 0.14, 0.01], [0.02, 0.97, 0.01], [0, 0, 1]]
+  cycles: 50
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [600, 4800, 0]
+      new_treatment: [1200, 4800, 0]
+    societal:
+      standard_care: [0, 0, 0]
+      new_treatment: [0, -12000, 0]
+  discount_rate: 0.03
+  qalys:
+    standard_care: [0.8, 0.9, 0.0]
+    new_treatment: [0.8, 0.95, 0.0]
+
+hepatitis_c_therapy:
+  states: ["Infected", "Cured", "Dead"]
+  transition_matrices:
+    standard_care: [[0.90, 0.05, 0.05], [0, 1, 0], [0, 0, 1]]
+    new_treatment: [[0.10, 0.85, 0.05], [0, 1, 0], [0, 0, 1]]
+  cycles: 98
+  initial_population: [1000, 0, 0]
+  costs:
+    health_system:
+      standard_care: [6000, 0, 0]
+      new_treatment: [6000, 0, 0]
+    societal:
+      standard_care: [3600, 0, 0]
+      new_treatment: [600, 0, 0]
+  qalys:
+    standard_care: [0.7, 1.0, 0.0]
+    new_treatment: [0.7, 1.0, 0.0]
+
+childhood_obesity_prevention:
+  states: ["Healthy", "Overweight/Obese", "Complications"]
+  initial_population: [500, 500, 0]
+  cycles: 50
+  discount_rate: 0.03
+  costs:
+    health_system:
+      standard_care: [0, 600, 2400]
+      new_treatment: [120, 480, 1800]
+    societal:
+      standard_care: [0, 1200, 3600]
+      new_treatment: [180, 840, 3000]
+  qalys:
+    standard_care: [0.9, 0.7, 0.5]
+    new_treatment: [0.95, 0.8, 0.6]
+
+housing_insulation:
+  states: ["Healthy", "Respiratory Illness", "Other Illnesses"]
+  initial_population: [1000, 0, 0]
+  cycles: 30
+  discount_rate: 0.03
+  costs:
+    health_system:
+      standard_care: [0, 1440, 2400]
+      new_treatment: [4200, 960, 1800]
+    societal:
+      standard_care: [0, 2400, 3600]
+      new_treatment: [-400, 1800, 3000]
+  qalys:
+    standard_care: [0.95, 0.75, 0.7]
+    new_treatment: [0.96, 0.85, 0.75]
+\end{verbatim}
+
+\end{document}

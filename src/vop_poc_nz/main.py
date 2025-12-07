@@ -35,7 +35,8 @@ def cmd_run(args):
     logging.info(f"Starting analysis pipeline... Output directory: {args.output_dir}")
 
     # 1. Run Analysis
-    results = run_analysis_pipeline()
+    # 1. Run Analysis
+    results = run_analysis_pipeline(parameters_file=args.parameters)
 
     # Save results to pickle for easier re-running of reporting
     results_path = os.path.join(args.output_dir, "results.pkl")
@@ -167,6 +168,13 @@ For more information, visit: https://github.com/edithatogo/vop_poc_nz
         "--skip-reporting",
         action="store_true",
         help="Skip report generation (only run analysis)",
+    )
+    run_parser.add_argument(
+        "--parameters",
+        "-p",
+        type=str,
+        default=None,
+        help="Path to parameters YAML file (default: use package bundled parameters)",
     )
     run_parser.set_defaults(func=cmd_run)
 

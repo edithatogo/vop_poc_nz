@@ -96,17 +96,20 @@ def generate_cheers_report() -> dict:
     }
 
 
-def run_analysis_pipeline() -> dict:
+def run_analysis_pipeline(parameters_file: Optional[str] = None) -> dict:
     """
     Run the complete health economic analysis pipeline.
 
     Performs CEA, DCEA, VOI, DSA, BIA for all selected interventions.
 
+    Args:
+        parameters_file: Path to parameters YAML file. If None, uses package default.
+
     Returns:
         Dict with all analysis results
     """
     # Load all parameters
-    all_params = load_parameters()
+    all_params = load_parameters(parameters_file)
 
     # Select interventions to analyze
     selected_interventions = {
@@ -439,6 +442,47 @@ def run_analysis_pipeline() -> dict:
 
         probabilistic_results[name] = psa_df
 
+        # Sobol Analysis
+        logger.info(f"  Performing Sobol Analysis for {name}...")
+        try:
+            from ..sobol_analysis import SobolAnalyzer
+            
+            # Wrapper for Sobol (calculates Incremental NMB Societal)
+            def sobol_wrapper(p):
+                # Run model for both arms
+                # psa_run_cea_wrapper returns (c_hs, q_hs, c_soc, q_soc, extras)
+                res_nt = psa_run_cea_wrapper(p, intervention_type="new_treatment")
+                res_sc = psa_run_cea_wrapper(p, intervention_type="standard_care")
+                
+                # Extract Societal values
+                c_soc_nt, q_soc_nt = res_nt[2], res_nt[3]
+                c_soc_sc, q_soc_sc = res_sc[2], res_sc[3]
+                
+                inc_c = c_soc_nt - c_soc_sc
+                inc_q = q_soc_nt - q_soc_sc
+                
+                return (inc_q * 50000) - inc_c
+
+            # Use fewer samples for speed in this demo/pipeline
+            analyzer = SobolAnalyzer(sobol_wrapper, psa_distributions, n_samples=64) 
+            indices = analyzer.calculate_sobol_indices()
+            
+            # Convert to dict for reporting
+            res_dict = {}
+            for _, row in indices['indices'].iterrows():
+                res_dict[row['parameter']] = {
+                    'S1': row['first_order'],
+                    'ST': row['total_order']
+                }
+            
+            # Store in a temporary dict to be added to return value later
+            if "sobol_results" not in all_results:
+                all_results["sobol_results"] = {}
+            all_results["sobol_results"][name] = res_dict
+            
+        except Exception as e:
+            logger.warning(f"Sobol analysis failed for {name}: {e}")
+
     # 6. Value of Information
     logger.info("Running Value of Information Analysis...")
     voi_results = {}
@@ -518,6 +562,7 @@ def run_analysis_pipeline() -> dict:
 
     return {
         "intervention_results": all_results,
+        "sobol_results": all_results.get("sobol_results", {}),
         "comparative_icer_table": full_comparison,
         "parameters_table": full_parameters,
         "voi_analysis": voi_results,

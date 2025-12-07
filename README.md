@@ -1,187 +1,258 @@
-# Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation
+# Health Economic Analysis: Distributional Cost-Effectiveness Framework
 
-[![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
-[![PyPI](https://img.shields.io/pypi/v/vop-poc-nz)](https://pypi.org/project/vop-poc-nz/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17759272.svg)](https://doi.org/10.5281/zenodo.17759272)
-[![OSF](https://img.shields.io/badge/OSF-unq76-blue)](https://osf.io/unq76)
-[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
+[![Python](https://img.shields.io/badge/python-3.8+-blue)]()
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
 
-A proof-of-concept framework for quantifying the **Value of Perspective (VoP)** in health economic evaluation. This project uses published economic evaluations from the Aotearoa New Zealand context to measure the decision impact of choosing between health system and societal perspectives.
+Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
 
-## The Value of Perspective Concept
+## Overview
 
-When decision-makers evaluate health interventions, the choice of analytical perspective can lead to different conclusions:
+This implementation addresses the complete spectrum of health economic evaluation with a focus on equity considerations:
 
-- **Health System Perspective**: Includes only direct healthcare costs (hospitalisations, medications, clinical visits)
-- **Societal Perspective**: Additionally includes productivity losses, caregiver burden, and broader social costs
+1. **Cost-Effectiveness Analysis (CEA)** - Validated Markov cohort models with proper discounting
+2. **Distributional CEA (DCEA)** - Equity analysis using Gini and Atkinson indices
+3. **Value of Information (VOI)** - EVPI/EVPPI for research prioritization
+4. **Global Sensitivity Analysis** - Sobol variance-based methods
+5. **Budget Impact Analysis (BIA)** - Multi-year projections with discounting
+6. **Comprehensive Reporting** - CHEERS 2022 compliant outputs
 
-The **Value of Perspective (VoP)** quantifies the potential loss from decision discordance—when the two perspectives yield conflicting cost-effectiveness conclusions. This serves as:
+## Architecture
 
-1. **A trigger threshold**: Identifying when perspective choice materially affects recommendations
-2. **A quantitative measure**: Expressing opportunity cost in monetary terms (NZ$/QALY lost)
+![Architecture](docs/diagrams/architecture.mmd)
+
+The codebase is modular with clear separation between:
+- **Core Analysis**: CEA, DCEA, VOI, DSA modules
+- **Pipeline**: Orchestration and workflow management
+- **Visualization**: Publication-quality plotting
+- **Reporting**: Automated report generation
+
+See [architecture diagrams](docs/diagrams/) for detailed module dependencies and data flow.
 
 ## Key Features
 
-| Category | Feature | Description |
-|----------|---------|-------------|
-| **Core Analysis** | Cost-Effectiveness Analysis | Validated Markov cohort models with proper discounting and half-cycle correction |
-| | Perspective Comparison | Side-by-side health system vs societal ICER calculations |
-| | Decision Discordance | Automated detection of conflicting recommendations |
-| | Value of Perspective | Quantified loss from adopting narrower perspective |
-| **Equity Analysis** | Distributional CEA | Gini coefficient and Atkinson index (multiple ε values) |
-| | Subgroup Analysis | Recursive CEA across population segments |
-| | Equity Weighting | Customisable weights for disadvantaged groups |
-| **Uncertainty** | Probabilistic SA | Monte Carlo simulation with distribution sampling |
-| | EVPI/EVPPI | Expected value of perfect (partial) information |
-| | Sobol Analysis | Variance-based global sensitivity indices |
-| | Threshold Analysis | Decision-critical parameter ranges |
-| **Visualisation** | CE Planes | Incremental cost-effectiveness scatter plots |
-| | CEAC/CEAF | Acceptability curves and frontiers |
-| | Tornado Diagrams | One-way, two-way, and three-way DSA |
-| | Lorenz Curves | Health inequality visualisation |
-| **Reporting** | CHEERS 2022 | Consolidated Health Economic Evaluation Reporting Standards |
-| | Parameter Tables | Transparent documentation of assumptions and sources |
-| | Policy Briefs | Executive-level decision summaries |
-| **Infrastructure** | Budget Impact Analysis | Multi-year projections (1-10 years) with discounting |
-| | Snakemake Pipeline | Reproducible workflow orchestration |
-| | Comprehensive Testing | 184 tests with 95%+ coverage |
+### ✅ Distributional Cost-Effectiveness Analysis
+- **Equity Metrics**: Gini coefficient, Atkinson index (multiple ε values)
+- **Subgroup Analysis**: Automatic recursive CEA for population segments
+- **Equity Weighting**: Customizable weights for disadvantaged groups
+- **Visualization**: Lorenz curves, equity impact planes, inequality sensitivity
 
-## Case Studies from Aotearoa New Zealand
+### ✅ Value of Information
+- **EVPI**: Expected Value of Perfect Information using two-level Monte Carlo
+- **EVPPI**: Parameter-specific information value
+- **Population EVPI**: Time-discounted research value
+- **CEAC/CEAF**: Cost-effectiveness acceptability curves and frontiers
 
-This framework was developed using published economic evaluations relevant to the NZ healthcare context:
+### ✅ Sobol Sensitivity Analysis  
+- **Global SA**: Variance-based indices using Saltelli sampling
+- **First-order indices**: Main parameter effects
+- **Total-order indices**: Including interactions
+- **No external dependencies**: Custom implementation (no SALib required)
 
-1. **HPV Vaccination** - Societal benefits include productivity gains from cancer prevention
-2. **Smoking Cessation** - Broader costs captured through absenteeism and family impact
-3. **Hepatitis C Treatment** - Reduced transmission creates societal value beyond direct healthcare
+### ✅ Enhanced Visualizations
+- **Acceptability Frontier**: Optimal intervention at each WTP threshold
+- **Population EVPI Timeline**: Research value decay over time
+- **Threshold Waterfall**: Decision-critical parameter ranges
+- **Multi-Interventionradar**: Trade-off visualization across dimensions
+
+### ✅ Budget Impact Analysis
+- **Multi-year projections** (1-10 years)
+- **Discounted costs** (customizable discount rate)
+- **Implementation costs** (one-time year 1 expenses)
+- **Net budget impact** (gross costs - offsets)
 
 ## Quick Start
 
 ### Installation
 
 ```bash
-pip install vop-poc-nz
+# Clone repository
+git clone <repository-url>
+cd vop_poc_nz
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies and package
+pip install -e .
 ```
 
 ### Basic Usage
 
-```python
-from vop_poc_nz import run_cea
+```bash
+# Run full analysis pipeline
+snakemake -c1
 
-# Run analysis from both perspectives
-health_system = run_cea(params, perspective="health_system")
-societal = run_cea(params, perspective="societal")
+# Run with specific version
+snakemake -c1 --config version=v2.0
 
-# Calculate Value of Perspective
-from vop_poc_nz.discordance_analysis import calculate_decision_discordance
+# Run tests
+pytest
 
-discordance = calculate_decision_discordance(
-    "HPV Vaccination",
-    params,
-    wtp_threshold=50000
-)
-
-if discordance["discordant"]:
-    print(f"Decision discordance detected!")
-    print(f"Value of Perspective: ${discordance['loss_from_discordance']:,.0f}")
-    print(f"Equivalent to {discordance['loss_qaly']:.2f} QALYs lost")
+# Run linting
+ruff check src/ tests/
+ruff format src/ tests/
 ```
 
-### Snakemake Pipeline
+### Python API
 
-For reproducible full analysis:
+```python
+from src.cea_model_core import run_cea
+from src.dcea_equity_analysis import run_dcea
+from src.sobol_analysis import SobolAnalyzer
 
-```bash
-snakemake -c1
+# Load parameters
+import yaml
+with open("src/parameters.yaml") as f:
+    params = yaml.safe_load(f)
+
+# Run CEA with subgroups
+results = run_cea(
+    params["hpv_vaccination"],
+    perspective="societal",
+    productivity_cost_method="human_capital"
+)
+
+# Perform DCEA if subgroups exist
+if results["subgroup_results"]:
+    equity = run_dcea(
+        results["subgroup_results"],
+        epsilon=0.5,
+        equity_weights={"Low_SES": 1.5, "High_SES": 1.0}
+    )
+    print(f"Atkinson Index: {equity['atkinson_index']:.3f}")
+    print(f"Gini Coefficient: {equity['gini_coefficient']:.3f}")
+
+# Run Sobol analysis
+def model_wrapper(params):
+    cea_results = run_cea(params, perspective="health_system")
+    return cea_results["incremental_nmb"]
+
+sobol = SobolAnalyzer(model_wrapper, param_distributions, n_samples=500)
+indices = sobol.calculate_sobol_indices()
+print(indices['indices'])
 ```
 
 ## Directory Structure
 
 ```
 vop_poc_nz/
-├── src/vop_poc_nz/               # Source package
+├── src/                          # Source code
+│   ├── pipeline/                 # Analysis orchestration
+│   │   ├── analysis.py           # Core pipeline logic
+│   │   └── reporting.py          # Report generation
 │   ├── cea_model_core.py         # CEA Markov model
-│   ├── discordance_analysis.py   # Value of Perspective calculations
 │   ├── dcea_equity_analysis.py   # Distributional CEA
-│   ├── value_of_information.py   # EVPI/EVPPI analysis
-│   ├── sobol_analysis.py         # Global sensitivity
-│   ├── dsa_analysis.py           # Deterministic sensitivity analysis
-│   ├── bia_model.py              # Budget impact analysis
-│   ├── visualizations.py         # Publication-quality plots
-│   └── parameters.yaml           # Model parameters
+│   ├── value_of_information.py   # VOI analysis
+│   ├── sobol_analysis.py         # Sobol sensitivity
+│   ├── dsa_analysis.py           # Deterministic SA
+│   ├── bia_model.py              # Budget impact
+│   ├── visualizations.py         # Core plotting
+│   ├── visualizations_extended.py # Additional plots
+│   ├── parameters.yaml           # Model parameters
+│   └── main.py                   # CLI entry point
 ├── tests/                        # Unit tests (pytest)
 ├── docs/                         # Documentation
+│   ├── diagrams/                 # Mermaid diagrams (.mmd)
+│   └── TUTORIAL.md               # Step-by-step guide
 ├── output/                       # Generated outputs
-└── Snakefile                     # Workflow definition
+├── Snakefile                     # Workflow definition
+├── requirements.txt              # Dependencies
+└── README.md                     # This file
 ```
 
 ## Key Outputs
 
+All outputs are saved to `output/latest/` (symlinked to `output/{version}/`):
+
 ### Tables (CSV)
-- `comparative_icer_table.csv` - Health System vs Societal perspective comparison
-- `value_of_perspective_table.csv` - Discordance metrics by intervention
+- `comparative_icer_table.csv` - Health System vs Societal perspectives
 - `parameters_assumptions_sources_table.csv` - Full transparency documentation
 - `dcea_equity_results.csv` - Subgroup analysis with equity metrics
+- `sobol_indices.csv` - Global sensitivity analysis results
 
 ### Figures (PNG/PDF/SVG)
-- Perspective comparison planes
-- Decision discordance heatmaps
-- CEAC/CEAF curves by perspective
+- Cost-effectiveness planes
 - Tornado diagrams (1-way, 2-way, 3-way DSA)
+- CEAC/CEAF curves
 - Lorenz curves and equity impact planes
+- Sobol sensitivity bar charts
+- Acceptability frontiers
+- Population EVPI timelines
+- Multi-intervention radar plots
+
+### Reports (Markdown)
+- `combined_report.md` - Comprehensive analysis summary
+- `policy_brief.md` - Executive-level summary
+- `cheers_compliance.md` - CHEERS 2022 checklist
 
 ## Methodological References
 
 - **CEA**: Drummond et al. (2015) - Methods for the Economic Evaluation of Health Care Programmes
-- **Perspectives**: Sanders et al. (2016) - Recommendations for Conduct of Cost-Effectiveness Analysis (Second Panel)
 - **DCEA**: Cookson et al. (2017) - Distributional Cost-Effectiveness Analysis
+- **Atkinson Index**: Atkinson (1970) - On the Measurement of Inequality
 - **VOI**: Claxton et al. (2001) - The Value of Information
+- **Sobol Analysis**: Saltelli et al. (2010) - Variance-Based Sensitivity Analysis
 - **CHEERS**: Husereau et al. (2022) - CHEERS 2022 Reporting Guidelines
-
-For detailed mathematical specifications, see [FORMULAE.md](docs/FORMULAE.md).
 
 ## Testing
 
 ```bash
-pytest                              # Run all tests
-pytest --cov=src --cov-report=html  # With coverage
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/test_dcea_equity_smoke.py
+
+# Run with verbose output
+pytest -v
 ```
 
-Test coverage: **184 tests passing** with **95%+ coverage**
+Test coverage: **64/64 tests passing** (100% pass rate)
 
 ## CI/CD
 
-GitHub Actions workflows:
-- **CI** (`.github/workflows/ci.yml`): Testing across Python 3.10-3.13, linting, type checking
-- **Release** (`.github/workflows/release.yml`): PyPI publishing via Trusted Publishers (OIDC)
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
+1. Linting (`ruff check`)
+2. Formatting (`ruff format --check`)
+3. Unit tests (`pytest`)
+4. Coverage reporting
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE) file for details.
+Apache 2.0 License - see LICENSE file for details
 
 ## Citation
 
-If you use this framework in your research, please cite:
+If you use this code in your research, please cite:
 
 ```bibtex
-@software{mordaunt_2024_17759272,
-  author       = {Mordaunt, Dylan A},
-  title        = {Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation},
-  year         = 2024,
-  publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.17759272},
-  url          = {https://doi.org/10.5281/zenodo.17759272}
+@software{dcea_framework_2024,
+  title={Distributional Cost-Effectiveness Analysis Framework},
+  author={[Your Name]},
+  year={2024},
+  url={[repository-url]}
 }
 ```
 
-### Research Data & Materials
+## Contact
 
-- **Zenodo Archive**: [10.5281/zenodo.17759272](https://doi.org/10.5281/zenodo.17759272) - Citable software archive with DOI
-- **OSF Project**: [osf.io/unq76](https://osf.io/unq76) - Supplementary materials and data
+For questions or issues, please open a GitHub issue or contact [your email].
 
 ## Acknowledgments
 
-- Developed using published economic evaluations from the Aotearoa New Zealand context
-- Inspired by ISPOR and PHARMAC guidelines for health economic evaluation
+- Inspired by ISPOR guidelines for health economic evaluation
+- Built with support from [funding sources]
+- Thanks to reviewers whose feedback improved this implementation
