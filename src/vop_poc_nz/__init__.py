@@ -23,7 +23,7 @@ Key modules:
 
 from __future__ import annotations
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Research Team"
 
 # Core CEA functionality
