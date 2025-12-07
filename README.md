@@ -1,8 +1,8 @@
 # Health Economic Analysis: Distributional Cost-Effectiveness Framework
 
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
-[![Python](https://img.shields.io/badge/python-3.8+-blue)]()
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
+[![Tests](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
+[![Documentation](https://github.com/edithatogo/vop_poc_nz/actions/workflows/docs.yml/badge.svg)](https://edithatogo.github.io/vop_poc_nz/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
 Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
 
