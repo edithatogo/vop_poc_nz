@@ -58,7 +58,9 @@ def test_icer_sign_property(inc_cost, inc_qalys):
 
 @settings(max_examples=100, deadline=None)
 @given(
-    cost=st.floats(min_value=0.001, max_value=1e6, allow_nan=False, allow_infinity=False),
+    cost=st.floats(
+        min_value=0.001, max_value=1e6, allow_nan=False, allow_infinity=False
+    ),
     qalys=st.floats(
         min_value=0.001, max_value=100, allow_nan=False, allow_infinity=False
     ),

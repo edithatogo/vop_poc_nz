@@ -3,7 +3,7 @@ import pandas as pd
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from vop_poc_nz.value_of_information import calculate_evpi
+from src.value_of_information import calculate_evpi
 
 
 @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow], deadline=None)
@@ -36,6 +36,5 @@ def test_evpi_dominance():
         {"cost_sc": [1000], "qaly_sc": [5], "cost_nt": [900], "qaly_nt": [6]}
     )
     evpi_dominant = calculate_evpi(psa_df_dominant, wtp)
-    assert evpi_dominant == 0, (
-        f"EVPI should be 0 if one option dominates, got {evpi_dominant}"
-    )
+    assert evpi_dominant == 0, f"EVPI should be 0 if one option dominates, got {evpi_dominant}"
+

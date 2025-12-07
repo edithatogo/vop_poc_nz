@@ -1,0 +1,24 @@
+graph TD
+    subgraph "Configuration Layer"
+        Config[YAML Configuration] -->|Load Parameters| ModelParams[ModelParameters Class]
+    end
+
+    subgraph "Core Computational Engine"
+        ModelParams -->|Validate & Pass| MarkovModel[MarkovModel Class]
+        MarkovModel -->|Vectorized Simulation| StateTrace[State Trace Tensor]
+        MarkovModel -->|Cost & Utility Accumulation| Outcomes[Outcomes Tensor]
+    end
+
+    subgraph "Analysis Pipeline"
+        Outcomes -->|Aggregate| Results[Results Aggregation]
+        Results -->|Run PSA| PSA[Probabilistic Sensitivity Analysis]
+        Results -->|Run DCEA| DCEA[Distributional CEA Module]
+        Results -->|Run VoP| VoP[Value of Perspective Module]
+    end
+
+    subgraph "Reporting Layer"
+        PSA -->|Generate| Plots[Static Plots & Tables]
+        DCEA -->|Generate| Plots
+        VoP -->|Generate| Plots
+        Plots -->|Compile| Report[Markdown/PDF Report]
+    end

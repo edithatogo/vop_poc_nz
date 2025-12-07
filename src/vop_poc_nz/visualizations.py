@@ -169,6 +169,41 @@ def plot_decision_tree(  # pragma: no cover - requires graphviz rendering
     dot.render(base, view=False, format="svg")
 
 
+def plot_markov_trace(
+    trace_data: np.ndarray,
+    state_names: list[str],
+    title: str,
+    output_dir: str = "output/figures/",
+    filename_suffix: str = "",
+):
+    """
+    Plots the Markov trace (state occupancy over time).
+    """
+    apply_default_style()
+    
+    cycles = trace_data.shape[0] - 1
+    x = range(cycles + 1)
+    
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
+    
+    # Plot each state
+    for i, state in enumerate(state_names):
+        ax.plot(x, trace_data[:, i], label=state, linewidth=2)
+        
+    ax.set_xlabel("Cycle (Year)", fontsize=12)
+    ax.set_ylabel("Proportion of Cohort", fontsize=12)
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.legend(fontsize=10, loc="center right")
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlim(0, cycles)
+    
+    plt.tight_layout()
+    
+    filename = f"markov_trace_{slugify(title)}{filename_suffix}"
+    save_figure(fig, output_dir, filename)
+
+
 def plot_cost_effectiveness_plane(
     all_results, output_dir="output/figures/", perspective: Optional[str] = None
 ):
@@ -231,7 +266,6 @@ def plot_comparative_ce_plane(
         # Iterate over all interventions
         for model_name, results in all_results.items():
             # Extract data for this perspective
-            # Extract data for this perspective
             data = None
             scatter_data = None
 
@@ -258,7 +292,7 @@ def plot_comparative_ce_plane(
                             "inc_cost": psa_df["inc_cost_soc"],
                             "inc_qaly": psa_df["inc_qaly_soc"],
                         }
-                    # Backward compatibility if _soc columns missing but inc_cost exists (legacy)
+                    # Backward compatibility
                     elif "inc_cost" in psa_df.columns:
                         scatter_data = {
                             "inc_cost": psa_df["inc_cost"],
@@ -305,6 +339,119 @@ def plot_comparative_ce_plane(
         fig,
         output_dir,
         "cost_effectiveness_plane_comparative",
+    )
+
+
+def plot_sobol_indices(
+    sobol_results: dict[str, dict[str, float]],
+    intervention_name: str,
+    output_dir: str = "output/figures/",
+    top_n: int = 10,
+):
+    """
+    Plot Sobol indices (First Order and Total Order) for parameters.
+    
+    Args:
+        sobol_results: Dictionary mapping parameter names to a dict with 'S1' and 'ST'.
+        output_dir: Directory to save the plot.
+        top_n: Number of top parameters to show.
+    """
+    if not sobol_results:
+        print("No Sobol results to plot.")
+        return
+
+    apply_default_style()
+
+    # Convert to DataFrame for easier sorting/plotting
+    data = []
+    for param, indices in sobol_results.items():
+        data.append({
+            "Parameter": param,
+            "First Order (S1)": indices.get("S1", 0),
+            "Total Order (ST)": indices.get("ST", 0)
+        })
+    
+    df = pd.DataFrame(data)
+    
+    # Sort by Total Order
+    df = df.sort_values("Total Order (ST)", ascending=True).tail(top_n)
+    
+    fig, ax = plt.subplots(figsize=(10, 8), dpi=300)
+    
+    y = np.arange(len(df))
+    height = 0.35
+    
+    ax.barh(y - height/2, df["First Order (S1)"], height, label="First Order (S1)", color="skyblue")
+    ax.barh(y + height/2, df["Total Order (ST)"], height, label="Total Order (ST)", color="navy", alpha=0.7)
+    
+    ax.set_yticks(y)
+    ax.set_yticklabels(df["Parameter"])
+    ax.set_xlabel("Sobol Index")
+    ax.set_title(f"Sobol Sensitivity Indices (Top {top_n})")
+    ax.legend()
+    ax.grid(axis="x", alpha=0.3)
+    
+    plt.tight_layout()
+    plt.tight_layout()
+    filename = f"sobol_indices_{slugify(intervention_name)}"
+    save_figure(fig, output_dir, filename)
+
+
+def plot_delta_violin(
+    psa_results: dict, output_dir="output/figures/", wtp_threshold=50000
+):
+    """
+    Create a Violin plot of the Delta Net Monetary Benefit (Societal - Health System).
+    """
+    apply_default_style()
+    
+    # Prepare data
+    data_list = []
+    for model_name, df in psa_results.items():
+        if "inc_cost_soc" in df.columns and "inc_cost_hs" in df.columns:
+            # Calculate NMB for both perspectives
+            nmb_soc = df["inc_qaly_soc"] * wtp_threshold - df["inc_cost_soc"]
+            nmb_hs = df["inc_qaly_hs"] * wtp_threshold - df["inc_cost_hs"]
+            delta_nmb = nmb_soc - nmb_hs
+            
+            temp_df = pd.DataFrame({
+                "Delta NMB": delta_nmb,
+                "Intervention": model_name
+            })
+            data_list.append(temp_df)
+    
+    if not data_list:
+        print("No paired PSA data found for Violin plot.")
+        return
+
+    plot_df = pd.concat(data_list)
+
+    plt.figure(figsize=(12, 8), dpi=300)
+    
+    # Create Violin Plot
+    sns.violinplot(
+        data=plot_df,
+        x="Delta NMB",
+        y="Intervention",
+        scale="width",
+        inner="quartile",
+        palette="viridis",
+        linewidth=1.5
+    )
+    
+    # Add reference line at 0
+    plt.axvline(0, color="black", linestyle="--", linewidth=1.5, alpha=0.7)
+    
+    plt.xlabel(f"Delta Net Monetary Benefit (Societal - Health System) at ${wtp_threshold:,.0f}/QALY", fontsize=12)
+    plt.ylabel("Intervention", fontsize=12)
+    plt.title("Distribution of the 'Societal Bonus' (Delta NMB)", fontsize=14, fontweight="bold")
+    plt.grid(True, axis="x", alpha=0.3)
+    
+    plt.tight_layout()
+    save_figure(
+        plt.gcf(),
+        output_dir,
+        "delta_nmb_violin",
     )
 
 
@@ -2934,12 +3081,16 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
         inc_cost_soc = psa_results["inc_cost_soc"]
         inc_qaly_soc = psa_results["inc_qaly_soc"]
 
-        # Delta
-        delta_cost = inc_cost_soc - inc_cost_hs
-        # delta_qaly = inc_qaly_soc - inc_qaly_hs
+        # Delta NMB
+        # NMB = QALY * WTP - Cost
+        # Delta NMB = NMB_soc - NMB_hs
+        wtp = 50000
+        nmb_hs = inc_qaly_hs * wtp - inc_cost_hs
+        nmb_soc = inc_qaly_soc * wtp - inc_cost_soc
+        delta_nmb = nmb_soc - nmb_hs
 
         # Store for Violin
-        delta_costs_data.append(delta_cost)
+        delta_costs_data.append(delta_nmb)
         delta_costs_labels.append(model_name)
 
         # Plot Health System
@@ -3020,13 +3171,14 @@ def plot_comparative_ce_plane_with_delta(all_results, output_dir="output/figures
             )
         else:
             # Delta Plot Formatting
-            ax.set_ylabel("Delta Cost (Societal - HS)", fontsize=12)
+            ax.set_ylabel("Delta Net Monetary Benefit ($)", fontsize=12)
             ax.set_xticks(np.arange(1, len(model_names) + 1))
             ax.set_xticklabels(model_names, rotation=45, ha="right")
             ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
             ax.yaxis.set_major_formatter(
                 plt.FuncFormatter(lambda x, p: f"${x / 1000:,.0f}k")
             )
+            ax.set_title("Delta NMB (Societal - HS)", fontsize=14, fontweight="bold")
 
     # Legend
     handles, labels = axes[0].get_legend_handles_labels()
@@ -3550,51 +3702,7 @@ def plot_comparative_bia_line(
     save_figure(fig, output_dir, "dashboard_bia_v2")
 
 
-def plot_markov_trace(
-    trace_data: dict[str, pd.DataFrame], output_dir: str, intervention_name: str
-):
-    """
-    Plot Markov trace (state probabilities over time).
 
-    Args:
-        trace_data: Dictionary with keys 'standard_care' and 'new_treatment',
-                   values are DataFrames with state probabilities (columns=states, index=cycles).
-        output_dir: Directory to save the plot.
-        intervention_name: Name of the intervention.
-    """
-    apply_default_style()
-
-    for arm, df in trace_data.items():
-        if df is None or df.empty:
-            continue
-
-        fig, ax = plt.subplots(figsize=(10, 6))
-
-        # Plot each state
-        # Assuming columns are state names
-
-        # Check if data needs normalization (if max > 1.05, it's likely counts not probabilities)
-        if df.max().max() > 1.05:
-            # Normalize by row sum to get proportions
-            df_normalized = df.div(df.sum(axis=1), axis=0)
-            df_normalized.plot(ax=ax, linewidth=2)
-        else:
-            df.plot(ax=ax, linewidth=2)
-
-        ax.set_title(
-            f"Markov Trace: {intervention_name.replace('_', ' ').title()} ({arm.replace('_', ' ').title()})"
-        )
-        ax.set_xlabel("Cycle (Year)")
-        ax.set_ylabel("Proportion in State")
-        ax.legend(title="Health State", bbox_to_anchor=(1.05, 1), loc="upper left")
-        ax.grid(True, alpha=0.3)
-
-        # Ensure y-axis is 0-1
-        ax.set_ylim(0, 1.05)
-
-        filename = f"markov_trace_{slugify(intervention_name)}_{slugify(arm)}"
-        print(f"Saving Markov trace to {filename}")
-        save_figure(fig, output_dir, filename)
 
 
 def plot_comparative_pop_evpi_with_delta(

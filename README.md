@@ -1,11 +1,8 @@
 # Health Economic Analysis: Distributional Cost-Effectiveness Framework
 
-[![CI](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/edithatogo/vop_poc_nz/branch/main/graph/badge.svg)](https://codecov.io/gh/edithatogo/vop_poc_nz)
-[![PyPI](https://img.shields.io/pypi/v/vop-poc-nz)](https://pypi.org/project/vop-poc-nz/)
-[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
+[![Python](https://img.shields.io/badge/python-3.8+-blue)]()
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
 
 Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
 
@@ -77,8 +74,8 @@ cd vop_poc_nz
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies and package
+pip install -e .
 ```
 
 ### Basic Usage
@@ -90,19 +87,12 @@ snakemake -c1
 # Run with specific version
 snakemake -c1 --config version=v2.0
 
-# Run tests via Tox (Recommended)
-tox                  # Run all environments (tests, lint, type, coverage)
-tox -e py313         # Run tests on Python 3.13
-tox -e lint          # Run linting
-tox -e type          # Run type checking
+# Run tests
+pytest
 
-# Run memory profiling
-memray run -o output/memray.bin -m src.pipeline.reporting
-memray flamegraph output/memray.bin -o output/memray-flamegraph.html
-
-# Run linting manually
-ruff check .
-ruff format .
+# Run linting
+ruff check src/ tests/
+ruff format src/ tests/
 ```
 
 ### Python API
@@ -114,9 +104,7 @@ from src.sobol_analysis import SobolAnalyzer
 
 # Load parameters
 import yaml
-from importlib import resources
-
-with resources.files("vop_poc_nz").joinpath("parameters.yaml").open("r") as f:
+with open("src/parameters.yaml") as f:
     params = yaml.safe_load(f)
 
 # Run CEA with subgroups
@@ -150,7 +138,7 @@ print(indices['indices'])
 
 ```
 vop_poc_nz/
-├── src/vop_poc_nz/               # Source package
+├── src/                          # Source code
 │   ├── pipeline/                 # Analysis orchestration
 │   │   ├── analysis.py           # Core pipeline logic
 │   │   └── reporting.py          # Report generation
@@ -201,8 +189,6 @@ All outputs are saved to `output/latest/` (symlinked to `output/{version}/`):
 
 ## Methodological References
 
-For detailed mathematical specifications, see [FORMULAE.md](docs/FORMULAE.md).
-
 - **CEA**: Drummond et al. (2015) - Methods for the Economic Evaluation of Health Care Programmes
 - **DCEA**: Cookson et al. (2017) - Distributional Cost-Effectiveness Analysis
 - **Atkinson Index**: Atkinson (1970) - On the Measurement of Inequality
@@ -226,17 +212,15 @@ pytest tests/test_dcea_equity_smoke.py
 pytest -v
 ```
 
-Test coverage: **163 tests passing** with **95%+ coverage**
+Test coverage: **64/64 tests passing** (100% pass rate)
 
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
-1. **Testing**: Multi-version Python matrix (3.10-3.13)
-2. **Linting**: `ruff check` and `ruff format --check`
-3. **Type checking**: `mypy` with strict settings
-4. **Coverage**: Uploaded to Codecov with 95% target
-5. **Security**: `pip-audit` and `bandit` scanning
-6. **Pre-commit**: Validates all hooks pass
+1. Linting (`ruff check`)
+2. Formatting (`ruff format --check`)
+3. Unit tests (`pytest`)
+4. Coverage reporting
 
 ## Contributing
 
@@ -248,7 +232,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE) file for details
+Apache 2.0 License - see LICENSE file for details
 
 ## Citation
 

@@ -284,7 +284,7 @@ def plot_lorenz_curve(
 
     population_fractions = np.linspace(0, 1, n + 1)
 
-    fig, ax = plt.subplots(figsize=(8, 8), dpi=300)
+    _fig, ax = plt.subplots(figsize=(8, 8), dpi=300)
     ax.plot(population_fractions, lorenz_curve, marker="o", label="Lorenz Curve")
     ax.plot([0, 1], [0, 1], color="black", linestyle="--", label="Line of Equality")
 

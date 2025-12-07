@@ -69,6 +69,15 @@ This report presents a comprehensive cost-effectiveness analysis of {interventio
 - **Time Horizon**: {params["cycles"]} years
 - **Discount Rate**: {params.get("discount_rate", 0.03) * 100}%
 - **WTP Threshold**: ${wtp_threshold:,.0f} per QALY
+- **Inequality Aversion ($\\epsilon$)**: 0.5 (Default)
+- **Equity Weights**: Low SES (1.5), High SES (1.0), Māori (1.5), Non-Māori (1.0)
+
+## Normative Assumptions
+
+This analysis incorporates specific value judgments regarding equity:
+1.  **Inequality Aversion**: We assume $\\epsilon=0.5$, implying a mild preference for health gains accruing to worse-off groups.
+2.  **Societal Relevance**: The Value of Perspective calculation assumes that the societal perspective represents the comprehensive welfare standard.
+3.  **Equity Weights**: Weights are applied to Net Monetary Benefit, treating a dollar of benefit to a prioritized group as more valuable than a dollar to a non-prioritized group.
 
 ## Results
 

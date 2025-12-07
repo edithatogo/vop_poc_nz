@@ -2,15 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import vop_poc_nz.dcea_equity_analysis as equity
-from vop_poc_nz.cea_model_core import MarkovModel, _validate_model_parameters
-from vop_poc_nz.cluster_analysis import ClusterAnalysis
-from vop_poc_nz.dsa_analysis import (
-    perform_comprehensive_two_way_dsa,
-    perform_three_way_dsa,
-)
-from vop_poc_nz.threshold_analysis import run_threshold_analysis
-from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
+from src import dcea_equity_analysis as equity
+from src.cea_model_core import MarkovModel, _validate_model_parameters
+from src.cluster_analysis import ClusterAnalysis
+from src.dsa_analysis import perform_comprehensive_two_way_dsa, perform_three_way_dsa
+from src.threshold_analysis import run_threshold_analysis
+from src.value_of_information import ProbabilisticSensitivityAnalysis
 
 
 def minimal_params():
@@ -166,7 +163,7 @@ def test_value_of_information_ceac():
         "dummy": {"distribution": "normal", "params": {"mean": 0, "std": 1}}
     }
 
-    from vop_poc_nz.value_of_information import (
+    from src.value_of_information import (
         calculate_evppi,
         explain_value_of_information_benefits,
         generate_voi_report,

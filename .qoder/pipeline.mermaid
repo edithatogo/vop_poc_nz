@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Pipeline
+    participant Model
+    participant Analysis
+    participant Reporting
+
+    User->>CLI: vop-poc-nz run
+    CLI->>Pipeline: run_analysis_pipeline(config)
+    
+    loop For each Intervention
+        Pipeline->>Model: run_cea(perspective="health_system")
+        Model-->>Pipeline: results_hs
+        Pipeline->>Model: run_cea(perspective="societal")
+        Model-->>Pipeline: results_soc
+    end
+
+    Pipeline->>Analysis: run_psa(iterations=1000)
+    Analysis-->>Pipeline: psa_results
+
+    Pipeline->>Analysis: calculate_vop(psa_results)
+    Analysis-->>Pipeline: vop_metrics
+
+    Pipeline->>Analysis: run_dcea(subgroups)
+    Analysis-->>Pipeline: equity_metrics
+
+    Pipeline->>Reporting: generate_figures(all_results)
+    Reporting-->>User: plots/*.png
+    Pipeline->>Reporting: generate_tables(all_results)
+    Reporting-->>User: tables/*.md

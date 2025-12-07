@@ -278,6 +278,8 @@ def run_cea(
         "wtp_threshold": wtp_threshold,
         "productivity_cost_method": productivity_cost_method,
         "subgroup_results": subgroup_results,  # Include subgroup results if they exist
+        "trace_standard_care": trace_sc,
+        "trace_new_treatment": trace_nt,
         "trace_standard_care": trace_sc if "trace_sc" in locals() else None,
         "trace_new_treatment": trace_nt if "trace_nt" in locals() else None,
     }

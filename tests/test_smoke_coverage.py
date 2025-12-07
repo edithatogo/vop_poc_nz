@@ -1,8 +1,8 @@
 import pandas as pd
 
-from vop_poc_nz.main_analysis import generate_policy_implications_report
-from vop_poc_nz.value_of_information import generate_voi_report
-from vop_poc_nz.visualizations import (
+from src.main_analysis import generate_policy_implications_report
+from src.value_of_information import generate_voi_report
+from src.visualizations import (
     plot_cost_qaly_breakdown,
     plot_density_ce_plane,
     plot_markov_trace,

@@ -1,6 +1,6 @@
-# DCEA Analysis
+# DCEA Equity Analysis
 
-::: vop_poc_nz.dcea_analysis
+::: vop_poc_nz.dcea_equity_analysis
     options:
       show_source: true
       show_root_heading: true
