@@ -2,58 +2,66 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/bia_model/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/cea_model/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/dcea/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/main_analysis/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/reporting/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/sensitivity/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/validation/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/value_of_information/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/visualization/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/visualizations_comparative/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/api/visualizations_extended/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
+    </url>
+    <url>
+         <loc>https://edithatogo.github.io/vop_poc_nz/examples/</loc>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/getting-started/installation/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
     </url>
     <url>
          <loc>https://edithatogo.github.io/vop_poc_nz/getting-started/quickstart/</loc>
-         <lastmod>2025-12-05</lastmod>
+         <lastmod>2025-12-07</lastmod>
+    </url>
+    <url>
+         <loc>https://edithatogo.github.io/vop_poc_nz/tutorials/</loc>
+         <lastmod>2025-12-07</lastmod>
     </url>
 </urlset>

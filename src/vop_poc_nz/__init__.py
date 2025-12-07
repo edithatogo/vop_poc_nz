@@ -23,8 +23,8 @@ Key modules:
 
 from __future__ import annotations
 
-__version__ = "0.1.8"
-__author__ = "Dylan A Mordaunt"
+__version__ = "0.2.0"
+__author__ = "Research Team"
 
 # Core CEA functionality
 # Budget Impact Analysis
