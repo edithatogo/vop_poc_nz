@@ -136,11 +136,13 @@ def deep_update(d, u):
     return d
 
 
-def run_cea(
+def _run_cea_impl(
     model_parameters: dict,
     perspective: str = "health_system",
     wtp_threshold: float = 50000.0,
     productivity_cost_method: str = "human_capital",
+    *,
+    emit_diagnostics: bool,
 ) -> dict:
     """
     Runs a cost-effectiveness analysis, handling subgroups for DCEA if present.
@@ -186,14 +188,18 @@ def run_cea(
             if "subgroups" in subgroup_model_params:
                 del subgroup_model_params["subgroups"]
 
-            logger.debug(  # pragma: no cover - debug tracing
-                f"DEBUG: Running subgroup {subgroup_name} with params: {subgroup_model_params.keys()}"
-            )
-            sub_results = run_cea(
+            if emit_diagnostics:
+                logger.debug(  # pragma: no cover - debug tracing
+                    "Running subgroup %s with parameters %s",
+                    subgroup_name,
+                    subgroup_model_params.keys(),
+                )
+            sub_results = _run_cea_impl(
                 subgroup_model_params,
                 perspective,
                 wtp_threshold,
                 productivity_cost_method,
+                emit_diagnostics=emit_diagnostics,
             )
             subgroup_results[subgroup_name] = sub_results
 
@@ -285,6 +291,40 @@ def run_cea(
     }
 
     return results
+
+
+def run_cea(
+    model_parameters: dict,
+    perspective: str = "health_system",
+    wtp_threshold: float = 50000.0,
+    productivity_cost_method: str = "human_capital",
+) -> dict:
+    """Run the established CEA API with its diagnostic warning behaviour."""
+    return _run_cea_impl(
+        model_parameters,
+        perspective,
+        wtp_threshold,
+        productivity_cost_method,
+        emit_diagnostics=True,
+    )
+
+
+def calculate_cea(
+    model_parameters: dict,
+    perspective: str = "health_system",
+    wtp_threshold: float = 50000.0,
+    productivity_cost_method: str = "human_capital",
+) -> dict:
+    """Calculate CEA deterministically without emitting logs, warnings, or I/O."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return _run_cea_impl(
+            model_parameters,
+            perspective,
+            wtp_threshold,
+            productivity_cost_method,
+            emit_diagnostics=False,
+        )
 
 
 def _validate_model_parameters(params: dict):

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
+from numbers import Integral, Real
 from typing import Any
 
 from vop_poc_nz.domain.cea import (
@@ -27,13 +29,37 @@ from vop_poc_nz.kernels.cea import CEACalculationContext, CEACalculationKernel
 from vop_poc_nz.results.cea import CEAAnalysisResult
 
 
+def _number(value: object, *, field: str) -> float:
+    """Normalize real legacy scalars without accepting strings or booleans."""
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise TypeError(f"{field} must be a real number, not {type(value).__name__}")
+    normalized = float(value)
+    if not math.isfinite(normalized):
+        raise ValueError(f"{field} must be finite")
+    return normalized
+
+
+def _positive_integer(value: object, *, field: str) -> int:
+    """Normalize integral legacy scalars without truncation or bool coercion."""
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise TypeError(f"{field} must be an integer")
+    normalized = int(value)
+    if normalized <= 0:
+        raise ValueError(f"{field} must be greater than zero")
+    return normalized
+
+
 def _vector(value: Sequence[Any]) -> NumericVector:
-    return NumericVector(values=tuple(float(item) for item in value))
+    return NumericVector(
+        values=tuple(_number(item, field="vector value") for item in value)
+    )
 
 
 def _matrix(value: Sequence[Sequence[Any]]) -> TransitionMatrix:
     return TransitionMatrix(
-        rows=tuple(tuple(float(item) for item in row) for row in value)
+        rows=tuple(
+            tuple(_number(item, field="matrix value") for item in row) for row in value
+        )
     )
 
 
@@ -61,15 +87,22 @@ def _productivity_costs(value: Mapping[str, Any]) -> ProductivityCostSpec:
 
 def _friction_costs(value: Mapping[str, Any]) -> FrictionCostSpec:
     return FrictionCostSpec(
-        friction_period_days=float(value["friction_period_days"]),
-        replacement_cost_per_day=float(value["replacement_cost_per_day"]),
-        absenteeism_rate=float(value["absenteeism_rate"]),
+        friction_period_days=_number(
+            value["friction_period_days"], field="friction_period_days"
+        ),
+        replacement_cost_per_day=_number(
+            value["replacement_cost_per_day"], field="replacement_cost_per_day"
+        ),
+        absenteeism_rate=_number(value["absenteeism_rate"], field="absenteeism_rate"),
     )
 
 
 def _loss_states(value: Mapping[str, Any]) -> tuple[ProductivityLossState, ...]:
     return tuple(
-        ProductivityLossState(state=str(state), annual_absence_days=float(days))
+        ProductivityLossState(
+            state=str(state),
+            annual_absence_days=_number(days, field="annual_absence_days"),
+        )
         for state, days in value.items()
     )
 
@@ -104,7 +137,7 @@ def _subgroup(name: str, value: Mapping[str, Any]) -> NamedSubgroupSpec:
             if costs
             else None,
             qalys=_partial_arm_vectors(value["qalys"]) if "qalys" in value else None,
-            discount_rate=float(value["discount_rate"])
+            discount_rate=_number(value["discount_rate"], field="discount_rate")
             if "discount_rate" in value
             else None,
             productivity_costs=_productivity_costs(value["productivity_costs"])
@@ -126,7 +159,7 @@ def intervention_spec_from_legacy(data: Mapping[str, Any]) -> InterventionSpec:
     costs = data["costs"]
     return InterventionSpec(
         states=tuple(str(state) for state in data["states"]),
-        cycles=int(data["cycles"]),
+        cycles=_positive_integer(data["cycles"], field="cycles"),
         initial_population=_vector(data["initial_population"]),
         transition_matrices=TransitionMatrices(
             standard_care=_matrix(transitions["standard_care"]),
@@ -137,7 +170,7 @@ def intervention_spec_from_legacy(data: Mapping[str, Any]) -> InterventionSpec:
             societal=_arm_vectors(costs["societal"]),
         ),
         qalys=_arm_vectors(data["qalys"]),
-        discount_rate=float(data.get("discount_rate", 0.03)),
+        discount_rate=_number(data.get("discount_rate", 0.03), field="discount_rate"),
         productivity_costs=_productivity_costs(data["productivity_costs"])
         if "productivity_costs" in data
         else None,
@@ -277,7 +310,7 @@ def run_typed_cea(
     )
     context = CEACalculationContext(
         perspective=Perspective(perspective),
-        wtp_threshold=float(wtp_threshold),
+        wtp_threshold=_number(wtp_threshold, field="wtp_threshold"),
         productivity_cost_method=ProductivityCostMethod(productivity_cost_method),
     )
     return CEACalculationKernel().calculate(spec, context=context)

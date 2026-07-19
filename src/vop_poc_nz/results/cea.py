@@ -8,10 +8,37 @@ from enum import StrEnum
 from typing import Any, ClassVar
 
 import numpy as np
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from vop_poc_nz.domain.base import FrozenDomainModel
 from vop_poc_nz.domain.cea import Perspective, ProductivityCostMethod
+from vop_poc_nz.results.base import (
+    ArrowSchemaIdentity,
+    ResultMaturity,
+    ResultMetadata,
+)
+
+
+def _cea_metadata() -> ResultMetadata:
+    return ResultMetadata(
+        contract_version="1.0.0",
+        maturity=ResultMaturity.STABLE,
+        arrow_schema=ArrowSchemaIdentity.from_logical_fields(
+            schema_id="cea_analysis_result",
+            schema_version="1.0.0",
+            logical_fields=(
+                "perspective",
+                "productivity_cost_method",
+                "incremental_cost",
+                "incremental_qalys",
+                "incremental_nmb",
+                "icer_status",
+                "icer_value",
+                "is_cost_effective",
+                "wtp_threshold",
+            ),
+        ),
+    )
 
 
 class ICERStatus(StrEnum):
@@ -80,6 +107,7 @@ class CEAAnalysisResult(FrozenDomainModel):
     subgroup_results: tuple[NamedSubgroupResult, ...] = ()
     trace_standard_care: Trace | None = None
     trace_new_treatment: Trace | None = None
+    metadata: ResultMetadata = Field(default_factory=_cea_metadata)
 
     @classmethod
     def from_legacy(cls, result: Mapping[str, Any]) -> CEAAnalysisResult:

@@ -39,6 +39,8 @@ class GitHubIssueSnapshot:
     labels: tuple[str, ...]
     project_number: int | None
     project_fields: tuple[tuple[str, str], ...]
+    managed_labels: tuple[str, ...] = ()
+    managed_project_field_names: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -93,7 +95,9 @@ def _fallback_digest(body: str) -> str:
 
 
 def _snapshot_projection(
-    snapshot: GitHubIssueSnapshot, managed_labels: frozenset[str]
+    snapshot: GitHubIssueSnapshot,
+    managed_labels: frozenset[str],
+    managed_project_field_names: frozenset[str],
 ) -> dict[str, Any] | None:
     section = _section(snapshot.body)
     if section is None:
@@ -101,7 +105,11 @@ def _snapshot_projection(
     return {
         "body_section": section,
         "labels": sorted(label for label in snapshot.labels if label in managed_labels),
-        "project_fields": sorted(snapshot.project_fields),
+        "project_fields": sorted(
+            field
+            for field in snapshot.project_fields
+            if field[0] in managed_project_field_names
+        ),
         "state": snapshot.state,
         "title": snapshot.title,
     }
@@ -133,8 +141,16 @@ def _proposal(
     local: GitHubSyncPayload,
     remote: GitHubIssueSnapshot,
 ) -> PlannedIssueUpdate:
-    unmanaged = set(remote.labels) - set(base.labels)
-    labels = tuple(sorted(unmanaged | set(local.labels)))
+    managed_labels = set(base.managed_labels) | set(local.labels)
+    unmanaged_labels = set(remote.labels) - managed_labels
+    labels = tuple(sorted(unmanaged_labels | set(local.labels)))
+    managed_field_names = set(base.managed_project_field_names) | {
+        name for name, _value in local.project_fields
+    }
+    unmanaged_fields = {
+        field for field in remote.project_fields if field[0] not in managed_field_names
+    }
+    project_fields = tuple(sorted(unmanaged_fields | set(local.project_fields)))
     return PlannedIssueUpdate(
         github_repository=local.github_repository,
         issue_number=local.issue_number,
@@ -143,7 +159,7 @@ def _proposal(
         body=_replace_section(remote.body, local.body),
         labels=labels,
         project_number=local.project_number,
-        project_fields=tuple(sorted(local.project_fields)),
+        project_fields=project_fields,
     )
 
 
@@ -196,10 +212,17 @@ def plan_github_sync(
             remote_digest=_fallback_digest(remote.body),
         )
 
-    managed_labels = frozenset((*base.labels, *local.labels))
-    base_projection = _snapshot_projection(base, managed_labels)
+    managed_labels = frozenset((*base.managed_labels, *local.labels))
+    managed_project_field_names = frozenset(
+        (*base.managed_project_field_names, *(name for name, _ in local.project_fields))
+    )
+    base_projection = _snapshot_projection(
+        base, managed_labels, managed_project_field_names
+    )
     local_projection = _local_projection(local)
-    remote_projection = _snapshot_projection(remote, managed_labels)
+    remote_projection = _snapshot_projection(
+        remote, managed_labels, managed_project_field_names
+    )
     if any(
         projection is None
         for projection in (base_projection, local_projection, remote_projection)
@@ -262,7 +285,7 @@ def issue_snapshot_from_json(content: str) -> GitHubIssueSnapshot:
     raw = json.loads(content)
     if not isinstance(raw, dict):
         raise ValueError("GitHub issue snapshot must be an object")
-    expected = {
+    required = {
         "github_repository",
         "issue_number",
         "state",
@@ -272,7 +295,8 @@ def issue_snapshot_from_json(content: str) -> GitHubIssueSnapshot:
         "project_number",
         "project_fields",
     }
-    if set(raw) != expected:
+    optional = {"managed_labels", "managed_project_field_names"}
+    if not required <= set(raw) or set(raw) - required - optional:
         raise ValueError("GitHub issue snapshot has missing or unexpected fields")
     state = raw["state"]
     if state not in {"open", "closed"}:
@@ -291,6 +315,10 @@ def issue_snapshot_from_json(content: str) -> GitHubIssueSnapshot:
         else None,
         project_fields=tuple(
             (str(item[0]), str(item[1])) for item in raw["project_fields"]
+        ),
+        managed_labels=tuple(str(item) for item in raw.get("managed_labels", ())),
+        managed_project_field_names=tuple(
+            str(item) for item in raw.get("managed_project_field_names", ())
         ),
     )
 

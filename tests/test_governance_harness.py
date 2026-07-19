@@ -62,17 +62,25 @@ def test_harness_commands_are_strict_focused_and_private_safe() -> None:
 
     assert [command.name for command in commands] == [
         "schema_and_ledger",
+        "domain_schemas",
         "governance_tests",
         "import_boundary",
         "ruff",
         "ruff_format",
         "basedpyright",
+        "ty",
     ]
     assert "tests/test_concerns.py" in rendered
+    assert "scripts/generate_domain_contract_schemas.py --check" in rendered
     assert "tests/test_github_sync_planner.py" in rendered
     assert "scripts/import_boundary.py" in rendered
     assert "src/vop_poc_nz/concerns.py" in rendered
     assert "src/vop_poc_nz/github_sync_planner.py" in rendered
+    assert "src/vop_poc_nz/domain/contracts.py" in rendered
+    assert "src/vop_poc_nz/pipeline/typed.py" in rendered
+    assert "tests/test_typed_cea_contract.py" in rendered
+    assert "tests/test_typed_pipeline.py" in rendered
+    assert "tests/test_c13_contract_hardening.py" in rendered
     assert ".conductor/local" not in rendered
     assert "pytest tests -q" not in rendered
 

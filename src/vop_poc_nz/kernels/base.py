@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from typing import Protocol, TypeVar, runtime_checkable
 
-from vop_poc_nz.domain.base import FrozenDomainModel
+from vop_poc_nz.domain.contracts import RunContextSpec
 
 
-class CalculationContext(FrozenDomainModel):
-    case_id: str | None = None
-    seed: int | None = None
+class CalculationContext(RunContextSpec):
+    """Typed run context inherited by analysis-specific kernels."""
 
 
 SpecT = TypeVar("SpecT", contravariant=True)

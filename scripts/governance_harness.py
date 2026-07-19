@@ -39,17 +39,31 @@ def governance_commands(
     reports = output_dir or Path(tempfile.gettempdir()) / "vop-governance-harness"
     source_files = (
         "src/vop_poc_nz/concerns.py",
+        "src/vop_poc_nz/compat/legacy.py",
+        "src/vop_poc_nz/domain/base.py",
+        "src/vop_poc_nz/domain/cea.py",
+        "src/vop_poc_nz/domain/contracts.py",
         "src/vop_poc_nz/github_sync_planner.py",
+        "src/vop_poc_nz/kernels/base.py",
+        "src/vop_poc_nz/kernels/cea.py",
+        "src/vop_poc_nz/pipeline/typed.py",
+        "src/vop_poc_nz/results/base.py",
+        "src/vop_poc_nz/results/cea.py",
+        "src/vop_poc_nz/results/pipeline.py",
         "scripts/generate_concern_governance_schemas.py",
+        "scripts/generate_domain_contract_schemas.py",
         "scripts/governance_harness.py",
         "scripts/plan_github_governance_sync.py",
         "scripts/profile_governance_workload.py",
     )
     test_files = (
+        "tests/test_c13_contract_hardening.py",
         "tests/test_concerns.py",
         "tests/test_github_sync_planner.py",
         "tests/test_governance_harness.py",
         "tests/test_import_boundary.py",
+        "tests/test_typed_cea_contract.py",
+        "tests/test_typed_pipeline.py",
     )
     lint_test_files = test_files[:-1]
     python = sys.executable
@@ -63,6 +77,10 @@ def governance_commands(
                 "--ledger",
                 "governance/registry.json",
             ),
+        ),
+        GovernanceCommand(
+            "domain_schemas",
+            (python, "scripts/generate_domain_contract_schemas.py", "--check"),
         ),
         GovernanceCommand(
             "governance_tests",
@@ -109,6 +127,7 @@ def governance_commands(
             "basedpyright",
             (python, "-m", "basedpyright", *source_files),
         ),
+        GovernanceCommand("ty", (python, "-m", "ty", "check", *source_files)),
     )
 
 

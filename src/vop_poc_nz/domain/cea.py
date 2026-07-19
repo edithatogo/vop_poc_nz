@@ -8,6 +8,7 @@ from enum import StrEnum
 from pydantic import Field, field_validator, model_validator
 
 from .base import FrozenDomainModel
+from .contracts import CYCLE, NZD_UNSPECIFIED, PERSON, QALY, ProvenanceSpec, UnitSpec
 
 
 class Perspective(StrEnum):
@@ -142,15 +143,20 @@ class InterventionSpec(FrozenDomainModel):
 
     states: tuple[str, ...] = Field(min_length=1)
     cycles: int = Field(gt=0)
+    cycle_unit: UnitSpec = CYCLE
     initial_population: NumericVector
+    population_unit: UnitSpec = PERSON
     transition_matrices: TransitionMatrices
     costs: CostSpec
+    cost_unit: UnitSpec = NZD_UNSPECIFIED
     qalys: ArmVectors
+    health_outcome_unit: UnitSpec = QALY
     discount_rate: float = Field(default=0.03, ge=0.0, le=1.0)
     productivity_costs: ProductivityCostSpec | None = None
     friction_cost_params: FrictionCostSpec | None = None
     productivity_loss_states: tuple[ProductivityLossState, ...] = ()
     subgroups: tuple[NamedSubgroupSpec, ...] = ()
+    provenance: tuple[ProvenanceSpec, ...] = ()
 
     @field_validator("states")
     @classmethod

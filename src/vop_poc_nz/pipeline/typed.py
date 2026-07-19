@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from vop_poc_nz.compat.legacy import (
     intervention_spec_from_legacy,
@@ -25,7 +25,9 @@ from vop_poc_nz.domain.cea import (
     Perspective,
     ProductivityCostMethod,
 )
+from vop_poc_nz.domain.contracts import ProvenanceSpec
 from vop_poc_nz.logging_config import log_context
+from vop_poc_nz.results.base import ArrowSchemaIdentity, ResultMaturity, ResultMetadata
 from vop_poc_nz.results.cea import CEAAnalysisResult
 from vop_poc_nz.results.pipeline import (
     InterventionPipelineResult,
@@ -46,7 +48,7 @@ class TypedPipelineSpec(FrozenDomainModel):
     created_at_utc: datetime
     random_seed: int | None = None
     software_version: str | None = None
-    spec_fingerprint: str = Field(min_length=64, max_length=64)
+    spec_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
     interventions: tuple[NamedInterventionSpec, ...] = Field(min_length=1)
 
     @field_validator("created_at_utc")
@@ -55,6 +57,16 @@ class TypedPipelineSpec(FrozenDomainModel):
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("created_at_utc must be timezone-aware")
         return value.astimezone(UTC)
+
+    @model_validator(mode="after")
+    def validate_identity(self) -> TypedPipelineSpec:
+        """Reject duplicate names and caller-forged provenance fingerprints."""
+        names = tuple(item.name for item in self.interventions)
+        if len(set(names)) != len(names):
+            raise ValueError("intervention names must be unique")
+        if self.spec_fingerprint != _fingerprint(self.interventions):
+            raise ValueError("spec_fingerprint does not match interventions")
+        return self
 
 
 def _fingerprint(interventions: tuple[NamedInterventionSpec, ...]) -> str:
@@ -139,6 +151,40 @@ def run_typed_analysis_pipeline(spec: TypedPipelineSpec) -> TypedPipelineResult:
         random_seed=spec.random_seed,
         software_version=spec.software_version,
         spec_fingerprint=spec.spec_fingerprint,
+        metadata=ResultMetadata(
+            contract_version="1.0.0",
+            maturity=ResultMaturity.STABLE,
+            arrow_schema=ArrowSchemaIdentity.from_logical_fields(
+                schema_id="typed_pipeline_records",
+                schema_version="1.0.0",
+                logical_fields=(
+                    "run_id",
+                    "created_at_utc",
+                    "software_version",
+                    "random_seed",
+                    "spec_fingerprint",
+                    "contract_version",
+                    "intervention",
+                    "perspective",
+                    "productivity_cost_method",
+                    "incremental_cost",
+                    "incremental_qalys",
+                    "incremental_nmb",
+                    "icer_status",
+                    "icer_value",
+                    "is_cost_effective",
+                    "wtp_threshold",
+                ),
+            ),
+            provenance=(
+                ProvenanceSpec(
+                    source_id=f"typed-pipeline:{spec.run_id}",
+                    observed_at_utc=spec.created_at_utc,
+                    source_version=spec.software_version,
+                    content_sha256=spec.spec_fingerprint,
+                ),
+            ),
+        ),
         interventions=tuple(
             _calculate_intervention(intervention, pipeline=spec)
             for intervention in spec.interventions
