@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: contract-bundle-private-draft-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
 jobs:
   stage:
     name: Build content-addressed standalone bundle
@@ -145,20 +149,71 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = true
+          release_by_tag="repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}"
+          if gh api "$release_by_tag" > release-before.json 2>/dev/null; then
+            jq -e --arg tag "$RELEASE_TAG" \
+              '.draft == true and .tag_name == $tag' release-before.json >/dev/null
           else
             gh release create "$RELEASE_TAG" --draft --title "$RELEASE_TAG" --verify-tag
+            gh api "$release_by_tag" > release-before.json
           fi
-          jq -r '.release_assets[].path' bundle-stage/stage-manifest.json > expected-assets.txt
-          printf '%s\n' stage-manifest.json >> expected-assets.txt
-          sort -u expected-assets.txt -o expected-assets.txt
-          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort -u > existing-assets.txt
+          release_id="$(jq -r '.id' release-before.json)"
+          [[ "$release_id" =~ ^[1-9][0-9]*$ ]]
+          jq -e --argjson id "$release_id" --arg tag "$RELEASE_TAG" \
+            '.id == $id and .draft == true and .tag_name == $tag' \
+            release-before.json >/dev/null
+          {
+            jq -r '.release_assets[] | [.path, .sha256] | @tsv' bundle-stage/stage-manifest.json
+            printf 'stage-manifest.json\t%s\n' "$(sha256sum bundle-stage/stage-manifest.json | cut -d' ' -f1)"
+          } | sort -k1,1 > expected-assets.tsv
+          cut -f1 expected-assets.tsv > expected-assets.txt
+          jq -r '.assets[].name' release-before.json | sort -u > existing-assets.txt
           if test -s existing-assets.txt; then
             test -z "$(comm -23 existing-assets.txt expected-assets.txt)"
           fi
           while read -r asset; do
-            gh release upload "$RELEASE_TAG" "bundle-stage/$asset" --clobber
+            [[ "$asset" =~ ^[A-Za-z0-9._-]+$ ]]
+            asset_id="$(jq -r --arg name "$asset" '.assets[] | select(.name == $name) | .id' release-before.json)"
+            if test -n "$asset_id"; then
+              [[ "$asset_id" =~ ^[1-9][0-9]*$ ]]
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/assets/${asset_id}"
+            fi
+            curl --fail-with-body --silent --show-error \
+              --request POST \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@bundle-stage/$asset" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${release_id}/assets?name=${asset}" \
+              > uploaded-asset.json
+            jq -e --arg name "$asset" \
+              '.name == $name and .state == "uploaded"' uploaded-asset.json >/dev/null
           done < expected-assets.txt
-          gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | sort -u > uploaded-assets.txt
-          diff -u expected-assets.txt uploaded-assets.txt
+          printf '%s\n' "$release_id" > release-id.txt
+      - name: Revalidate immutable identities and remote asset bytes after upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_id="$(cat release-id.txt)"
+          expected_oid="$(jq -r '.source.tag_object_oid' bundle-stage/stage-manifest.json)"
+          expected_commit="$(jq -r '.source.tag_target_commit' bundle-stage/stage-manifest.json)"
+          gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/$RELEASE_TAG" > final-tag-ref.json
+          test "$(jq -r '.object.type' final-tag-ref.json)" = tag
+          test "$(jq -r '.object.sha' final-tag-ref.json)" = "$expected_oid"
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$expected_oid" > final-tag-verification.json
+          jq -e --arg tag "$RELEASE_TAG" --arg commit "$expected_commit" \
+            '.tag == $tag and .object.type == "commit" and .object.sha == $commit and .verification.verified == true' \
+            final-tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' final-tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
+          gh api "repos/${GITHUB_REPOSITORY}/releases/$release_id" > release-after.json
+          jq -e --argjson id "$release_id" --arg tag "$RELEASE_TAG" \
+            '.id == $id and .draft == true and .tag_name == $tag
+             and all(.assets[]; .state == "uploaded"
+               and (.digest | type == "string" and test("^sha256:[0-9a-f]{64}$")))' \
+            release-after.json >/dev/null
+          jq -r '.assets[] | [.name, (.digest | sub("^sha256:"; ""))] | @tsv' \
+            release-after.json | sort -k1,1 > uploaded-assets.tsv
+          diff -u expected-assets.tsv uploaded-assets.tsv

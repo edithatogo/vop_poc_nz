@@ -58,6 +58,26 @@ def _snapshot_dict(snapshot: GitHubIssueSnapshot) -> dict[str, object]:
     return raw
 
 
+def _validate_workflow_binding(
+    repository: object,
+    workflow_path: object,
+    workflow_ref: object,
+    head_branch: object,
+) -> None:
+    """Require one exact default-branch workflow identity across all API forms."""
+    if not isinstance(repository, str) or not repository:
+        raise ValueError("capture repository is required")
+    if workflow_path != _WORKFLOW_PATH:
+        raise ValueError("capture workflow path is not allowlisted")
+    if not isinstance(head_branch, str) or not head_branch.strip():
+        raise ValueError("capture head branch is required")
+    expected_workflow_ref = f"{repository}/{workflow_path}@refs/heads/{head_branch}"
+    if workflow_ref != expected_workflow_ref:
+        raise ValueError(
+            "capture workflow ref does not match repository, path, and branch"
+        )
+
+
 def candidate_digest(candidate: Mapping[str, object]) -> str:
     """Return the digest over every candidate field except its integrity seal."""
     body = {key: value for key, value in candidate.items() if key != "integrity"}
@@ -73,6 +93,8 @@ def build_baseline_candidate(
     tool_revision: str,
     repository: str,
     workflow_path: str,
+    workflow_ref: str,
+    head_branch: str,
     run_id: int,
     observed_at: datetime,
 ) -> dict[str, object]:
@@ -87,8 +109,7 @@ def build_baseline_candidate(
         raise ValueError("tool revision must be an exact lowercase Git commit SHA")
     if repository != snapshot.github_repository:
         raise ValueError("capture repository must match the snapshot repository")
-    if workflow_path != _WORKFLOW_PATH:
-        raise ValueError("capture workflow path is not allowlisted")
+    _validate_workflow_binding(repository, workflow_path, workflow_ref, head_branch)
     if type(run_id) is not int or run_id < 1:
         raise ValueError("capture run ID must be a positive integer")
     candidate: dict[str, object] = {
@@ -102,6 +123,8 @@ def build_baseline_candidate(
             "tool_revision": tool_revision,
             "repository": repository,
             "workflow_path": workflow_path,
+            "workflow_ref": workflow_ref,
+            "head_branch": head_branch,
             "run_id": run_id,
         },
         "snapshot": _snapshot_dict(snapshot),
@@ -130,6 +153,8 @@ def _validate_capture(value: object) -> Mapping[str, object]:
             "tool_revision",
             "repository",
             "workflow_path",
+            "workflow_ref",
+            "head_branch",
             "run_id",
         },
         field="capture",
@@ -142,6 +167,8 @@ def _validate_capture(value: object) -> Mapping[str, object]:
     tool_revision = capture.get("tool_revision")
     repository = capture.get("repository")
     workflow_path = capture.get("workflow_path")
+    workflow_ref = capture.get("workflow_ref")
+    head_branch = capture.get("head_branch")
     run_id = capture.get("run_id")
     observed_at = capture.get("observed_at_utc")
     if not isinstance(captured_by, str) or not captured_by.strip():
@@ -153,10 +180,7 @@ def _validate_capture(value: object) -> Mapping[str, object]:
         or _REVISION_RE.fullmatch(tool_revision) is None
     ):
         raise ValueError("tool revision must be an exact lowercase Git commit SHA")
-    if not isinstance(repository, str) or not repository:
-        raise ValueError("capture repository is required")
-    if workflow_path != _WORKFLOW_PATH:
-        raise ValueError("capture workflow path is not allowlisted")
+    _validate_workflow_binding(repository, workflow_path, workflow_ref, head_branch)
     if type(run_id) is not int or run_id < 1:
         raise ValueError("capture run ID must be a positive integer")
     if not isinstance(observed_at, str):
@@ -227,7 +251,8 @@ def validate_capture_run(
         "status": "completed",
         "conclusion": "success",
         "head_sha": capture["tool_revision"],
-        "path": capture["workflow_path"],
+        "path": f"{capture['workflow_path']}@{capture['head_branch']}",
+        "head_branch": capture["head_branch"],
     }
     for field, value in expected.items():
         if run_metadata.get(field) != value:

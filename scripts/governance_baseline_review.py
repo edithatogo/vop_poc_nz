@@ -63,6 +63,8 @@ def _capture(args: argparse.Namespace) -> int:
         tool_revision=args.tool_revision,
         repository=args.repository,
         workflow_path=args.workflow_path,
+        workflow_ref=args.workflow_ref,
+        head_branch=args.head_branch,
         run_id=args.run_id,
         observed_at=datetime.now(UTC),
     )
@@ -105,6 +107,8 @@ def main() -> int:
     capture.add_argument("--tool-revision", required=True)
     capture.add_argument("--repository", required=True)
     capture.add_argument("--workflow-path", required=True)
+    capture.add_argument("--workflow-ref", required=True)
+    capture.add_argument("--head-branch", required=True)
     capture.add_argument("--run-id", type=int, required=True)
     capture.add_argument("--output", type=Path, required=True)
     capture.set_defaults(handler=_capture)

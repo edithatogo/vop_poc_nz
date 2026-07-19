@@ -57,6 +57,8 @@ jobs:
           --tool-revision "${{ github.sha }}"
           --repository "${{ github.repository }}"
           --workflow-path ".github/workflows/governance-baseline-capture.yml"
+          --workflow-ref "${{ github.workflow_ref }}"
+          --head-branch "${{ github.ref_name }}"
           --run-id "${{ github.run_id }}"
           --output governance-review/candidate.json
       - name: Record candidate digest

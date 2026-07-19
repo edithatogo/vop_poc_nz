@@ -162,3 +162,11 @@ def test_dedicated_workflows_are_dispatch_only_and_fail_closed() -> None:
     assert "git/ref/tags/$RELEASE_TAG" in bundle
     assert "comm -23 existing-assets.txt expected-assets.txt" in bundle
     assert "bundle-stage/* --clobber" not in bundle
+    assert "group: contract-bundle-private-draft-${{ inputs.release_tag }}" in bundle
+    assert "release_id=\"$(jq -r '.id' release-before.json)\"" in bundle
+    assert "releases/${release_id}/assets?name=${asset}" in bundle
+    assert "repos/${GITHUB_REPOSITORY}/releases/$release_id" in bundle
+    assert ".draft == true and .tag_name == $tag" in bundle
+    assert 'test("^sha256:[0-9a-f]{64}$")' in bundle
+    assert "diff -u expected-assets.tsv uploaded-assets.tsv" in bundle
+    assert bundle.count("git/ref/tags/$RELEASE_TAG") == 2

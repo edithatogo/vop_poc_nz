@@ -44,6 +44,11 @@ def _candidate() -> dict[str, object]:
         tool_revision="c" * 40,
         repository="edithatogo/vop_poc_nz",
         workflow_path=".github/workflows/governance-baseline-capture.yml",
+        workflow_ref=(
+            "edithatogo/vop_poc_nz/.github/workflows/"
+            "governance-baseline-capture.yml@refs/heads/main"
+        ),
+        head_branch="main",
         run_id=123,
         observed_at=datetime(2026, 7, 20, 1, 2, 3, tzinfo=UTC),
     )
@@ -56,7 +61,8 @@ def _capture_run() -> dict[str, object]:
         "status": "completed",
         "conclusion": "success",
         "head_sha": "c" * 40,
-        "path": ".github/workflows/governance-baseline-capture.yml",
+        "path": ".github/workflows/governance-baseline-capture.yml@main",
+        "head_branch": "main",
         "repository": {"full_name": "edithatogo/vop_poc_nz"},
         "actor": {"login": "capture-bot"},
     }
@@ -90,6 +96,13 @@ def test_capture_is_untrusted_content_addressed_and_read_only() -> None:
     ("path", "value", "match"),
     [
         (("capture", "source_revision"), "main", "source revision"),
+        (
+            ("capture", "workflow_ref"),
+            "edithatogo/vop_poc_nz/.github/workflows/"
+            "governance-baseline-capture.yml@refs/heads/feature",
+            "workflow ref",
+        ),
+        (("capture", "head_branch"), "feature", "workflow ref"),
         (("review", "status"), "approved", "pending review"),
         (("network_mutation",), True, "read-only"),
         (("snapshot", "issue_number"), 42, "digest"),
@@ -162,6 +175,20 @@ def test_promotion_rejects_missing_separation_or_digest_binding(
 def test_capture_run_metadata_is_authoritative(field: str) -> None:
     run = deepcopy(_capture_run())
     run[field] = "forged"
+    with pytest.raises(ValueError, match="capture run"):
+        validate_capture_run(_candidate(), run)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("path", ".github/workflows/governance-baseline-capture.yml@feature"),
+        ("head_branch", "feature"),
+    ],
+)
+def test_capture_run_rejects_wrong_workflow_ref(field: str, value: str) -> None:
+    run = deepcopy(_capture_run())
+    run[field] = value
     with pytest.raises(ValueError, match="capture run"):
         validate_capture_run(_candidate(), run)
 
