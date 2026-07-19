@@ -5,15 +5,15 @@ human-readable navigation surface.
 
 ## Historical programme
 
-C00-C12 are completed and retained in [`tracks/`](./tracks/) with their
+C00-C13 are retained in [`tracks/`](./tracks/) with their
 evidence in `.conductor/local/track_state.json` and the shared GitHub Project.
 
 ---
 
-## [~] Track: Domain Abstraction Excellence
+## [x] Track: Domain Abstraction Excellence [completed: 2026-07-20]
 
 *Link: [./tracks/abstraction-excellence_20260719/index.md](./tracks/abstraction-excellence_20260719/index.md)*
 
-*Status: in progress - typed domain contracts, canonical package boundaries,
-machine-readable concerns, and cross-repository conformance.*
-
+*Status: typed domain contracts, canonical package boundaries, machine-readable
+concerns, cross-repository conformance, and hosted quality evidence are complete;
+human approval remains separate under `close_requires_approval`.*
