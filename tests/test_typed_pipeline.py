@@ -132,6 +132,14 @@ def test_pipeline_emits_structured_context_and_provenance(capsys) -> None:
 
     assert {event["intervention"] for event in calculations} == {"A", "B"}
     assert {event["pipeline_run_id"] for event in calculations} == {"run-123"}
+    assert {event["run_id"] for event in calculations} == {"run-123"}
+    assert {event["analysis_id"] for event in calculations} == {"typed-cea"}
+    assert {event["backend_requested"] for event in calculations} == {"numpy"}
+    assert {event["backend_selected"] for event in calculations} == {"numpy"}
+    assert {event["fallback_code"] for event in calculations} == {"none"}
+    assert all(len(event["trace_id"]) == 32 for event in calculations)
+    assert all(len(event["span_id"]) == 16 for event in calculations)
+    assert all(len(event["numerical_policy_id"]) == 64 for event in calculations)
     assert all(
         event["spec_fingerprint"] == result.spec_fingerprint for event in calculations
     )

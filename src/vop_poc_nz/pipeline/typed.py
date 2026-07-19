@@ -30,8 +30,13 @@ from vop_poc_nz.domain.cea import (
     Perspective,
     ProductivityCostMethod,
 )
-from vop_poc_nz.domain.contracts import ProvenanceSpec
-from vop_poc_nz.logging_config import log_context
+from vop_poc_nz.domain.contracts import NumericalPolicySpec, ProvenanceSpec
+from vop_poc_nz.logging_config import (
+    AnalysisLogContext,
+    analysis_log_context,
+    log_context,
+    numerical_policy_digest,
+)
 from vop_poc_nz.perspective_io import attach_contract_metadata, schema_fingerprint
 from vop_poc_nz.results.base import ArrowSchemaIdentity, ResultMaturity, ResultMetadata
 from vop_poc_nz.results.cea import CEAAnalysisResult
@@ -183,34 +188,44 @@ def _calculate_intervention(
 
 def run_typed_analysis_pipeline(spec: TypedPipelineSpec) -> TypedPipelineResult:
     """Calculate immutable CEA bundles without reporting or artifact writes."""
-    return TypedPipelineResult(
+    numerical_policy = NumericalPolicySpec()
+    correlation = AnalysisLogContext(
         run_id=spec.run_id,
-        created_at_utc=spec.created_at_utc,
-        random_seed=spec.random_seed,
-        software_version=spec.software_version,
-        spec_fingerprint=spec.spec_fingerprint,
-        metadata=ResultMetadata(
-            contract_version="1.0.0",
-            maturity=ResultMaturity.STABLE,
-            arrow_schema=ArrowSchemaIdentity(
-                schema_id="typed_pipeline_records",
-                schema_version="1.0.0",
-                schema_fingerprint=schema_fingerprint(TYPED_PIPELINE_ARROW_SCHEMA),
-            ),
-            provenance=(
-                ProvenanceSpec(
-                    source_id=f"typed-pipeline:{spec.run_id}",
-                    observed_at_utc=spec.created_at_utc,
-                    source_version=spec.software_version,
-                    content_sha256=spec.spec_fingerprint,
+        analysis_id="typed-cea",
+        backend_requested="numpy",
+        backend_selected="numpy",
+        fallback_code="none",
+        numerical_policy_id=numerical_policy_digest(numerical_policy),
+    )
+    with analysis_log_context(correlation):
+        return TypedPipelineResult(
+            run_id=spec.run_id,
+            created_at_utc=spec.created_at_utc,
+            random_seed=spec.random_seed,
+            software_version=spec.software_version,
+            spec_fingerprint=spec.spec_fingerprint,
+            metadata=ResultMetadata(
+                contract_version="1.0.0",
+                maturity=ResultMaturity.STABLE,
+                arrow_schema=ArrowSchemaIdentity(
+                    schema_id="typed_pipeline_records",
+                    schema_version="1.0.0",
+                    schema_fingerprint=schema_fingerprint(TYPED_PIPELINE_ARROW_SCHEMA),
+                ),
+                provenance=(
+                    ProvenanceSpec(
+                        source_id=f"typed-pipeline:{spec.run_id}",
+                        observed_at_utc=spec.created_at_utc,
+                        source_version=spec.software_version,
+                        content_sha256=spec.spec_fingerprint,
+                    ),
                 ),
             ),
-        ),
-        interventions=tuple(
-            _calculate_intervention(intervention, pipeline=spec)
-            for intervention in spec.interventions
-        ),
-    )
+            interventions=tuple(
+                _calculate_intervention(intervention, pipeline=spec)
+                for intervention in spec.interventions
+            ),
+        )
 
 
 def _result_record(
