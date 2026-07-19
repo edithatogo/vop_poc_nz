@@ -217,3 +217,4 @@ pytest_add_cli_args_test_selection = [
     "tests/test_github_sync_planner.py",
     "tests/test_mutation_score.py",
 ]
+also_copy = ["scripts/check_mutation_score.py"]

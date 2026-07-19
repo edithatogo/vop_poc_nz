@@ -39,6 +39,26 @@
           "title": "Cost Standard Care",
           "type": "number"
         },
+        "cost_unit": {
+          "$ref": "#/$defs/UnitSpec",
+          "default": {
+            "currency_code": null,
+            "currency_year": null,
+            "dimension": "currency",
+            "metadata_status": "unknown",
+            "symbol": "currency-unspecified"
+          }
+        },
+        "health_outcome_unit": {
+          "$ref": "#/$defs/UnitSpec",
+          "default": {
+            "currency_code": null,
+            "currency_year": null,
+            "dimension": "health",
+            "metadata_status": "known",
+            "symbol": "QALY"
+          }
+        },
         "icer": {
           "$ref": "#/$defs/ICERResult"
         },
@@ -362,6 +382,70 @@
         "arrow_schema"
       ],
       "title": "ResultMetadata",
+      "type": "object"
+    },
+    "UnitDimension": {
+      "description": "Physical or decision-model dimension represented by a unit.",
+      "enum": [
+        "currency",
+        "time",
+        "health",
+        "probability",
+        "count",
+        "dimensionless"
+      ],
+      "title": "UnitDimension",
+      "type": "string"
+    },
+    "UnitSpec": {
+      "additionalProperties": false,
+      "description": "Machine-readable unit identity, including currency price year.",
+      "properties": {
+        "currency_code": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency Code"
+        },
+        "currency_year": {
+          "anyOf": [
+            {
+              "maximum": 2200,
+              "minimum": 1900,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency Year"
+        },
+        "dimension": {
+          "$ref": "#/$defs/UnitDimension"
+        },
+        "metadata_status": {
+          "$ref": "#/$defs/MetadataStatus",
+          "default": "known"
+        },
+        "symbol": {
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol",
+        "dimension"
+      ],
+      "title": "UnitSpec",
       "type": "object"
     }
   },
