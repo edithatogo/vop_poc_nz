@@ -179,6 +179,17 @@ def test_github_projection_is_deterministic_and_privacy_safe() -> None:
     )
 
 
+def test_local_private_issue_link_never_produces_a_projection() -> None:
+    records = list(_records())
+    link = records[-1]
+    assert isinstance(link, IssueLink)
+    records[-1] = link.model_copy(update={"visibility": "local_private"})
+
+    payloads = build_github_sync_payloads(GovernanceLedger(records=tuple(records)))
+
+    assert payloads == ()
+
+
 def test_schema_export_is_deterministic(tmp_path) -> None:
     first = export_governance_schemas(tmp_path)
     before = {path.name: path.read_bytes() for path in first}

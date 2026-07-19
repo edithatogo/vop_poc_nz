@@ -352,7 +352,11 @@ def build_github_sync_payloads(
     by_id = {record.id: record for record in ledger.records}
     payloads: list[GitHubSyncPayload] = []
     links = sorted(
-        (record for record in ledger.records if isinstance(record, IssueLink)),
+        (
+            record
+            for record in ledger.records
+            if isinstance(record, IssueLink) and record.visibility != "local_private"
+        ),
         key=lambda item: item.id,
     )
     for link in links:
