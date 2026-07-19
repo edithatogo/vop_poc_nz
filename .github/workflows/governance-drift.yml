@@ -27,7 +27,7 @@ jobs:
           enable-cache: true
       - name: Install the locked audit environment
         run: uv sync --frozen --extra dev
-      - name: Query and plan without mutation
+      - name: Query complete issue and Project state without mutation
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PROJECT_READ_TOKEN: ${{ secrets.PROJECT_READ_TOKEN }}
@@ -36,7 +36,7 @@ jobs:
           --record-id CON-SHR-0013
           --base .github/governance-baselines/CON-SHR-0013.json
           --output .conductor/local/github_governance_drift.json
-      - name: Retain approval-ready reconciliation evidence
+      - name: Always retain privacy-bounded reconciliation evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

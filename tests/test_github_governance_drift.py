@@ -11,17 +11,34 @@ import pytest
 
 from vop_poc_nz.concerns import GitHubSyncPayload
 from vop_poc_nz.github_drift_auditor import (
+    PROJECT_FIELDS_QUERY,
     PROJECT_QUERY,
+    BaselineProvenance,
     ProjectCheck,
     assert_query_only,
     audit_governance_drift,
     fetch_issue,
     fetch_project_check,
+    governance_audit_exit_code,
+    governance_baseline_from_json,
     issue_snapshot_from_api,
 )
 from vop_poc_nz.github_sync_planner import GitHubIssueSnapshot
 
 MARKER = "vop-voiage-governance-id:CON-SHR-0013"
+
+
+def _provenance(*, trusted: bool = True) -> BaselineProvenance:
+    return BaselineProvenance(
+        schema_version="1.0.0",
+        trust_state=(
+            "verified_last_applied" if trusted else "unverified_initial_snapshot"
+        ),
+        capture_method="github_api" if trusted else "legacy_import",
+        captured_at_utc="2026-07-19T00:00:00+00:00" if trusted else None,
+        source_revision='W/"issue-etag"' if trusted else None,
+        captured_by="governance-baseline-capture",
+    )
 
 
 def _body(summary: str = "Canonical summary.") -> str:
@@ -77,9 +94,12 @@ def _issue_api(body: str | None = None) -> dict[str, object]:
 
 
 def test_query_allowlist_rejects_mutation_and_unknown_operations() -> None:
-    assert_query_only("project.read", PROJECT_QUERY)
+    assert_query_only("project.items.read", PROJECT_QUERY)
+    assert_query_only("project.fields.read", PROJECT_FIELDS_QUERY)
     with pytest.raises(ValueError, match="query-only"):
-        assert_query_only("project.read", "mutation { updateProjectV2ItemFieldValue }")
+        assert_query_only(
+            "project.items.read", "mutation { updateProjectV2ItemFieldValue }"
+        )
     with pytest.raises(ValueError, match="allowlisted"):
         assert_query_only("repository.write", "query { viewer { login } }")
 
@@ -102,6 +122,7 @@ def test_missing_project_credential_is_explicit_and_never_claims_full_clean() ->
         local=_local(),
         issue_payload=_issue_api(),
         project_check=ProjectCheck.not_checked("credential_gate"),
+        baseline_provenance=_provenance(),
         observed_at=datetime(2026, 7, 20, tzinfo=UTC),
     )
 
@@ -110,10 +131,12 @@ def test_missing_project_credential_is_explicit_and_never_claims_full_clean() ->
         "status": "not_checked",
         "reason": "credential_gate",
         "project_fields": [],
+        "projection": "managed_fields_only",
     }
     assert artifact["scope"] == "issue_only"
     assert artifact["reconciliation_required"] is True
     assert artifact["plan"]["outcome"] == "clean"
+    assert governance_audit_exit_code(artifact) == 3
     rendered = json.dumps(artifact, sort_keys=True)
     assert "token" not in rendered.casefold()
     assert ".conductor/local" not in rendered
@@ -125,6 +148,7 @@ def test_checked_project_fields_participate_in_the_pure_three_way_plan() -> None
         local=_local(),
         issue_payload=_issue_api(),
         project_check=ProjectCheck.checked(_base().project_fields),
+        baseline_provenance=_provenance(),
         observed_at=datetime(2026, 7, 20, tzinfo=UTC),
     )
     assert artifact["scope"] == "issue_and_project"
@@ -137,10 +161,58 @@ def test_checked_project_fields_participate_in_the_pure_three_way_plan() -> None
         local=_local(),
         issue_payload=_issue_api(),
         project_check=ProjectCheck.checked(changed.project_fields),
+        baseline_provenance=_provenance(),
         observed_at=datetime(2026, 7, 20, tzinfo=UTC),
     )
     assert changed_artifact["plan"]["outcome"] == "remote_only"
     assert changed_artifact["reconciliation_required"] is True
+    assert governance_audit_exit_code(changed_artifact) == 2
+
+
+def test_retained_plan_contains_only_managed_differences() -> None:
+    private_human_text = "PRIVATE-HUMAN-NOTE-DO-NOT-RETAIN"
+    remote_body = _body().replace("Human preface.", private_human_text)
+    artifact = audit_governance_drift(
+        base=_base(),
+        local=_local("Updated managed summary."),
+        issue_payload=_issue_api(remote_body),
+        project_check=ProjectCheck.checked(
+            (*_base().project_fields, ("Human Notes", private_human_text))
+        ),
+        baseline_provenance=_provenance(),
+        observed_at=datetime(2026, 7, 20, tzinfo=UTC),
+    )
+    rendered = json.dumps(artifact, sort_keys=True)
+    assert artifact["plan"]["outcome"] == "local_only"
+    assert "proposed_issue" not in artifact["plan"]
+    assert private_human_text not in rendered
+    assert "Updated managed summary." in rendered
+    assert artifact["plan"]["managed_differences"]
+
+
+def test_unverified_baseline_is_explicit_and_non_clean() -> None:
+    artifact = audit_governance_drift(
+        base=_base(),
+        local=_local(),
+        issue_payload=_issue_api(),
+        project_check=ProjectCheck.checked(_base().project_fields),
+        baseline_provenance=_provenance(trusted=False),
+        observed_at=datetime(2026, 7, 20, tzinfo=UTC),
+    )
+    assert artifact["baseline_capture"]["trusted_for_three_way"] is False
+    assert artifact["reconciliation_required"] is True
+    assert governance_audit_exit_code(artifact) == 4
+
+
+def test_committed_baseline_records_honest_capture_provenance() -> None:
+    baseline, provenance = governance_baseline_from_json(
+        Path(".github/governance-baselines/CON-SHR-0013.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert baseline.issue_number == 41
+    assert provenance.trust_state == "unverified_initial_snapshot"
+    assert provenance.trusted_for_three_way is False
 
 
 def test_mocked_network_boundary_allows_only_issue_get_and_project_query() -> None:
@@ -161,25 +233,39 @@ def test_mocked_network_boundary_allows_only_issue_get_and_project_query() -> No
 
     def project_loader(request):
         requests.append(request)
+        submitted = json.loads(request.data)
+        if "GovernanceProjectItems" in submitted["query"]:
+            return {
+                "data": {
+                    "repository": {
+                        "issue": {
+                            "projectItems": {
+                                "nodes": [
+                                    {"id": "PVTI_target", "project": {"number": 28}}
+                                ],
+                                "pageInfo": {
+                                    "hasNextPage": False,
+                                    "endCursor": "items-end",
+                                },
+                            }
+                        }
+                    }
+                }
+            }
         return {
             "data": {
-                "repository": {
-                    "issue": {
-                        "projectItems": {
-                            "nodes": [
-                                {
-                                    "project": {"number": 28},
-                                    "fieldValues": {
-                                        "nodes": [
-                                            {
-                                                "field": {"name": "Track ID"},
-                                                "textValue": "C13",
-                                            }
-                                        ]
-                                    },
-                                }
-                            ]
-                        }
+                "node": {
+                    "fieldValues": {
+                        "nodes": [
+                            {
+                                "field": {"name": "Track ID"},
+                                "textValue": "C13",
+                            }
+                        ],
+                        "pageInfo": {
+                            "hasNextPage": False,
+                            "endCursor": "fields-end",
+                        },
                     }
                 }
             }
@@ -193,10 +279,85 @@ def test_mocked_network_boundary_allows_only_issue_get_and_project_query() -> No
         loader=project_loader,
     )
     assert project == ProjectCheck.checked((("Track ID", "C13"),))
+    assert len(requests) == 3
     assert requests[-1].method == "POST"
     submitted = json.loads(requests[-1].data)
     assert submitted["query"].lstrip().startswith("query ")
     assert "mutation" not in submitted["query"].casefold()
+
+
+def test_project_fetcher_paginates_items_and_fields_without_truncation() -> None:
+    calls: list[tuple[str, str | None]] = []
+
+    def loader(request):
+        submitted = json.loads(request.data)
+        variables = submitted["variables"]
+        query = submitted["query"]
+        kind = "items" if "GovernanceProjectItems" in query else "fields"
+        calls.append((kind, variables["cursor"]))
+        if kind == "items":
+            first = variables["cursor"] is None
+            return {
+                "data": {
+                    "repository": {
+                        "issue": {
+                            "projectItems": {
+                                "nodes": (
+                                    [{"id": "other", "project": {"number": 27}}]
+                                    if first
+                                    else [{"id": "target", "project": {"number": 28}}]
+                                ),
+                                "pageInfo": {
+                                    "hasNextPage": first,
+                                    "endCursor": "items-2" if first else None,
+                                },
+                            }
+                        }
+                    }
+                }
+            }
+        first = variables["cursor"] is None
+        return {
+            "data": {
+                "node": {
+                    "fieldValues": {
+                        "nodes": [
+                            {
+                                "field": {"name": "Record ID" if first else "Track ID"},
+                                "textValue": "CON-SHR-0013" if first else "C13",
+                            }
+                        ],
+                        "pageInfo": {
+                            "hasNextPage": first,
+                            "endCursor": "fields-2" if first else None,
+                        },
+                    }
+                }
+            }
+        }
+
+    result = fetch_project_check(
+        "edithatogo/vop_poc_nz", 41, 28, token="read", loader=loader
+    )
+    assert result == ProjectCheck.checked(
+        (("Record ID", "CON-SHR-0013"), ("Track ID", "C13"))
+    )
+    assert calls == [
+        ("items", None),
+        ("items", "items-2"),
+        ("fields", None),
+        ("fields", "fields-2"),
+    ]
+
+
+def test_project_fetcher_rejects_missing_pagination_metadata() -> None:
+    def loader(_request):
+        return {"data": {"repository": {"issue": {"projectItems": {"nodes": []}}}}}
+
+    with pytest.raises(ValueError, match="pagination metadata is incomplete"):
+        fetch_project_check(
+            "edithatogo/vop_poc_nz", 41, 28, token="read", loader=loader
+        )
 
 
 def test_project_fetcher_does_not_touch_network_without_explicit_credential() -> None:
@@ -223,6 +384,8 @@ def test_workflow_is_read_only_scheduled_manual_and_retains_artifact() -> None:
     assert "PROJECT_READ_TOKEN" in workflow
     assert "scripts/audit_github_governance_drift.py" in workflow
     assert "actions/upload-artifact@" in workflow
+    assert "if: always()" in workflow
+    assert "privacy-bounded" in workflow
     assert "contents: write" not in workflow
     assert "issues: write" not in workflow
     assert "pull-requests: write" not in workflow

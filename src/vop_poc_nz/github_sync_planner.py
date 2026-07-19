@@ -95,7 +95,7 @@ def _fallback_digest(body: str) -> str:
     return _canonical_digest({"invalid_body": body})
 
 
-def _snapshot_projection(
+def managed_snapshot_projection(
     snapshot: GitHubIssueSnapshot,
     managed_labels: frozenset[str],
     managed_project_field_names: frozenset[str],
@@ -116,7 +116,7 @@ def _snapshot_projection(
     }
 
 
-def _local_projection(payload: GitHubSyncPayload) -> dict[str, Any] | None:
+def managed_local_projection(payload: GitHubSyncPayload) -> dict[str, Any] | None:
     section = _section(payload.body)
     if section is None:
         return None
@@ -217,11 +217,11 @@ def plan_github_sync(
     managed_project_field_names = frozenset(
         (*base.managed_project_field_names, *(name for name, _ in local.project_fields))
     )
-    base_projection = _snapshot_projection(
+    base_projection = managed_snapshot_projection(
         base, managed_labels, managed_project_field_names
     )
-    local_projection = _local_projection(local)
-    remote_projection = _snapshot_projection(
+    local_projection = managed_local_projection(local)
+    remote_projection = managed_snapshot_projection(
         remote, managed_labels, managed_project_field_names
     )
     if any(
@@ -345,6 +345,8 @@ __all__ = [
     "GitHubSyncPlan",
     "PlannedIssueUpdate",
     "issue_snapshot_from_json",
+    "managed_local_projection",
+    "managed_snapshot_projection",
     "plan_github_sync",
     "sync_plan_json",
 ]

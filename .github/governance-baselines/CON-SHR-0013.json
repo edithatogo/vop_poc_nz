@@ -1,4 +1,12 @@
 {
+  "baseline_capture": {
+    "schema_version": "1.0.0",
+    "trust_state": "unverified_initial_snapshot",
+    "capture_method": "legacy_import",
+    "captured_at_utc": null,
+    "source_revision": null,
+    "captured_by": "repository_migration"
+  },
   "github_repository": "edithatogo/vop_poc_nz",
   "issue_number": 41,
   "state": "open",

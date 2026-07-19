@@ -14,8 +14,9 @@ from vop_poc_nz.github_drift_auditor import (
     audit_governance_drift,
     fetch_issue,
     fetch_project_check,
+    governance_audit_exit_code,
+    governance_baseline_from_json,
 )
-from vop_poc_nz.github_sync_planner import issue_snapshot_from_json
 
 
 def main() -> int:
@@ -42,7 +43,9 @@ def main() -> int:
     local = payloads[marker]
     if local.issue_number is None:
         raise ValueError(f"governance record {args.record_id} has no GitHub issue")
-    base = issue_snapshot_from_json(args.base.read_text(encoding="utf-8"))
+    base, baseline_provenance = governance_baseline_from_json(
+        args.base.read_text(encoding="utf-8")
+    )
 
     issue = fetch_issue(
         local.github_repository,
@@ -60,6 +63,7 @@ def main() -> int:
         local=local,
         issue_payload=issue,
         project_check=project,
+        baseline_provenance=baseline_provenance,
         observed_at=datetime.now(UTC),
     )
 
@@ -75,10 +79,7 @@ def main() -> int:
         newline="\n",
     )
     print(output)
-    plan = artifact["plan"]
-    if not isinstance(plan, dict):
-        raise RuntimeError("drift artifact plan must be an object")
-    return 0 if plan.get("outcome") == "clean" else 2
+    return governance_audit_exit_code(artifact)
 
 
 if __name__ == "__main__":
