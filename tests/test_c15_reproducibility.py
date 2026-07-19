@@ -6,10 +6,12 @@ import io
 import json
 import sys
 import tarfile
+import tomllib
 import zipfile
 from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -19,6 +21,12 @@ from vop_poc_nz.c15_reproducibility import (
     compare_digest_reports,
     normalized_archive_report,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _report_entries(report: dict[str, object]) -> list[dict[str, object]]:
+    return cast("list[dict[str, object]]", report["entries"])
 
 
 def _record(contents: dict[str, bytes], record_name: str) -> bytes:
@@ -72,7 +80,7 @@ def test_tar_digest_ignores_archive_metadata_but_not_content(tmp_path: Path) -> 
     with tarfile.open(first, "w:gz") as archive:
         archive.add(source, arcname="pkg/payload.json")
     report = normalized_archive_report(first, runner="linux-x64")
-    assert report["entries"][0]["path"] == "pkg/payload.json"
+    assert _report_entries(report)[0]["path"] == "pkg/payload.json"
 
 
 def test_sdist_digest_normalizes_safe_utf8_text_independent_of_filename(
@@ -167,6 +175,7 @@ def test_digest_report_schema_is_self_authenticating_and_bound_to_artifact(
     _zip(right_path, "\n")
     left = normalized_archive_report(left_path, runner="linux-x64")
     right = normalized_archive_report(right_path, runner="windows-x64")
+    left_entries = _report_entries(left)
     assert left["artifact_kind"] == "wheel"
     assert compare_digest_reports(left, right)["matched"] is True
 
@@ -177,22 +186,23 @@ def test_digest_report_schema_is_self_authenticating_and_bound_to_artifact(
         {"artifact_name": "other.whl"},
         {"unexpected": True},
         {"entries": []},
-        {"entries": [*left["entries"], left["entries"][0]]},
+        {"entries": [*left_entries, left_entries[0]]},
         {
             "entries": [
-                {**left["entries"][0], "size": left["entries"][0]["size"] + 1},
-                *left["entries"][1:],
+                {**left_entries[0], "size": cast("int", left_entries[0]["size"]) + 1},
+                *left_entries[1:],
             ]
         },
         {"runner": ""},
         {"artifact_name": ""},
         {"artifact_kind": "mystery"},
         {"entries": [None]},
-        {"entries": [{**left["entries"][0], "path": "../unsafe"}]},
-        {"entries": [{**left["entries"][0], "member_type": []}]},
-        {"entries": [{**left["entries"][0], "sha256": "A" * 64}]},
-        {"entries": [{**left["entries"][0], "size": True}]},
-        {"entries": [{**left["entries"][0], "extra": True}]},
+        {"entries": [{**left_entries[0], "path": 1}]},
+        {"entries": [{**left_entries[0], "path": "../unsafe"}]},
+        {"entries": [{**left_entries[0], "member_type": []}]},
+        {"entries": [{**left_entries[0], "sha256": "A" * 64}]},
+        {"entries": [{**left_entries[0], "size": True}]},
+        {"entries": [{**left_entries[0], "extra": True}]},
     )
     for corruption in corruptions:
         with pytest.raises(ArtifactMismatch):
@@ -213,7 +223,7 @@ def test_digest_report_schema_is_self_authenticating_and_bound_to_artifact(
 def test_tar_inventory_encodes_non_regular_members_and_link_drift(
     tmp_path: Path,
 ) -> None:
-    reports = []
+    reports: list[dict[str, object]] = []
     for directory, target in (("left", "data.txt"), ("right", "other.txt")):
         archive_path = tmp_path / directory / "pkg.tar.gz"
         archive_path.parent.mkdir()
@@ -251,7 +261,7 @@ def test_tar_inventory_encodes_non_regular_members_and_link_drift(
             normalized_archive_report(archive_path, runner=f"{directory}-runner")
         )
 
-    member_types = {entry["member_type"] for entry in reports[0]["entries"]}
+    member_types = {entry["member_type"] for entry in _report_entries(reports[0])}
     assert member_types == {
         "block-device",
         "character-device",
@@ -266,7 +276,9 @@ def test_tar_inventory_encodes_non_regular_members_and_link_drift(
 
     symlink_drift = deepcopy(reports[0])
     symlink = next(
-        entry for entry in symlink_drift["entries"] if entry["member_type"] == "symlink"
+        entry
+        for entry in _report_entries(symlink_drift)
+        if entry["member_type"] == "symlink"
     )
     symlink["link_target"] = "../unsafe"
     with pytest.raises(ArtifactMismatch, match="link target"):
@@ -275,7 +287,7 @@ def test_tar_inventory_encodes_non_regular_members_and_link_drift(
     device_drift = deepcopy(reports[0])
     device = next(
         entry
-        for entry in device_drift["entries"]
+        for entry in _report_entries(device_drift)
         if entry["member_type"] == "character-device"
     )
     device.pop("device_major")
@@ -285,7 +297,7 @@ def test_tar_inventory_encodes_non_regular_members_and_link_drift(
     metadata_drift = deepcopy(reports[0])
     directory_entry = next(
         entry
-        for entry in metadata_drift["entries"]
+        for entry in _report_entries(metadata_drift)
         if entry["member_type"] == "directory"
     )
     directory_entry["sha256"] = "0" * 64
@@ -305,6 +317,39 @@ def test_tar_inventory_rejects_unknown_member_type(tmp_path: Path) -> None:
         archive.addfile(unknown)
     with pytest.raises(ValueError, match="unsupported tar member type"):
         normalized_archive_report(archive_path, runner="linux-x64")
+
+
+def test_tar_inventory_rejects_duplicate_paths_and_reports_plain_tar_kind(
+    tmp_path: Path,
+) -> None:
+    duplicate = tmp_path / "duplicate.tar"
+    with tarfile.open(duplicate, "w") as archive:
+        for content in (b"first", b"second"):
+            member = tarfile.TarInfo("pkg/data")
+            member.size = len(content)
+            archive.addfile(member, io.BytesIO(content))
+    with pytest.raises(ValueError, match="duplicate archive path"):
+        normalized_archive_report(duplicate, runner="linux-x64")
+
+    plain = tmp_path / "plain.tar"
+    with tarfile.open(plain, "w") as archive:
+        content = b"data"
+        member = tarfile.TarInfo("pkg/data")
+        member.size = len(content)
+        archive.addfile(member, io.BytesIO(content))
+    assert (
+        normalized_archive_report(plain, runner="linux-x64")["artifact_kind"] == "tar"
+    )
+
+
+def test_sdist_policy_excludes_generated_and_platform_specific_run_artifacts() -> None:
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    excludes = set(config["tool"]["hatch"]["build"]["targets"]["sdist"]["exclude"])
+    assert {
+        "/c15-evidence",
+        "/full_log.txt",
+        "/run_*_log.txt",
+    } <= excludes
 
 
 def test_comparator_cli_writes_structured_failure_evidence(

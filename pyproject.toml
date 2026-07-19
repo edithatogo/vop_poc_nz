@@ -93,6 +93,7 @@ exclude = [
   "/.snakemake",
   "/.benchmarks",
   "/.assurance",
+  "/c15-evidence",
   "/.conductor/local",
   "/.tmp-mutation-artifact",
   "/.pytest_cache",
@@ -100,6 +101,8 @@ exclude = [
   "/mutants",
   "/arxiv_figures.zip",
   "/debug_log*.txt",
+  "/full_log.txt",
+  "/run_*_log.txt",
   "/manuscript/figures",
 ]
 
