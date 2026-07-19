@@ -20,13 +20,27 @@ _TEXT_SUFFIXES = frozenset(
         ".py",
         ".rst",
         ".toml",
+        ".template",
         ".txt",
         ".xml",
         ".yaml",
         ".yml",
     }
 )
-_NORMALIZATION = "sorted-paths+utf8-lf+content-sha256+derived-record-excluded"
+_TEXT_FILENAMES = frozenset(
+    {
+        "authors",
+        "changelog",
+        "copying",
+        "license",
+        "notice",
+        "readme",
+        "snakefile",
+    }
+)
+_NORMALIZATION = (
+    "sorted-paths+declared-utf8-text-lf+content-sha256+derived-record-excluded"
+)
 
 
 class ArtifactMismatch(ValueError):
@@ -49,7 +63,10 @@ def _safe_path(name: str) -> str:
 
 
 def _normalized_content(name: str, content: bytes) -> bytes:
-    if PurePosixPath(name).suffix.casefold() not in _TEXT_SUFFIXES:
+    path = PurePosixPath(name)
+    filename = path.name.casefold()
+    stem = filename.split(".", maxsplit=1)[0]
+    if path.suffix.casefold() not in _TEXT_SUFFIXES and stem not in _TEXT_FILENAMES:
         return content
     try:
         text = content.decode("utf-8")

@@ -17,6 +17,9 @@ from vop_poc_nz.c15_reproducibility import (
 def _zip(path: Path, newline: str) -> None:
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("pkg/data.txt", f"alpha{newline}beta{newline}")
+        archive.writestr("pkg/parameters.yaml.template", f"value: 1{newline}")
+        archive.writestr("pkg/templates/Snakefile", f"rule all:{newline}    pass{newline}")
+        archive.writestr("pkg-1.dist-info/licenses/LICENSE", f"terms{newline}")
         archive.writestr("pkg/data.bin", b"\x00\x01")
         archive.writestr("pkg-1.dist-info/RECORD", f"platform-derived-{newline}")
 
@@ -30,6 +33,9 @@ def test_zip_digest_is_stable_across_timestamps_order_and_line_endings(
     with zipfile.ZipFile(windows, "w") as archive:
         archive.writestr("pkg/data.bin", b"\x00\x01")
         archive.writestr("pkg/data.txt", "alpha\r\nbeta\r\n")
+        archive.writestr("pkg/parameters.yaml.template", "value: 1\r\n")
+        archive.writestr("pkg/templates/Snakefile", "rule all:\r\n    pass\r\n")
+        archive.writestr("pkg-1.dist-info/licenses/LICENSE", "terms\r\n")
         archive.writestr("pkg-1.dist-info/RECORD", "different-derived-record\r\n")
 
     left = normalized_archive_report(linux, runner="linux-x64")
