@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "provenance": "GitHub Actions run 29690746269 at bea1cd3c5767628d067a80a790128996caceb6dd",
+  "provenance": "C14 expanded-target evidence from GitHub Actions run 29696479958 at 361c38809964d6be9da30f1469a9847de82a8cdf",
   "policy": "Per-target exact score and unresolved-debt non-regression",
   "targets": {
     "src/vop_poc_nz/github_sync_planner.py": {
@@ -10,8 +10,8 @@
     },
     "src/vop_poc_nz/logging_config.py": {
       "cache_metadata": "src/vop_poc_nz/logging_config.py.meta",
-      "killed": 68,
-      "eligible": 213
+      "killed": 149,
+      "eligible": 335
     }
   }
 }
