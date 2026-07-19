@@ -26,6 +26,7 @@ _CANDIDATE_KEYS = {
     "network_mutation",
     "integrity",
 }
+_WORKFLOW_PATH = ".github/workflows/governance-baseline-capture.yml"
 
 
 def _canonical_bytes(value: object) -> bytes:
@@ -69,6 +70,10 @@ def build_baseline_candidate(
     source_revision: str,
     captured_by: str,
     workflow_identity: str,
+    tool_revision: str,
+    repository: str,
+    workflow_path: str,
+    run_id: int,
     observed_at: datetime,
 ) -> dict[str, object]:
     """Build an explicitly untrusted review candidate from a read-only snapshot."""
@@ -78,6 +83,14 @@ def build_baseline_candidate(
         raise ValueError("captured_by is required")
     if _WORKFLOW_RE.fullmatch(workflow_identity) is None:
         raise ValueError("workflow identity must name an exact GitHub Actions run")
+    if _REVISION_RE.fullmatch(tool_revision) is None:
+        raise ValueError("tool revision must be an exact lowercase Git commit SHA")
+    if repository != snapshot.github_repository:
+        raise ValueError("capture repository must match the snapshot repository")
+    if workflow_path != _WORKFLOW_PATH:
+        raise ValueError("capture workflow path is not allowlisted")
+    if type(run_id) is not int or run_id < 1:
+        raise ValueError("capture run ID must be a positive integer")
     candidate: dict[str, object] = {
         "schema_version": "1.0.0",
         "kind": "governance_baseline_review_candidate",
@@ -86,6 +99,10 @@ def build_baseline_candidate(
             "source_revision": source_revision,
             "captured_by": captured_by,
             "workflow_identity": workflow_identity,
+            "tool_revision": tool_revision,
+            "repository": repository,
+            "workflow_path": workflow_path,
+            "run_id": run_id,
         },
         "snapshot": _snapshot_dict(snapshot),
         "review": {
@@ -110,6 +127,10 @@ def _validate_capture(value: object) -> Mapping[str, object]:
             "source_revision",
             "captured_by",
             "workflow_identity",
+            "tool_revision",
+            "repository",
+            "workflow_path",
+            "run_id",
         },
         field="capture",
     )
@@ -118,11 +139,26 @@ def _validate_capture(value: object) -> Mapping[str, object]:
         raise ValueError("source revision must be an exact lowercase Git commit SHA")
     captured_by = capture.get("captured_by")
     workflow = capture.get("workflow_identity")
+    tool_revision = capture.get("tool_revision")
+    repository = capture.get("repository")
+    workflow_path = capture.get("workflow_path")
+    run_id = capture.get("run_id")
     observed_at = capture.get("observed_at_utc")
     if not isinstance(captured_by, str) or not captured_by.strip():
         raise ValueError("captured_by is required")
     if not isinstance(workflow, str) or _WORKFLOW_RE.fullmatch(workflow) is None:
         raise ValueError("workflow identity must name an exact GitHub Actions run")
+    if (
+        not isinstance(tool_revision, str)
+        or _REVISION_RE.fullmatch(tool_revision) is None
+    ):
+        raise ValueError("tool revision must be an exact lowercase Git commit SHA")
+    if not isinstance(repository, str) or not repository:
+        raise ValueError("capture repository is required")
+    if workflow_path != _WORKFLOW_PATH:
+        raise ValueError("capture workflow path is not allowlisted")
+    if type(run_id) is not int or run_id < 1:
+        raise ValueError("capture run ID must be a positive integer")
     if not isinstance(observed_at, str):
         raise ValueError("capture time must be a string")
     parsed_time = datetime.fromisoformat(observed_at)
@@ -175,16 +211,75 @@ def validate_baseline_candidate(
     return dict(candidate)
 
 
+def validate_capture_run(
+    candidate: Mapping[str, object], run_metadata: Mapping[str, object]
+) -> None:
+    """Bind a candidate to authoritative GitHub Actions run metadata."""
+    validated = validate_baseline_candidate(candidate)
+    capture = cast("Mapping[str, object]", validated["capture"])
+    repository = run_metadata.get("repository")
+    actor = run_metadata.get("actor")
+    if not isinstance(repository, Mapping) or not isinstance(actor, Mapping):
+        raise ValueError("capture run metadata is incomplete")
+    expected = {
+        "id": capture["run_id"],
+        "event": "workflow_dispatch",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": capture["tool_revision"],
+        "path": capture["workflow_path"],
+    }
+    for field, value in expected.items():
+        if run_metadata.get(field) != value:
+            raise ValueError(f"capture run {field} does not match candidate")
+    if repository.get("full_name") != capture["repository"]:
+        raise ValueError("capture run repository does not match candidate")
+    if actor.get("login") != capture["captured_by"]:
+        raise ValueError("capture run actor does not match candidate")
+    expected_identity = (
+        f"github:{capture['repository']}/actions/runs/{capture['run_id']}"
+    )
+    if capture["workflow_identity"] != expected_identity:
+        raise ValueError("capture workflow identity does not match run ID")
+
+
+def _approved_reviewers(history: object, *, environment: str) -> tuple[str, ...]:
+    if not isinstance(history, list):
+        raise ValueError("approval history must be an array")
+    reviewers: set[str] = set()
+    for entry in history:
+        if not isinstance(entry, Mapping) or entry.get("state") != "approved":
+            continue
+        environments = entry.get("environments")
+        user = entry.get("user")
+        if not isinstance(environments, list) or not isinstance(user, Mapping):
+            continue
+        login = user.get("login")
+        if not isinstance(login, str) or not login:
+            continue
+        if any(
+            isinstance(item, Mapping) and item.get("name") == environment
+            for item in environments
+        ):
+            reviewers.add(login)
+    if not reviewers:
+        raise ValueError("no approved environment reviewer evidence was found")
+    return tuple(sorted(reviewers, key=str.casefold))
+
+
 def promote_baseline_candidate(
     candidate: Mapping[str, object],
     *,
     expected_candidate_sha256: str,
-    approved_by: str,
+    capture_run_metadata: Mapping[str, object],
+    approval_history: object,
+    approval_environment: str,
     approval_run: str,
     approved_at: datetime,
 ) -> tuple[dict[str, object], dict[str, object]]:
     """Create review artifacts after an external approval gate has succeeded."""
     validated = validate_baseline_candidate(candidate)
+    validate_capture_run(validated, capture_run_metadata)
     digest = candidate_digest(validated)
     if (
         _SHA256_RE.fullmatch(expected_candidate_sha256) is None
@@ -192,9 +287,11 @@ def promote_baseline_candidate(
     ):
         raise ValueError("approved candidate digest does not match")
     capture = cast("Mapping[str, object]", validated["capture"])
-    if not approved_by.strip():
-        raise ValueError("reviewer identity is required")
-    if approved_by == capture["captured_by"]:
+    reviewers = _approved_reviewers(approval_history, environment=approval_environment)
+    if any(
+        reviewer.casefold() == str(capture["captured_by"]).casefold()
+        for reviewer in reviewers
+    ):
         raise ValueError("baseline approval requires an independent reviewer")
     if _WORKFLOW_RE.fullmatch(approval_run) is None:
         raise ValueError("approval run must name an exact GitHub Actions run")
@@ -207,7 +304,7 @@ def promote_baseline_candidate(
         "capture_method": "github_api",
         "captured_at_utc": capture["observed_at_utc"],
         "source_revision": capture["source_revision"],
-        "captured_by": approved_by,
+        "captured_by": "github-environment:" + ",".join(reviewers),
     }
     baseline_sha256 = sha256(_canonical_bytes(baseline)).hexdigest()
     receipt = {
@@ -217,10 +314,12 @@ def promote_baseline_candidate(
         "baseline_sha256": baseline_sha256,
         "source_revision": capture["source_revision"],
         "approval": {
-            "approved_by": approved_by,
+            "reviewers": list(reviewers),
+            "environment": approval_environment,
             "approved_at_utc": approved_at_iso,
             "workflow_identity": approval_run,
             "separation_of_duties": True,
+            "history_sha256": sha256(_canonical_bytes(approval_history)).hexdigest(),
         },
         "network_mutation": False,
     }
@@ -232,4 +331,5 @@ __all__ = [
     "candidate_digest",
     "promote_baseline_candidate",
     "validate_baseline_candidate",
+    "validate_capture_run",
 ]

@@ -17,6 +17,7 @@ _TAG_RE = re.compile(
 )
 _REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_GIT_OID_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
 
 
 def _canonical_bytes(value: object) -> bytes:
@@ -98,6 +99,26 @@ def _cyclonedx_sbom(manifest: dict[str, Any]) -> dict[str, object]:
     }
 
 
+def _validated_tag_verification(
+    path: Path, *, release_tag: str, tag_target_commit: str
+) -> dict[str, object]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("tag verification evidence must be a JSON object")
+    tag_object = value.get("object")
+    verification = value.get("verification")
+    if (
+        value.get("tag") != release_tag
+        or not isinstance(tag_object, dict)
+        or tag_object.get("type") != "commit"
+        or tag_object.get("sha") != tag_target_commit
+        or not isinstance(verification, dict)
+        or verification.get("verified") is not True
+    ):
+        raise ValueError("tag verification evidence does not match the exact tag")
+    return value
+
+
 def stage_contract_bundle(
     bundle_root: Path,
     output_dir: Path,
@@ -105,6 +126,9 @@ def stage_contract_bundle(
     release_tag: str,
     source_revision: str,
     expected_bundle_sha256: str,
+    tag_object_oid: str,
+    tag_target_commit: str,
+    tag_verification_path: Path,
 ) -> dict[str, Any]:
     """Stage exact bytes and evidence without authorizing publication."""
     matched = _TAG_RE.fullmatch(release_tag)
@@ -114,6 +138,17 @@ def stage_contract_bundle(
         raise ValueError("source revision must be an exact lowercase Git commit SHA")
     if _SHA256_RE.fullmatch(expected_bundle_sha256) is None:
         raise ValueError("expected bundle digest must be a lowercase SHA-256")
+    if _GIT_OID_RE.fullmatch(tag_object_oid) is None:
+        raise ValueError("tag object OID must be an exact lowercase Git object ID")
+    if _REVISION_RE.fullmatch(tag_target_commit) is None:
+        raise ValueError("tag target must be an exact lowercase Git commit SHA")
+    if tag_target_commit != source_revision:
+        raise ValueError("tag target commit does not match the source revision")
+    tag_verification = _validated_tag_verification(
+        tag_verification_path,
+        release_tag=release_tag,
+        tag_target_commit=tag_target_commit,
+    )
     manifest = verify_contract_bundle(bundle_root)
     bundle_sha256 = manifest.get("bundle_sha256")
     if bundle_sha256 != expected_bundle_sha256:
@@ -138,6 +173,9 @@ def stage_contract_bundle(
     sbom_name = "sbom.cdx.json"
     sbom_path = output_dir / sbom_name
     sbom_sha256 = _write_json(sbom_path, _cyclonedx_sbom(manifest))
+    tag_verification_name = "tag-verification.json"
+    tag_verification_output = output_dir / tag_verification_name
+    tag_verification_sha256 = _write_json(tag_verification_output, tag_verification)
 
     provenance = {
         "_type": "https://in-toto.io/Statement/v1",
@@ -150,6 +188,9 @@ def stage_contract_bundle(
                     "release_tag": release_tag,
                     "source_revision": source_revision,
                     "bundle_sha256": expected_bundle_sha256,
+                    "tag_object_oid": tag_object_oid,
+                    "tag_target_commit": tag_target_commit,
+                    "tag_verification_sha256": tag_verification_sha256,
                 },
                 "resolvedDependencies": [
                     {
@@ -185,6 +226,9 @@ def stage_contract_bundle(
             "repository": "edithatogo/vop_poc_nz",
             "revision": source_revision,
             "tag": release_tag,
+            "tag_object_oid": tag_object_oid,
+            "tag_target_commit": tag_target_commit,
+            "tag_verification_sha256": tag_verification_sha256,
         },
         "bundle": {
             "bundle_id": manifest["bundle_id"],
@@ -211,6 +255,16 @@ def stage_contract_bundle(
             "signing_authorized": False,
             "requires_human_release_approval": True,
         },
+        "release_assets": [
+            {"path": artifact_name, "sha256": artifact_sha256},
+            {"path": sbom_name, "sha256": sbom_sha256},
+            {"path": provenance_name, "sha256": provenance_sha256},
+            {"path": predicate_name, "sha256": predicate_sha256},
+            {
+                "path": tag_verification_name,
+                "sha256": tag_verification_sha256,
+            },
+        ],
         "network_mutation": False,
     }
     _write_json(output_dir / "stage-manifest.json", stage)

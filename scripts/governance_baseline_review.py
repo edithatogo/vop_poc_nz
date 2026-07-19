@@ -60,6 +60,10 @@ def _capture(args: argparse.Namespace) -> int:
         source_revision=args.source_revision,
         captured_by=args.captured_by,
         workflow_identity=args.workflow_identity,
+        tool_revision=args.tool_revision,
+        repository=args.repository,
+        workflow_path=args.workflow_path,
+        run_id=args.run_id,
         observed_at=datetime.now(UTC),
     )
     _write_json(args.output, candidate)
@@ -71,10 +75,16 @@ def _promote(args: argparse.Namespace) -> int:
     candidate = json.loads(args.candidate.read_text(encoding="utf-8"))
     if not isinstance(candidate, dict):
         raise ValueError("candidate must be a JSON object")
+    capture_run = json.loads(args.capture_run_metadata.read_text(encoding="utf-8"))
+    approval_history = json.loads(args.approval_history.read_text(encoding="utf-8"))
+    if not isinstance(capture_run, dict):
+        raise ValueError("capture run metadata must be a JSON object")
     baseline, receipt = promote_baseline_candidate(
         candidate,
         expected_candidate_sha256=args.candidate_sha256,
-        approved_by=args.approved_by,
+        capture_run_metadata=capture_run,
+        approval_history=approval_history,
+        approval_environment=args.approval_environment,
         approval_run=args.approval_run,
         approved_at=datetime.now(UTC),
     )
@@ -92,13 +102,19 @@ def main() -> int:
     capture.add_argument("--source-revision", required=True)
     capture.add_argument("--captured-by", required=True)
     capture.add_argument("--workflow-identity", required=True)
+    capture.add_argument("--tool-revision", required=True)
+    capture.add_argument("--repository", required=True)
+    capture.add_argument("--workflow-path", required=True)
+    capture.add_argument("--run-id", type=int, required=True)
     capture.add_argument("--output", type=Path, required=True)
     capture.set_defaults(handler=_capture)
 
     promote = commands.add_parser("promote")
     promote.add_argument("--candidate", type=Path, required=True)
     promote.add_argument("--candidate-sha256", required=True)
-    promote.add_argument("--approved-by", required=True)
+    promote.add_argument("--capture-run-metadata", type=Path, required=True)
+    promote.add_argument("--approval-history", type=Path, required=True)
+    promote.add_argument("--approval-environment", required=True)
     promote.add_argument("--approval-run", required=True)
     promote.add_argument("--output-baseline", type=Path, required=True)
     promote.add_argument("--output-receipt", type=Path, required=True)

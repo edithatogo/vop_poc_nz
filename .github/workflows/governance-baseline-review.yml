@@ -15,11 +15,6 @@ on:
         description: Exact source commit recorded by the candidate
         required: true
         type: string
-      approved_by:
-        description: Reviewer identity; must equal the triggering actor
-        required: true
-        type: string
-
 permissions:
   contents: read
   actions: read
@@ -33,21 +28,21 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
-          ref: ${{ inputs.source_revision }}
+          fetch-depth: 0
           persist-credentials: false
-      - name: Verify exact source and reviewer identity
+      - name: Verify trusted tooling and protected source ancestry
         shell: bash
         env:
-          APPROVED_BY: ${{ inputs.approved_by }}
-          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SOURCE_REVISION: ${{ inputs.source_revision }}
         run: |
           set -euo pipefail
-          [[ "${{ inputs.source_revision }}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
           [[ "${{ inputs.candidate_run_id }}" =~ ^[1-9][0-9]*$ ]]
           [[ "${{ inputs.candidate_sha256 }}" =~ ^[0-9a-f]{64}$ ]]
-          test "$(git rev-parse HEAD)" = "${{ inputs.source_revision }}"
-          test -n "$APPROVED_BY"
-          test "$APPROVED_BY" = "$TRIGGERING_ACTOR"
+          test "$GITHUB_REF" = "refs/heads/$DEFAULT_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$SOURCE_REVISION" "$GITHUB_SHA"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: governance-baseline-candidate
@@ -60,6 +55,13 @@ jobs:
           set -euo pipefail
           test "$(cat governance-review/candidate/candidate.sha256)" = "${{ inputs.candidate_sha256 }}"
           test "$(jq -r '.capture.source_revision' governance-review/candidate/candidate.json)" = "${{ inputs.source_revision }}"
+      - name: Acquire authoritative capture and environment approval evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p governance-review/evidence
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${{ inputs.candidate_run_id }}" > governance-review/evidence/capture-run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/approvals" > governance-review/evidence/approval-history.json
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.14"
@@ -74,7 +76,9 @@ jobs:
           uv run --frozen python scripts/governance_baseline_review.py promote
           --candidate governance-review/candidate/candidate.json
           --candidate-sha256 "${{ inputs.candidate_sha256 }}"
-          --approved-by "${{ inputs.approved_by }}"
+          --capture-run-metadata governance-review/evidence/capture-run.json
+          --approval-history governance-review/evidence/approval-history.json
+          --approval-environment governance-baseline-approval
           --approval-run "github:${{ github.repository }}/actions/runs/${{ github.run_id }}"
           --output-baseline governance-review/approved/CON-SHR-0013.json
           --output-receipt governance-review/approved/approval-receipt.json
@@ -85,4 +89,3 @@ jobs:
           path: governance-review/approved/
           if-no-files-found: error
           retention-days: 30
-

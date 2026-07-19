@@ -17,6 +17,9 @@ def main() -> int:
     parser.add_argument("--release-tag", required=True)
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--bundle-sha256", required=True)
+    parser.add_argument("--tag-object-oid", required=True)
+    parser.add_argument("--tag-target-commit", required=True)
+    parser.add_argument("--tag-verification", type=Path, required=True)
     args = parser.parse_args()
     stage = stage_contract_bundle(
         args.bundle,
@@ -24,6 +27,9 @@ def main() -> int:
         release_tag=args.release_tag,
         source_revision=args.source_revision,
         expected_bundle_sha256=args.bundle_sha256,
+        tag_object_oid=args.tag_object_oid,
+        tag_target_commit=args.tag_target_commit,
+        tag_verification_path=args.tag_verification,
     )
     print(json.dumps(stage, ensure_ascii=False, sort_keys=True))
     return 0
