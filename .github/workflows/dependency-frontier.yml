@@ -9,7 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  audit:
+  stable-frozen:
+    name: Frozen lock policy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -17,17 +18,59 @@ jobs:
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
-      - name: Verify lockfile and install audit environment
+      - name: Verify frozen lockfile and install audit environment
         run: |
           uv lock --check
           uv sync --frozen --extra dev
-      - name: Compare direct dependencies with official PyPI releases
-        run: uv run python scripts/dependency_frontier.py . --strict
+      - name: Validate the stable frozen lane without network metadata
+        run: >-
+          uv run python scripts/dependency_frontier.py .
+          --lane stable --strict
+          --output .benchmarks/dependency-stable.json
+      - name: Test dependency policy semantics
+        run: uv run pytest -q tests/test_dependency_frontier.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: dependency-frontier
+          name: dependency-stable-frozen
           path: |
-            .conductor/local/dependency_frontier.json
-            .conductor/local/dependency_frontier.md
-          if-no-files-found: warn
+            .benchmarks/dependency-stable.json
+            .benchmarks/dependency-stable.md
+          if-no-files-found: error
+          include-hidden-files: true
+
+  supported-latest:
+    name: Ephemeral supported-latest resolution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+      - name: Resolve latest stable versions allowed by project policy
+        run: |
+          uv lock --upgrade
+          uv sync --extra dev --extra experimental
+      - name: Exercise the upgraded environment
+        run: >-
+          uv run pytest -q
+          tests/test_dependency_frontier.py
+          tests/test_contract_bundle.py
+          tests/test_contract_properties.py
+          tests/test_perspective_io.py
+      - name: Compare the ephemeral lock with official PyPI release metadata
+        run: >-
+          uv run python scripts/dependency_frontier.py .
+          --lane frontier --strict
+          --output .benchmarks/dependency-frontier.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dependency-supported-latest
+          path: |
+            .benchmarks/dependency-frontier.json
+            .benchmarks/dependency-frontier.md
+            uv.lock
+          if-no-files-found: error
+          include-hidden-files: true

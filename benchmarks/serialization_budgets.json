@@ -1,8 +1,40 @@
 {
-  "description": "Hardware-normalised write-time budgets; tighten after hosted-run history is available.",
+  "description": "Portable deterministic envelopes for 20,000-row serialization with BLAS threads fixed to one.",
+  "formats": {
+    "ipc": {
+      "max_bytes_per_row": 512.0,
+      "max_cpu_seconds_median": 10.0,
+      "max_peak_rss_bytes_max": 2147483648,
+      "max_peak_rss_delta_bytes_max": 1073741824,
+      "max_retained_allocation_count_median": 1000000,
+      "max_tracemalloc_peak_bytes_max": 536870912,
+      "max_wall_seconds_median": 15.0,
+      "min_throughput_rows_per_second_median": 500.0
+    },
+    "jsonl": {
+      "max_bytes_per_row": 1024.0,
+      "max_cpu_seconds_median": 10.0,
+      "max_peak_rss_bytes_max": 2147483648,
+      "max_peak_rss_delta_bytes_max": 1073741824,
+      "max_retained_allocation_count_median": 1000000,
+      "max_tracemalloc_peak_bytes_max": 536870912,
+      "max_wall_seconds_median": 15.0,
+      "min_throughput_rows_per_second_median": 500.0
+    },
+    "parquet": {
+      "max_bytes_per_row": 512.0,
+      "max_cpu_seconds_median": 10.0,
+      "max_peak_rss_bytes_max": 2147483648,
+      "max_peak_rss_delta_bytes_max": 1073741824,
+      "max_retained_allocation_count_median": 1000000,
+      "max_tracemalloc_peak_bytes_max": 536870912,
+      "max_wall_seconds_median": 15.0,
+      "min_throughput_rows_per_second_median": 500.0
+    }
+  },
   "maximum_ratios": {
     "ipc_write_vs_jsonl": 3.0,
     "parquet_write_vs_jsonl": 5.0
   },
-  "schema_version": "1.0.0"
+  "schema_version": "2.0.0"
 }
