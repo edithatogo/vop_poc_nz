@@ -40,6 +40,7 @@ def governance_commands(
     source_files = (
         "src/vop_poc_nz/concerns.py",
         "src/vop_poc_nz/compat/legacy.py",
+        "src/vop_poc_nz/contract_bundle.py",
         "src/vop_poc_nz/critical_invariants.py",
         "src/vop_poc_nz/domain/base.py",
         "src/vop_poc_nz/domain/cea.py",
@@ -54,6 +55,7 @@ def governance_commands(
         "src/vop_poc_nz/results/pipeline.py",
         "src/vop_poc_nz/mutation_policy.py",
         "scripts/check_mutation_targets.py",
+        "scripts/generate_contract_bundle.py",
         "scripts/experimental_backend_probe.py",
         "scripts/generate_concern_governance_schemas.py",
         "scripts/generate_domain_contract_schemas.py",
@@ -65,6 +67,8 @@ def governance_commands(
     test_files = (
         "tests/test_c13_contract_hardening.py",
         "tests/test_concerns.py",
+        "tests/test_contract_bundle.py",
+        "tests/test_contract_properties.py",
         "tests/test_critical_invariants.py",
         "tests/test_critical_mutation_lane.py",
         "tests/test_experimental_backend_probe.py",

@@ -1,0 +1,3 @@
+contracts/vop-voiage/**/*.json text eol=lf
+contracts/vop-voiage/**/*.arrow binary
+contracts/vop-voiage/**/*.parquet binary

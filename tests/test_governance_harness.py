@@ -76,6 +76,7 @@ def test_harness_commands_are_strict_focused_and_private_safe() -> None:
     assert "tests/test_github_sync_planner.py" in rendered
     assert "scripts/import_boundary.py" in rendered
     assert "src/vop_poc_nz/concerns.py" in rendered
+    assert "src/vop_poc_nz/contract_bundle.py" in rendered
     assert "src/vop_poc_nz/critical_invariants.py" in rendered
     assert "src/vop_poc_nz/github_sync_planner.py" in rendered
     assert "src/vop_poc_nz/mutation_policy.py" in rendered
@@ -85,11 +86,14 @@ def test_harness_commands_are_strict_focused_and_private_safe() -> None:
     assert "tests/test_typed_cea_contract.py" in rendered
     assert "tests/test_typed_pipeline.py" in rendered
     assert "tests/test_c13_contract_hardening.py" in rendered
+    assert "tests/test_contract_bundle.py" in rendered
+    assert "tests/test_contract_properties.py" in rendered
     assert "tests/test_critical_invariants.py" in rendered
     assert "tests/test_critical_mutation_lane.py" in rendered
     assert "tests/test_mutation_score.py" in rendered
     assert "tests/test_perspective_io.py" in rendered
     assert "scripts/check_mutation_targets.py" in rendered
+    assert "scripts/generate_contract_bundle.py" in rendered
     assert "scripts/experimental_backend_probe.py" in rendered
     assert "scripts/run_critical_mutation_lane.py" in rendered
     assert ".conductor/local" not in rendered
