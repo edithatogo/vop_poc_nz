@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 from vop_poc_nz.mutation_policy import (
     mutation_score_from_meta,
@@ -31,7 +32,7 @@ def main() -> int:
         raise ValueError("mutation baseline requires a non-empty targets object")
 
     cache_root = args.cache_root.resolve()
-    reports: dict[str, object] = {}
+    reports: dict[str, dict[str, Any]] = {}
     for target, expected in sorted(targets.items()):
         if not isinstance(target, str) or not isinstance(expected, dict):
             raise ValueError("mutation baseline target entries are invalid")
@@ -48,7 +49,7 @@ def main() -> int:
             baseline_eligible=_count(expected.get("eligible"), "eligible"),
         )
 
-    passed = all(bool(report["passed"]) for report in reports.values())  # type: ignore[index]
+    passed = all(bool(report["passed"]) for report in reports.values())
     rendered = (
         json.dumps(
             {"schema_version": "1.0.0", "targets": reports, "passed": passed},

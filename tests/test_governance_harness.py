@@ -76,12 +76,21 @@ def test_harness_commands_are_strict_focused_and_private_safe() -> None:
     assert "tests/test_github_sync_planner.py" in rendered
     assert "scripts/import_boundary.py" in rendered
     assert "src/vop_poc_nz/concerns.py" in rendered
+    assert "src/vop_poc_nz/critical_invariants.py" in rendered
     assert "src/vop_poc_nz/github_sync_planner.py" in rendered
+    assert "src/vop_poc_nz/mutation_policy.py" in rendered
+    assert "src/vop_poc_nz/perspective_io.py" in rendered
     assert "src/vop_poc_nz/domain/contracts.py" in rendered
     assert "src/vop_poc_nz/pipeline/typed.py" in rendered
     assert "tests/test_typed_cea_contract.py" in rendered
     assert "tests/test_typed_pipeline.py" in rendered
     assert "tests/test_c13_contract_hardening.py" in rendered
+    assert "tests/test_critical_invariants.py" in rendered
+    assert "tests/test_critical_mutation_lane.py" in rendered
+    assert "tests/test_mutation_score.py" in rendered
+    assert "tests/test_perspective_io.py" in rendered
+    assert "scripts/check_mutation_targets.py" in rendered
+    assert "scripts/run_critical_mutation_lane.py" in rendered
     assert ".conductor/local" not in rendered
     assert "pytest tests -q" not in rendered
 
@@ -125,4 +134,5 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
     assert "continue-on-error: true" in workflow
     assert "steps.broad-mutation.outcome" in workflow
     assert "steps.critical-mutation.outcome" in workflow
+    assert "include-hidden-files: true" in workflow
     assert "mutation-score" in pixi["tasks"]

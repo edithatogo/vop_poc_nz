@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 RecordVisibility = Literal["public", "repository", "local_private"]
 Repository = Literal["vop_poc_nz", "voiage", "shared"]
@@ -81,6 +81,15 @@ class BaseGovernanceRecord(GovernanceModel):
     relations: tuple[Relation, ...] = ()
     evidence_reference_ids: tuple[str, ...] = ()
     issue_link_ids: tuple[str, ...] = ()
+
+    @field_validator("created_at", "updated_at")
+    @classmethod
+    def _timestamps_are_aware(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("governance timestamps must be timezone-aware")
+        return value.astimezone(UTC)
 
     @model_validator(mode="after")
     def _validate_identity(self) -> BaseGovernanceRecord:
@@ -172,6 +181,15 @@ class Decision(BaseGovernanceRecord):
     approved_at: datetime | None = None
     supersedes: tuple[str, ...] = ()
 
+    @field_validator("approved_at")
+    @classmethod
+    def _approval_timestamp_is_aware(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("approved_at must be timezone-aware")
+        return value.astimezone(UTC)
+
     @model_validator(mode="after")
     def _validate_disposition(self) -> Decision:
         if (
@@ -221,6 +239,13 @@ class EvidenceReference(BaseGovernanceRecord):
     supports: tuple[str, ...] = ()
     challenges: tuple[str, ...] = ()
     claim_ids: tuple[str, ...] = ()
+
+    @field_validator("observed_at")
+    @classmethod
+    def _observation_timestamp_is_aware(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("observed_at must be timezone-aware")
+        return value.astimezone(UTC)
 
     @model_validator(mode="after")
     def _validate_locator(self) -> EvidenceReference:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -135,6 +135,52 @@ def test_models_are_strict_frozen_and_forbid_extra_fields() -> None:
         )
     with pytest.raises(ValidationError):
         concern.title = "mutated"  # type: ignore[misc]
+
+
+@pytest.mark.parametrize("field", ["created_at", "updated_at"])
+def test_governance_record_timestamps_require_timezone_awareness(field: str) -> None:
+    concern = _records()[2]
+    assert isinstance(concern, Concern)
+    values = concern.model_dump()
+    values[field] = datetime(2026, 7, 19)
+    with pytest.raises(ValidationError, match="timezone-aware"):
+        Concern.model_validate(values)
+
+
+def test_decision_and_evidence_timestamps_require_timezone_awareness() -> None:
+    decision = _records()[5]
+    evidence = _records()[0]
+    assert isinstance(decision, Decision)
+    assert isinstance(evidence, EvidenceReference)
+
+    with pytest.raises(ValidationError, match="approved_at must be timezone-aware"):
+        Decision.model_validate(
+            {**decision.model_dump(), "approved_at": datetime(2026, 7, 19)}
+        )
+    with pytest.raises(ValidationError, match="observed_at must be timezone-aware"):
+        EvidenceReference.model_validate(
+            {**evidence.model_dump(), "observed_at": datetime(2026, 7, 19)}
+        )
+
+
+def test_governance_timestamps_are_normalized_to_utc() -> None:
+    offset = timezone(timedelta(hours=12))
+    observed = datetime(2026, 7, 19, 12, tzinfo=offset)
+    evidence = _records()[0]
+    assert isinstance(evidence, EvidenceReference)
+
+    normalized = EvidenceReference.model_validate(
+        {
+            **evidence.model_dump(),
+            "created_at": observed,
+            "updated_at": observed,
+            "observed_at": observed,
+        }
+    )
+
+    assert normalized.created_at == datetime(2026, 7, 19, tzinfo=UTC)
+    assert normalized.updated_at == datetime(2026, 7, 19, tzinfo=UTC)
+    assert normalized.observed_at == datetime(2026, 7, 19, tzinfo=UTC)
 
 
 def test_ledger_validates_unique_ids_and_references() -> None:
