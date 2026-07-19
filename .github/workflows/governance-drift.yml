@@ -1,0 +1,46 @@
+name: Governance drift audit
+
+on:
+  schedule:
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  read-only-drift:
+    name: Read-only issue and Project drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: latest
+          enable-cache: true
+      - name: Install the locked audit environment
+        run: uv sync --frozen --extra dev
+      - name: Query and plan without mutation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PROJECT_READ_TOKEN: ${{ secrets.PROJECT_READ_TOKEN }}
+        run: >-
+          uv run python scripts/audit_github_governance_drift.py
+          --record-id CON-SHR-0013
+          --base .github/governance-baselines/CON-SHR-0013.json
+          --output .conductor/local/github_governance_drift.json
+      - name: Retain approval-ready reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: github-governance-drift
+          path: .conductor/local/github_governance_drift.json
+          if-no-files-found: error
+          retention-days: 30
