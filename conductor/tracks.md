@@ -17,3 +17,13 @@ evidence in `.conductor/local/track_state.json` and the shared GitHub Project.
 *Status: typed domain contracts, canonical package boundaries, machine-readable
 concerns, cross-repository conformance, and hosted quality evidence are complete;
 human approval remains separate under `close_requires_approval`.*
+
+---
+
+## [ ] Track: Assurance Frontier
+
+*Link: [./tracks/assurance-frontier_20260720/index.md](./tracks/assurance-frontier_20260720/index.md)*
+
+*Status: planned - versioned shared contracts, evolution/differential tests,
+mutation and performance ratchets, supply-chain evidence, observability,
+governance drift detection, and independent numerical references.*
