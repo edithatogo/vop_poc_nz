@@ -205,7 +205,8 @@ sort_by_size = true
 verbose = false
 
 [tool.mutmut]
-source_paths = [
+source_paths = ["src/vop_poc_nz/"]
+only_mutate = [
     "src/vop_poc_nz/logging_config.py",
     "src/vop_poc_nz/github_sync_planner.py",
 ]

@@ -100,8 +100,12 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
         "uv run python scripts/governance_harness.py . --strict"
     )
     assert "governance" in pixi["tasks"]["verify"]["depends-on"]
-    assert project["tool"]["mutmut"]["paths_to_mutate"] == [
+    assert project["tool"]["mutmut"]["source_paths"] == ["src/vop_poc_nz/"]
+    assert project["tool"]["mutmut"]["only_mutate"] == [
         "src/vop_poc_nz/logging_config.py",
         "src/vop_poc_nz/github_sync_planner.py",
     ]
-    assert "test_github_sync_planner.py" in project["tool"]["mutmut"]["runner"]
+    assert (
+        "tests/test_github_sync_planner.py"
+        in project["tool"]["mutmut"]["pytest_add_cli_args_test_selection"]
+    )
