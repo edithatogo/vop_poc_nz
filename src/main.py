@@ -1,43 +1,10 @@
-"""
-Main Entry Point for Health Economic Analysis Pipeline.
+"""Deprecated source-tree alias for :mod:`vop_poc_nz.main`."""
 
-This script orchestrates the full analysis workflow:
-1. Runs the core analysis pipeline (CEA, DCEA, VOI, DSA).
-2. Runs the reporting pipeline (Figures, Dashboards, Policy Brief).
-"""
+import sys
+import warnings
+from importlib import import_module
 
-import argparse
-
-import matplotlib
-
-matplotlib.use("Agg")
-
-from .pipeline.analysis import run_analysis_pipeline
-from .pipeline.reporting import run_reporting_pipeline
-from .logging_config import setup_logging
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Run Health Economic Analysis Pipeline"
-    )
-    parser.add_argument(
-        "--output-dir", type=str, default="output", help="Directory to save outputs"
-    )
-    args = parser.parse_args()
-
-    setup_logging(output_dir=args.output_dir)
-
-    logging.info(f"Starting analysis pipeline... Output directory: {args.output_dir}")
-
-    # 1. Run Analysis
-    results = run_analysis_pipeline()
-
-    # 2. Run Reporting
-    run_reporting_pipeline(results, output_dir=args.output_dir)
-
-    logging.info("\nPipeline execution completed successfully.")
-
-
-if __name__ == "__main__":
-    main()
+warnings.warn(
+    "src.main is deprecated; import vop_poc_nz.main", DeprecationWarning, stacklevel=2
+)
+sys.modules[__name__] = import_module("vop_poc_nz.main")
