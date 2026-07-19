@@ -336,15 +336,17 @@ def _validate_fingerprint_transition(
 def _field_names(fields: Sequence[object], *, document: str) -> list[str]:
     names: list[str] = []
     for field in fields:
+        if not isinstance(field, dict):
+            raise IncompatibleContractChange(f"{document} schema fields are invalid")
+        typed_field = cast(dict[str, object], field)
         if (
-            not isinstance(field, dict)
-            or set(field) != {"name", "arrow_type", "nullable", "unit"}
-            or not isinstance(field.get("name"), str)
-            or not isinstance(field.get("arrow_type"), str)
-            or not isinstance(field.get("nullable"), bool)
+            set(typed_field) != {"name", "arrow_type", "nullable", "unit"}
+            or not isinstance(typed_field.get("name"), str)
+            or not isinstance(typed_field.get("arrow_type"), str)
+            or not isinstance(typed_field.get("nullable"), bool)
         ):
             raise IncompatibleContractChange(f"{document} schema fields are invalid")
-        unit = field.get("unit")
+        unit = typed_field.get("unit")
         if unit is not None and (
             not isinstance(unit, dict)
             or set(unit) != {"symbol_field", "dimension"}
@@ -355,7 +357,7 @@ def _field_names(fields: Sequence[object], *, document: str) -> list[str]:
             or not isinstance(unit.get("dimension"), str)
         ):
             raise IncompatibleContractChange(f"{document} schema field unit is invalid")
-        name = cast(str, field["name"])
+        name = cast(str, typed_field["name"])
         names.append(name)
     if has_name_collision(names):
         raise IncompatibleContractChange(f"{document} schema field names collide")
