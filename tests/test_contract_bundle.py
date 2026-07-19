@@ -9,6 +9,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, cast
 
+import pyarrow as pa
 import pyarrow.ipc as ipc
 import pyarrow.parquet as pq
 import pytest
@@ -24,10 +25,32 @@ from vop_poc_nz.perspective_io import schema_fingerprint
 
 ROOT = Path(__file__).resolve().parents[1]
 BUNDLE = ROOT / "contracts/vop-voiage/1.0.0"
+MIGRATION = ROOT / "contracts/vop-voiage/migrations/1.0.0-to-1.1.0.json"
 
 
 def _identity() -> dict[str, Any]:
     return cast(dict[str, Any], arrow_identity_document())
+
+
+def _descriptor_fingerprint(fields: list[dict[str, Any]]) -> str:
+    arrow_types = {
+        "bool": pa.bool_(),
+        "double": pa.float64(),
+        "int64": pa.int64(),
+        "string": pa.string(),
+    }
+    return schema_fingerprint(
+        pa.schema(
+            [
+                pa.field(
+                    field["name"],
+                    arrow_types[field["arrow_type"]],
+                    nullable=field["nullable"],
+                )
+                for field in fields
+            ]
+        )
+    )
 
 
 def _tree(root: Path) -> dict[str, bytes]:
@@ -121,10 +144,23 @@ def test_identical_and_nullable_additive_schema_evolution_is_declared() -> None:
         }
     )
     current["schema_version"] = "1.1.0"
-    current["schema_fingerprint"] = "1" * 64
+    current["schema_fingerprint"] = _descriptor_fingerprint(current["fields"])
     report = assess_arrow_evolution(previous, current)
     assert report["backward_compatible"] is True
     assert report["forward_compatible"] is False
+
+
+def test_committed_previous_current_migration_matches_producer_identity() -> None:
+    migration = json.loads(MIGRATION.read_text(encoding="utf-8"))
+    assert migration["previous"] == _identity()
+
+    report = assess_arrow_evolution(migration["previous"], migration["current"])
+
+    assert report == {
+        "backward_compatible": True,
+        "forward_compatible": False,
+        "added_fields": ["decision_context"],
+    }
 
 
 @pytest.mark.parametrize(

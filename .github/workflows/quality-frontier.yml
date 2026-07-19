@@ -34,9 +34,9 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
         with:
-          version: latest
+          version: "0.11.29"
           enable-cache: true
-      - run: uv sync --extra dev
+      - run: uv sync --frozen --extra dev
       - name: Validate C13 governance harness
         run: uv run python scripts/governance_harness.py . --strict
       - run: uv run ruff check src/vop_poc_nz/logging_config.py scripts/profile_workload.py tests/test_logging_and_version.py
@@ -58,9 +58,9 @@ jobs:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
         with:
-          version: latest
-      - run: uv sync --extra dev
-      - run: uv build
+          version: "0.11.29"
+      - run: uv sync --frozen --extra dev
+      - run: uv run python scripts/reproducible_build.py . --output .assurance/reproducible-build.json --dist-dir dist
       - run: uv run twine check dist/*
       - run: uv run --isolated --no-project --with dist/*.whl python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

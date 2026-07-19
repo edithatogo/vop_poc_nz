@@ -8,6 +8,7 @@ from vop_poc_nz.assurance_policy import (
     exceeds_upper_bound,
     has_exact_keys,
     has_name_collision,
+    matches_computed_identity,
 )
 
 
@@ -21,6 +22,12 @@ def test_name_collision_detects_internal_and_existing_names() -> None:
     assert has_name_collision(("a", "b"), ("old",)) is False
     assert has_name_collision(("a", "a")) is True
     assert has_name_collision(("a", "b"), ("b", "old")) is True
+
+
+def test_computed_identity_requires_exact_typed_match() -> None:
+    assert matches_computed_identity("a" * 64, "a" * 64) is True
+    assert matches_computed_identity("b" * 64, "a" * 64) is False
+    assert matches_computed_identity(None, "a" * 64) is False
 
 
 @pytest.mark.parametrize(

@@ -28,4 +28,14 @@ def exceeds_upper_bound(actual: float, maximum: float) -> bool:
     )
 
 
-__all__ = ["exceeds_upper_bound", "has_exact_keys", "has_name_collision"]
+def matches_computed_identity(declared: object, computed: str) -> bool:
+    """Return true only for an exact, typed content-identity match."""
+    return isinstance(declared, str) and declared == computed
+
+
+__all__ = [
+    "exceeds_upper_bound",
+    "has_exact_keys",
+    "has_name_collision",
+    "matches_computed_identity",
+]

@@ -8,13 +8,17 @@ import shutil
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, cast
 
 import pyarrow as pa
 import pyarrow.ipc as ipc
 import pyarrow.parquet as pq
 
-from vop_poc_nz.assurance_policy import has_exact_keys, has_name_collision
+from vop_poc_nz.assurance_policy import (
+    has_exact_keys,
+    has_name_collision,
+    matches_computed_identity,
+)
 from vop_poc_nz.perspective_io import attach_contract_metadata, schema_fingerprint
 from vop_poc_nz.pipeline.typed import TYPED_PIPELINE_ARROW_SCHEMA
 
@@ -424,6 +428,47 @@ def migration_policy_document() -> dict[str, object]:
     }
 
 
+def _validate_computed_fingerprints(
+    previous: Mapping[str, object],
+    current: Mapping[str, object],
+    previous_fields: Sequence[Mapping[str, object]],
+    current_fields: Sequence[Mapping[str, object]],
+) -> None:
+    """Require migration descriptors to match represented Arrow fields."""
+    arrow_types: dict[str, pa.DataType] = {
+        "bool": pa.bool_(),
+        "double": pa.float64(),
+        "int64": pa.int64(),
+        "string": pa.string(),
+    }
+    computed: list[str] = []
+    for document, fields in (
+        ("previous", previous_fields),
+        ("current", current_fields),
+    ):
+        try:
+            schema = pa.schema(
+                [
+                    pa.field(
+                        str(field["name"]),
+                        arrow_types[str(field["arrow_type"])],
+                        nullable=bool(field["nullable"]),
+                    )
+                    for field in fields
+                    if isinstance(field, Mapping)
+                ]
+            )
+        except (KeyError, TypeError) as exc:
+            raise IncompatibleContractChange(
+                f"unsupported {document} Arrow field identity"
+            ) from exc
+        computed.append(schema_fingerprint(schema))
+    if not matches_computed_identity(previous.get("schema_fingerprint"), computed[0]):
+        raise IncompatibleContractChange("previous schema fingerprint mismatch")
+    if not matches_computed_identity(current.get("schema_fingerprint"), computed[1]):
+        raise IncompatibleContractChange("current schema fingerprint mismatch")
+
+
 def assess_arrow_evolution(
     previous: Mapping[str, object], current: Mapping[str, object]
 ) -> dict[str, object]:
@@ -444,6 +489,8 @@ def assess_arrow_evolution(
         raise IncompatibleContractChange("schema fields must be ordered arrays")
     previous_names = _field_names(previous_fields, document="previous")
     _field_names(current_fields, document="current")
+    previous_descriptors = cast(list[Mapping[str, object]], previous_fields)
+    current_descriptors = cast(list[Mapping[str, object]], current_fields)
     if len(current_fields) < len(previous_fields):
         raise IncompatibleContractChange("schema fields were removed")
     if current_fields[: len(previous_fields)] != previous_fields:
@@ -456,6 +503,9 @@ def assess_arrow_evolution(
         previous.get("schema_fingerprint"),
         current.get("schema_fingerprint"),
         changed=bool(additions),
+    )
+    _validate_computed_fingerprints(
+        previous, current, previous_descriptors, current_descriptors
     )
     if additions and current_version == previous_version:
         raise IncompatibleContractChange("additive schemas require a version increment")
