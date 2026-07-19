@@ -355,7 +355,7 @@ def _field_names(fields: Sequence[object], *, document: str) -> list[str]:
             or not isinstance(unit.get("dimension"), str)
         ):
             raise IncompatibleContractChange(f"{document} schema field unit is invalid")
-        name = field["name"]
+        name = cast(str, field["name"])
         names.append(name)
     if has_name_collision(names):
         raise IncompatibleContractChange(f"{document} schema field names collide")
