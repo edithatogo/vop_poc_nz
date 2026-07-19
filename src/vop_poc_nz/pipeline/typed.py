@@ -20,6 +20,10 @@ from vop_poc_nz.compat.legacy import (
     intervention_spec_from_legacy,
     run_typed_cea,
 )
+from vop_poc_nz.critical_invariants import (
+    require_matching_sha256,
+    supported_societal_methods,
+)
 from vop_poc_nz.domain.base import FrozenDomainModel
 from vop_poc_nz.domain.cea import (
     InterventionSpec,
@@ -91,8 +95,11 @@ class TypedPipelineSpec(FrozenDomainModel):
         names = tuple(item.name for item in self.interventions)
         if len(set(names)) != len(names):
             raise ValueError("intervention names must be unique")
-        if self.spec_fingerprint != _fingerprint(self.interventions):
-            raise ValueError("spec_fingerprint does not match interventions")
+        require_matching_sha256(
+            declared=self.spec_fingerprint,
+            actual=_fingerprint(self.interventions),
+            field="spec_fingerprint",
+        )
         return self
 
 
@@ -148,19 +155,12 @@ def _calculate_intervention(
             item.spec,
             perspective=Perspective.HEALTH_SYSTEM,
         )
-        supported_methods: tuple[ProductivityCostMethod, ...] = tuple(
-            method
-            for method, supported in (
-                (
-                    ProductivityCostMethod.HUMAN_CAPITAL,
-                    item.spec.productivity_costs is not None,
-                ),
-                (
-                    ProductivityCostMethod.FRICTION_COST,
-                    item.spec.friction_cost_params is not None,
-                ),
+        supported_methods = tuple(
+            ProductivityCostMethod(method)
+            for method in supported_societal_methods(
+                has_human_capital=item.spec.productivity_costs is not None,
+                has_friction_cost=item.spec.friction_cost_params is not None,
             )
-            if supported
         )
         societal = tuple(
             SocietalCEAResult(

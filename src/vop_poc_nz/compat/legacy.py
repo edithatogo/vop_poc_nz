@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from numbers import Integral, Real
 from typing import Any
 
+from vop_poc_nz.critical_invariants import require_societal_method_inputs
 from vop_poc_nz.domain.cea import (
     ArmVectors,
     CostSpec,
@@ -318,21 +319,12 @@ def run_typed_cea(
     )
     resolved_perspective = Perspective(perspective)
     resolved_method = ProductivityCostMethod(productivity_cost_method)
-    if resolved_perspective is Perspective.SOCIETAL:
-        if (
-            resolved_method is ProductivityCostMethod.HUMAN_CAPITAL
-            and spec.productivity_costs is None
-        ):
-            raise ValueError(
-                "human-capital societal analysis requires productivity_costs"
-            )
-        if (
-            resolved_method is ProductivityCostMethod.FRICTION_COST
-            and spec.friction_cost_params is None
-        ):
-            raise ValueError(
-                "friction-cost societal analysis requires friction_cost_params"
-            )
+    require_societal_method_inputs(
+        perspective=resolved_perspective.value,
+        method=resolved_method.value,
+        has_human_capital=spec.productivity_costs is not None,
+        has_friction_cost=spec.friction_cost_params is not None,
+    )
     context = CEACalculationContext(
         perspective=resolved_perspective,
         wtp_threshold=_number(wtp_threshold, field="wtp_threshold"),

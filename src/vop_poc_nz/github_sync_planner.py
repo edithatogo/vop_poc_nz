@@ -15,6 +15,7 @@ from hashlib import sha256
 from typing import Any, Literal, cast
 
 from .concerns import GitHubSyncPayload
+from .critical_invariants import exact_positive_int_or_none
 
 SyncOutcome = Literal["clean", "local_only", "remote_only", "conflict"]
 
@@ -307,9 +308,7 @@ def issue_snapshot_from_json(content: str) -> GitHubIssueSnapshot:
         raise ValueError("snapshot state must be open or closed")
     state = cast(Literal["open", "closed"], raw_state)
     for field in ("issue_number", "project_number"):
-        value = raw[field]
-        if value is not None and (type(value) is not int or value <= 0):
-            raise ValueError(f"snapshot {field} must be a positive integer or null")
+        raw[field] = exact_positive_int_or_none(raw[field], field=f"snapshot {field}")
     for field in ("labels", "managed_labels", "managed_project_field_names"):
         values = raw.get(field, [])
         if type(values) is not list or any(type(item) is not str for item in values):

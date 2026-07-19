@@ -12,6 +12,7 @@ import pyarrow as pa
 import pyarrow.ipc as ipc
 import pyarrow.parquet as pq
 
+from .critical_invariants import require_matching_sha256
 from .perspective import NetBenefitTensor
 
 ARROW_SCHEMA_VERSION = "1.0.0"
@@ -44,8 +45,12 @@ def attach_contract_metadata(
 ) -> pa.Table:
     """Attach verifiable shared-contract identity to an Arrow table."""
     fingerprint = schema_fingerprint(table.schema)
-    if expected_fingerprint is not None and fingerprint != expected_fingerprint:
-        raise ValueError("Arrow schema does not match declared result identity")
+    if expected_fingerprint is not None:
+        require_matching_sha256(
+            declared=expected_fingerprint,
+            actual=fingerprint,
+            field="Arrow schema",
+        )
     metadata = {
         **(table.schema.metadata or {}),
         b"vop.arrow_schema_version": schema_version.encode(),
