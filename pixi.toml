@@ -15,7 +15,7 @@ format-check = { cmd = "uv run ruff format --check src/vop_poc_nz tests scripts"
 typecheck = { cmd = "uv run basedpyright && uv run ty check src/vop_poc_nz", depends-on = ["sync"] }
 security = { cmd = "uv run bandit -r src/vop_poc_nz && uv run pip-audit", depends-on = ["sync"] }
 build = { cmd = "uv build", depends-on = ["sync"] }
-profile = { cmd = "uv run scalene --cli --outfile .benchmarks/scalene.json --json scripts/profile_workload.py", depends-on = ["sync"] }
+profile = { cmd = "uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py", depends-on = ["sync"] }
 verify = { depends-on = ["lint", "format-check", "typecheck", "test", "build"] }
 
 [feature.experimental.tasks]

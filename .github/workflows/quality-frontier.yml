@@ -88,7 +88,7 @@ jobs:
           enable-cache: true
       - run: uv sync --extra dev --extra experimental
       - if: matrix.lane == 'profile'
-        run: mkdir -p .benchmarks && uv run scalene --cli --outfile .benchmarks/scalene.txt scripts/profile_workload.py
+        run: mkdir -p .benchmarks && uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py
       - if: matrix.lane == 'mutation'
         run: uv run mutmut run
       - if: matrix.lane == 'security'
