@@ -1,0 +1,63 @@
+name: Governance baseline candidate capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_revision:
+        description: Exact commit SHA whose governance projection is being reviewed
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  capture:
+    name: Capture untrusted read-only candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: ${{ inputs.source_revision }}
+          persist-credentials: false
+      - name: Verify exact source revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.source_revision }}" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "${{ inputs.source_revision }}"
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - name: Install locked review environment
+        run: uv sync --frozen --extra dev
+      - name: Capture pending-review candidate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PROJECT_READ_TOKEN: ${{ secrets.PROJECT_READ_TOKEN }}
+        run: >-
+          uv run --frozen python scripts/governance_baseline_review.py capture
+          --base .github/governance-baselines/CON-SHR-0013.json
+          --source-revision "${{ inputs.source_revision }}"
+          --captured-by "${{ github.actor }}"
+          --workflow-identity "github:${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --output governance-review/candidate.json
+      - name: Record candidate digest
+        shell: bash
+        run: >-
+          jq -r '.integrity.candidate_sha256' governance-review/candidate.json
+          | tee governance-review/candidate.sha256
+      - name: Retain private review candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: governance-baseline-candidate
+          path: governance-review/
+          if-no-files-found: error
+          retention-days: 30
+
