@@ -13,6 +13,7 @@ import numpy as np
 
 from vop_poc_nz.c15_performance import (
     PerformanceRegression,
+    performance_config_digest,
     performance_ratchet,
 )
 from vop_poc_nz.c15_scientific_oracles import numpy_evpi
@@ -68,11 +69,17 @@ def main() -> int:
             raise ValueError(
                 "performance baseline parameters do not match the workload"
             )
+        config_digest = performance_config_digest(
+            workload_id=_WORKLOAD_ID,
+            parameters=expected_parameters,
+            confidence=args.confidence,
+        )
         samples = measure(repeats=args.repeats, iterations=args.iterations)
         report = performance_ratchet(
             samples,
             baseline=baseline,
             confidence=args.confidence,
+            config_digest=config_digest,
         )
     except (PerformanceRegression, RuntimeError, ValueError) as exc:
         print(f"C15 performance assurance failed: {exc}")

@@ -14,20 +14,87 @@ from urllib.request import Request, urlopen
 
 _HEX_32 = re.compile(r"^[0-9a-f]{32}$")
 _HEX_16 = re.compile(r"^[0-9a-f]{16}$")
-_SENSITIVE_KEY = re.compile(
-    r"(^|[._-])(authorization|api[_-]?key|cookie|password|secret|token)($|[._-])",
+_CAMEL_ACRONYM_BOUNDARY = re.compile(r"([A-Z]+)([A-Z][a-z])")
+_CAMEL_WORD_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
+_KEY_SEPARATOR = re.compile(r"[^a-z0-9]+")
+_SENSITIVE_KEY_TOKENS = frozenset(
+    {
+        "authorization",
+        "cookie",
+        "credential",
+        "credentials",
+        "jwt",
+        "passphrase",
+        "password",
+        "secret",
+        "session",
+        "signature",
+        "token",
+    }
+)
+_SENSITIVE_COMPACT_KEYS = frozenset(
+    {
+        "accesskey",
+        "accesstoken",
+        "apikey",
+        "clientsecret",
+        "idtoken",
+        "privatekey",
+        "refreshtoken",
+    }
+)
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?:authorization|api[\s._-]*key|access[\s._-]*(?:key|token)|"
+    r"client[\s._-]*secret|cookie|credentials?|jwt|passphrase|password|"
+    r"private[\s._-]*key|refresh[\s._-]*token|secret|session|signature|token)"
+    r"[\"']?\s*[:=]\s*[\"']?\S+",
     re.IGNORECASE,
 )
-_SENSITIVE_TEXT = re.compile(
-    r"(?:\b(?:authorization|api[_ -]?key|cookie|password|secret|token)\b"
-    r"\s*[:=]\s*\S+|\bbearer\s+\S+)",
-    re.IGNORECASE,
-)
+_BEARER_VALUE = re.compile(r"\bbearer\s+\S+", re.IGNORECASE)
 _REDACTED = "[REDACTED]"
 
 
 class TelemetryContractError(ValueError):
     """Raised for unsafe or malformed telemetry exports."""
+
+
+def _normalized_key_tokens(key: str) -> tuple[str, ...]:
+    separated = _CAMEL_ACRONYM_BOUNDARY.sub(r"\1_\2", key)
+    separated = _CAMEL_WORD_BOUNDARY.sub(r"\1_\2", separated).casefold()
+    return tuple(part for part in _KEY_SEPARATOR.split(separated) if part)
+
+
+def _is_sensitive_key(key: str) -> bool:
+    tokens = _normalized_key_tokens(key)
+    return (
+        bool(_SENSITIVE_KEY_TOKENS.intersection(tokens))
+        or "".join(tokens) in _SENSITIVE_COMPACT_KEYS
+    )
+
+
+def _contains_sensitive_pattern(text: str) -> bool:
+    return bool(_SENSITIVE_ASSIGNMENT.search(text) or _BEARER_VALUE.search(text))
+
+
+def _contains_sensitive_json(value: object) -> bool:
+    if isinstance(value, Mapping):
+        return any(
+            _is_sensitive_key(str(key)) or _contains_sensitive_json(item)
+            for key, item in value.items()
+        )
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return any(_contains_sensitive_json(item) for item in value)
+    return isinstance(value, str) and _contains_sensitive_pattern(value)
+
+
+def _contains_sensitive_text(text: str) -> bool:
+    if _contains_sensitive_pattern(text):
+        return True
+    try:
+        structured = json.loads(text)
+    except json.JSONDecodeError, TypeError:
+        return False
+    return _contains_sensitive_json(structured)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,18 +117,22 @@ class CorrelationContext:
         )
         if any(not value.strip() for value in text_fields):
             raise TelemetryContractError("correlation fields must not be empty")
-        if any(_SENSITIVE_TEXT.search(value) for value in text_fields):
+        if any(_contains_sensitive_text(value) for value in text_fields):
             raise TelemetryContractError(
                 "correlation fields contain secret-bearing text"
             )
         if _HEX_32.fullmatch(self.trace_id) is None:
             raise TelemetryContractError("trace_id must be 32 lowercase hex characters")
+        if int(self.trace_id, 16) == 0:
+            raise TelemetryContractError("trace_id must contain a non-zero byte")
         if _HEX_16.fullmatch(self.span_id) is None:
             raise TelemetryContractError("span_id must be 16 lowercase hex characters")
+        if int(self.span_id, 16) == 0:
+            raise TelemetryContractError("span_id must contain a non-zero byte")
 
 
 def _safe_value(key: str, value: object) -> object:
-    if _SENSITIVE_KEY.search(key):
+    if _is_sensitive_key(key):
         return _REDACTED
     if isinstance(value, Mapping):
         return {str(name): _safe_value(str(name), item) for name, item in value.items()}
@@ -69,11 +140,12 @@ def _safe_value(key: str, value: object) -> object:
         return [_safe_value(key, item) for item in value]
     if isinstance(value, float) and not math.isfinite(value):
         raise TelemetryContractError("telemetry numbers must be finite")
-    if isinstance(value, str) and _SENSITIVE_TEXT.search(value):
+    if isinstance(value, str) and _contains_sensitive_text(value):
         return _REDACTED
     if value is None or isinstance(value, (bool, int, float, str)):
         return value
-    return str(value)
+    coerced = str(value)
+    return _REDACTED if _contains_sensitive_text(coerced) else coerced
 
 
 def _any_value(value: object) -> dict[str, object]:
@@ -111,7 +183,7 @@ def build_otlp_log_request(
     """Build an OTLP/HTTP JSON logs request with mandatory safe correlation."""
     if not isinstance(message, str) or not message.strip():
         raise TelemetryContractError("telemetry message must not be empty")
-    if _SENSITIVE_TEXT.search(message):
+    if _contains_sensitive_text(message):
         raise TelemetryContractError("telemetry message contains secret-bearing text")
     safe = {
         str(key): _safe_value(str(key), value)

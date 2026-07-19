@@ -4,6 +4,7 @@ import json
 import math
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import Any, cast
 
 import pytest
 
@@ -13,6 +14,11 @@ from vop_poc_nz.c15_otel_contract import (
     build_otlp_log_request,
     export_otlp_http,
 )
+
+
+class _SecretBearingObject:
+    def __str__(self) -> str:
+        return "clientSecret=private-after-coercion"
 
 
 def _context() -> CorrelationContext:
@@ -27,7 +33,7 @@ def _context() -> CorrelationContext:
 
 
 def test_otlp_request_preserves_correlation_and_redacts_nested_secrets() -> None:
-    payload = build_otlp_log_request(
+    payload: Any = build_otlp_log_request(
         "analysis.completed",
         _context(),
         attributes={
@@ -67,11 +73,54 @@ def test_otlp_request_preserves_correlation_and_redacts_nested_secrets() -> None
         "password=hunter2",
         "api key: private-value",
         "token=private-value",
+        '{"token":"secret-json"}',
+        '{"nested":{"accessToken":"secret-json"}}',
+        '{"privateKey":"secret-json"',
+        "clientSecret=private-value",
     ],
 )
 def test_otlp_request_rejects_secret_bearing_message_body(message: str) -> None:
     with pytest.raises(TelemetryContractError, match="secret-bearing"):
         build_otlp_log_request(message, _context())
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "accessToken",
+        "access_token",
+        "access-token",
+        "access.token",
+        "APIKey",
+        "clientSecret",
+        "private_key",
+        "sessionId",
+    ],
+)
+def test_otlp_request_redacts_normalized_sensitive_attribute_keys(key: str) -> None:
+    encoded = json.dumps(
+        build_otlp_log_request(
+            "analysis.completed",
+            _context(),
+            attributes={key: "must-not-leak"},
+        ),
+        sort_keys=True,
+    )
+    assert "must-not-leak" not in encoded
+    assert _context().run_id in encoded
+
+
+def test_otlp_request_rescreens_values_after_string_coercion() -> None:
+    encoded = json.dumps(
+        build_otlp_log_request(
+            "analysis.completed",
+            _context(),
+            attributes={"custom": _SecretBearingObject()},
+        ),
+        sort_keys=True,
+    )
+    assert "private-after-coercion" not in encoded
+    assert "[REDACTED]" in encoded
 
 
 @pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
@@ -90,7 +139,7 @@ def test_otlp_request_rejects_invalid_timestamp(timestamp: object) -> None:
         build_otlp_log_request(
             "analysis.completed",
             _context(),
-            observed_time_unix_nano=timestamp,  # type: ignore[arg-type]
+            observed_time_unix_nano=cast(int, timestamp),
         )
 
 
@@ -100,6 +149,27 @@ def test_correlation_rejects_secret_bearing_text() -> None:
             run_id="token=private",
             trace_id="0123456789abcdef0123456789abcdef",
             span_id="0123456789abcdef",
+            backend="numpy",
+            fallback="none",
+            numerical_policy_id="policy-sha256",
+        )
+
+
+@pytest.mark.parametrize(
+    ("trace_id", "span_id", "expected"),
+    [
+        ("0" * 32, "0123456789abcdef", "trace_id"),
+        ("0123456789abcdef0123456789abcdef", "0" * 16, "span_id"),
+    ],
+)
+def test_correlation_rejects_all_zero_otel_ids(
+    trace_id: str, span_id: str, expected: str
+) -> None:
+    with pytest.raises(TelemetryContractError, match=expected):
+        CorrelationContext(
+            run_id="run-c15",
+            trace_id=trace_id,
+            span_id=span_id,
             backend="numpy",
             fallback="none",
             numerical_policy_id="policy-sha256",
