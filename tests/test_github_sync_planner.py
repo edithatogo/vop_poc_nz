@@ -2,16 +2,147 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
+from typing import Literal
+
+import pytest
 
 from vop_poc_nz.concerns import GitHubSyncPayload
 from vop_poc_nz.github_sync_planner import (
     GitHubIssueSnapshot,
+    issue_snapshot_from_json,
     plan_github_sync,
     sync_plan_json,
 )
 
 MARKER = "vop-voiage-governance-id:CON-SHR-0013"
+
+
+def _snapshot_json_payload() -> dict[str, object]:
+    return {
+        "github_repository": "edithatogo/vop_poc_nz",
+        "issue_number": 41,
+        "state": "open",
+        "title": "[CON-SHR-0013] Domain abstractions",
+        "body": "bounded governance body",
+        "labels": ["conductor", "roadmap"],
+        "project_number": 28,
+        "project_fields": [["Record ID", "CON-SHR-0013"], ["Track ID", "C13"]],
+    }
+
+
+def test_issue_snapshot_json_round_trip_preserves_every_contract_field() -> None:
+    payload = {
+        **_snapshot_json_payload(),
+        "managed_labels": ["conductor"],
+        "managed_project_field_names": ["Record ID"],
+    }
+
+    assert issue_snapshot_from_json(json.dumps(payload)) == GitHubIssueSnapshot(
+        github_repository="edithatogo/vop_poc_nz",
+        issue_number=41,
+        state="open",
+        title="[CON-SHR-0013] Domain abstractions",
+        body="bounded governance body",
+        labels=("conductor", "roadmap"),
+        project_number=28,
+        project_fields=(("Record ID", "CON-SHR-0013"), ("Track ID", "C13")),
+        managed_labels=("conductor",),
+        managed_project_field_names=("Record ID",),
+    )
+
+
+def test_issue_snapshot_json_defaults_optional_managed_fields() -> None:
+    snapshot = issue_snapshot_from_json(json.dumps(_snapshot_json_payload()))
+    assert snapshot.managed_labels == ()
+    assert snapshot.managed_project_field_names == ()
+
+
+@pytest.mark.parametrize("payload", [[], "snapshot", 1, None])
+def test_issue_snapshot_json_requires_an_object(payload: object) -> None:
+    with pytest.raises(ValueError, match=r"^GitHub issue snapshot must be an object$"):
+        issue_snapshot_from_json(json.dumps(payload))
+
+
+def test_issue_snapshot_json_rejects_missing_and_unexpected_fields() -> None:
+    missing = _snapshot_json_payload()
+    del missing["body"]
+    with pytest.raises(
+        ValueError,
+        match=r"^GitHub issue snapshot has missing or unexpected fields$",
+    ):
+        issue_snapshot_from_json(json.dumps(missing))
+
+    unexpected = {**_snapshot_json_payload(), "private_checkout": "C:/private"}
+    with pytest.raises(
+        ValueError,
+        match=r"^GitHub issue snapshot has missing or unexpected fields$",
+    ):
+        issue_snapshot_from_json(json.dumps(unexpected))
+
+
+@pytest.mark.parametrize("field", ["github_repository", "title", "body"])
+def test_issue_snapshot_json_requires_exact_strings(field: str) -> None:
+    payload = _snapshot_json_payload()
+    payload[field] = 1
+    with pytest.raises(
+        ValueError,
+        match=r"^snapshot repository, title, and body must be strings$",
+    ):
+        issue_snapshot_from_json(json.dumps(payload))
+
+
+@pytest.mark.parametrize("state", ["pending", "OPEN", 1, True, None])
+def test_issue_snapshot_json_rejects_invalid_state(state: object) -> None:
+    payload = _snapshot_json_payload()
+    payload["state"] = state
+    with pytest.raises(ValueError, match=r"^snapshot state must be open or closed$"):
+        issue_snapshot_from_json(json.dumps(payload))
+
+
+@pytest.mark.parametrize("field", ["issue_number", "project_number"])
+@pytest.mark.parametrize("value", [True, 0, -1, 1.5, "1", [], {}])
+def test_issue_snapshot_json_rejects_non_positive_exact_integers(
+    field: str, value: object
+) -> None:
+    payload = _snapshot_json_payload()
+    payload[field] = value
+    with pytest.raises(
+        ValueError,
+        match=rf"^snapshot {field} must be a positive integer or null$",
+    ):
+        issue_snapshot_from_json(json.dumps(payload))
+
+
+@pytest.mark.parametrize(
+    "field", ["labels", "managed_labels", "managed_project_field_names"]
+)
+@pytest.mark.parametrize("value", ["label", [1], [True], ["valid", 1], {}])
+def test_issue_snapshot_json_requires_string_arrays(field: str, value: object) -> None:
+    payload = _snapshot_json_payload()
+    payload[field] = value
+    with pytest.raises(
+        ValueError,
+        match=rf"^snapshot {field} must be an array of strings$",
+    ):
+        issue_snapshot_from_json(json.dumps(payload))
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["fields", {}, ["Name"], [["Name"]], [["Name", "Value", "Extra"]], [[1, 2]]],
+)
+def test_issue_snapshot_json_requires_project_field_string_pairs(
+    value: object,
+) -> None:
+    payload = _snapshot_json_payload()
+    payload["project_fields"] = value
+    with pytest.raises(
+        ValueError,
+        match=r"^snapshot project_fields must contain string pairs$",
+    ):
+        issue_snapshot_from_json(json.dumps(payload))
 
 
 def _body(summary: str = "Canonical summary.") -> str:
@@ -27,7 +158,9 @@ def _body(summary: str = "Canonical summary.") -> str:
 
 
 def _payload(
-    summary: str = "Canonical summary.", *, state: str = "open"
+    summary: str = "Canonical summary.",
+    *,
+    state: Literal["open", "closed"] = "open",
 ) -> GitHubSyncPayload:
     return GitHubSyncPayload(
         github_repository="edithatogo/vop_poc_nz",
