@@ -61,7 +61,7 @@
       "locator": "tests/test_concerns.py",
       "observed_at": "2026-07-19T00:00:00+10:00",
       "git_commit": "51a61340dde73868c319f97a7ce436b0650255be",
-      "sha256": "deb911470f8aa0a48b84884d88c6eef33b4279b73f8d74a7238f5f862d56a008",
+      "sha256": "163382949587303c278ea6c311e570640eaead2c28e093d030eeaf5a29a1eaf2",
       "supports": ["CON-SHR-0013"],
       "challenges": [],
       "claim_ids": ["governance.typed-contracts", "governance.private-filter"]

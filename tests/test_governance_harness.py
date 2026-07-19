@@ -5,9 +5,16 @@ from __future__ import annotations
 import subprocess
 import sys
 import tomllib
+from hashlib import sha256
 from pathlib import Path
 
+import pytest
+
+from scripts.generate_concern_governance_schemas import (
+    validate_local_evidence_provenance,
+)
 from scripts.governance_harness import governance_commands
+from vop_poc_nz.concerns import EvidenceReference, GovernanceLedger
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,6 +35,25 @@ def test_schema_regeneration_and_canonical_ledger_check_are_clean() -> None:
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "governance schemas and ledger are current" in completed.stdout
+
+
+def test_local_evidence_provenance_is_bound_to_pinned_git_bytes() -> None:
+    ledger = GovernanceLedger.model_validate_json(
+        (REPO_ROOT / "governance/registry.json").read_text(encoding="utf-8")
+    )
+    validate_local_evidence_provenance(ledger, REPO_ROOT)
+
+    evidence = next(
+        record for record in ledger.records if isinstance(record, EvidenceReference)
+    )
+    invalid = evidence.model_copy(update={"sha256": sha256(b"wrong").hexdigest()})
+    invalid_ledger = GovernanceLedger(
+        records=tuple(
+            invalid if record.id == evidence.id else record for record in ledger.records
+        )
+    )
+    with pytest.raises(ValueError, match="evidence digest mismatch"):
+        validate_local_evidence_provenance(invalid_ledger, REPO_ROOT)
 
 
 def test_harness_commands_are_strict_focused_and_private_safe() -> None:

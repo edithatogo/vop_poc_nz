@@ -4,10 +4,52 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 import tempfile
+from hashlib import sha256
 from pathlib import Path
 
-from vop_poc_nz.concerns import GovernanceLedger, export_governance_schemas
+from vop_poc_nz.concerns import (
+    EvidenceReference,
+    GovernanceLedger,
+    export_governance_schemas,
+)
+
+
+def validate_local_evidence_provenance(
+    ledger: GovernanceLedger, repository: Path
+) -> None:
+    """Bind verified local evidence to bytes at its declared Git commit."""
+    root = repository.resolve()
+    for record in ledger.records:
+        if not (
+            isinstance(record, EvidenceReference)
+            and record.locator_kind == "local_path"
+            and record.status == "verified"
+        ):
+            continue
+        if record.git_commit is None or record.sha256 is None:
+            raise ValueError(
+                f"verified local evidence {record.id} requires git_commit and sha256"
+            )
+        locator = record.locator.replace("\\", "/")
+        completed = subprocess.run(
+            ["git", "show", f"{record.git_commit}:{locator}"],
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            detail = completed.stderr.decode("utf-8", errors="replace").strip()
+            raise ValueError(
+                f"cannot resolve evidence {record.id} at {record.git_commit}: {detail}"
+            )
+        actual = sha256(completed.stdout).hexdigest()
+        if actual != record.sha256:
+            raise ValueError(
+                f"evidence digest mismatch for {record.id}: "
+                f"expected {record.sha256}, got {actual}"
+            )
 
 
 def main() -> int:
@@ -31,7 +73,10 @@ def main() -> int:
         help="fail if the committed schemas differ from deterministic regeneration",
     )
     args = parser.parse_args()
-    GovernanceLedger.model_validate_json(args.ledger.read_text(encoding="utf-8"))
+    ledger = GovernanceLedger.model_validate_json(
+        args.ledger.read_text(encoding="utf-8")
+    )
+    validate_local_evidence_provenance(ledger, Path.cwd())
     if args.check:
         with tempfile.TemporaryDirectory(prefix="vop-governance-schema-") as temp:
             generated = export_governance_schemas(temp)
