@@ -35,7 +35,7 @@ schema, method, producer, and interchange metadata in Arrow outputs.
 
 ```mermaid
 flowchart TD
-    Manifest[conductor/manifest.json\nC00-C12]
+    Manifest[conductor/manifest.json\nC00-C13]
     Tracks[Current track specifications]
     Legacy[VOP legacy track map]
     VoiageArchive[VOIAGE archived track registry]
@@ -118,3 +118,47 @@ build backend. Pixi is a cross-platform task surface and delegates Python
 resolution to the same uv lock, preventing two divergent dependency truths.
 Expensive or ecosystem-sensitive experiments are explicit evidence lanes and
 cannot silently redefine the stable runtime contract.
+
+## Typed domain and governance model
+
+```mermaid
+flowchart LR
+    Concern --> Assumption
+    Concern --> Risk
+    Assumption --> Risk
+    Evidence --> Assumption
+    Evidence --> Risk
+    Evidence --> Decision
+    Risk --> Decision
+    Decision --> IssueLink
+    IssueLink --> GitHubIssue
+    GitHubIssue --> Project
+
+    AnalysisSpec --> NumericalPolicy
+    AnalysisSpec --> Kernel
+    Kernel --> BackendCapabilities
+    Kernel --> AnalysisResult
+    RunContext --> AnalysisResult
+    Evidence --> AnalysisResult
+    AnalysisResult --> ArrowContract
+```
+
+```mermaid
+sequenceDiagram
+    participant R as Local registry
+    participant P as Sync planner
+    participant B as Last sync base
+    participant G as GitHub issue/project
+    R->>P: Canonical public projection
+    B->>P: Base digest
+    G->>P: Remote managed projection
+    P->>P: Three-way comparison
+    alt Conflict or private record
+      P-->>R: Fail closed with reconciliation plan
+    else Clean dry-run
+      P-->>R: Emit deterministic mutation plan
+    else Clean and explicitly authorized
+      P->>G: Update managed fields only
+      G-->>B: Persist new sync base locally
+    end
+```

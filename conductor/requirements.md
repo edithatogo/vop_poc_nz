@@ -39,6 +39,10 @@ the linked track files contain detailed acceptance criteria.
   uv and Pixi expose equivalent locked commands; Pydantic v2 validates runtime
   configuration; Ruff, BasedPyright, `ty`, tests, builds, and security checks
   are visible CI contracts.
+- **M13 — Typed governance and domain contracts (C13):** every material
+  concern, assumption, risk, decision, evidence reference, issue link,
+  parameter, numerical policy, calculation and result has a stable typed
+  identity, validated relationships, provenance and a compatibility policy.
 
 ### Should have
 
@@ -54,6 +58,8 @@ the linked track files contain detailed acceptance criteria.
   registry, archived track paths, releases, commits, and pull requests.
 - **S6:** Scalene, mutation, dependency-audit, and experimental-backend evidence
   runs on bounded scheduled/manual lanes with artifacts, not hidden local steps.
+- **S7:** GitHub synchronization uses stable markers, bounded managed sections,
+  dry-run plans and three-way conflict detection while preserving human content.
 
 ### Could have
 
@@ -64,6 +70,8 @@ the linked track files contain detailed acceptance criteria.
 - **C3:** automated project-field synchronization from the local track registry.
 - **C4:** richer model cards and case-level provenance visualizations.
 - **C5:** signed provenance and attestations for promoted interchange bundles.
+- **C6:** deterministic generated governance tables, JSON projections and
+  Mermaid traceability graphs derived from the canonical typed ledger.
 
 ### Won't have now
 
@@ -75,6 +83,8 @@ the linked track files contain detailed acceptance criteria.
 - **W4:** implicit publication of private/local Conductor state.
 - **W5:** retroactive rewriting or deletion of historical tracks merely because
   they are superseded.
+- **W6:** automation accepting risk, approving irreversible decisions, closing
+  human-controlled issues, or publishing local/private evidence.
 
 ## Verification
 
