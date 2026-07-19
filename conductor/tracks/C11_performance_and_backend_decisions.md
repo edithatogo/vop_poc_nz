@@ -21,6 +21,14 @@ Profile before optimising and adopt Polars/Arrow, JAX/XLA/NumPyro, Mojo, or Rust
 - [ ] Every backend change has benchmark and equivalence evidence.
 - [ ] Experimental backends do not expand the manuscript scope.
 
+## 2026-07-19 implementation evidence
+
+- `scripts/profile_workload.py` is a deterministic Arrow/Polars workload.
+- `pixi run profile` and the scheduled/manual CI frontier produce Scalene
+  artifacts from that workload.
+- Free-threaded and experimental dependency lanes remain observational and
+  opt-in; stable CI retains correctness, interchange, and numerical budgets.
+
 ## Agent operating rule
 
 Map the live worktree and inspect existing implementations before editing. Prefer the smallest compatible change, record evidence in the local track state, and never promote local/private artifacts implicitly.

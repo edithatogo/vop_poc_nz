@@ -1,0 +1,27 @@
+[workspace]
+name = "vop-poc-nz"
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64", "osx-arm64"]
+
+[dependencies]
+python = ">=3.14,<3.15"
+uv = "*"
+
+[tasks]
+sync = "uv sync --frozen --extra dev"
+test = { cmd = "uv run pytest tests", depends-on = ["sync"] }
+lint = { cmd = "uv run ruff check src/vop_poc_nz tests scripts", depends-on = ["sync"] }
+format-check = { cmd = "uv run ruff format --check src/vop_poc_nz tests scripts", depends-on = ["sync"] }
+typecheck = { cmd = "uv run basedpyright && uv run ty check src/vop_poc_nz", depends-on = ["sync"] }
+security = { cmd = "uv run bandit -r src/vop_poc_nz && uv run pip-audit", depends-on = ["sync"] }
+build = { cmd = "uv build", depends-on = ["sync"] }
+profile = { cmd = "uv run scalene --cli --outfile .benchmarks/scalene.json --json scripts/profile_workload.py", depends-on = ["sync"] }
+verify = { depends-on = ["lint", "format-check", "typecheck", "test", "build"] }
+
+[feature.experimental.tasks]
+sync-experimental = "uv sync --frozen --extra dev --extra experimental"
+test-experimental = { cmd = "uv run pytest tests -m experimental --no-cov", depends-on = ["sync-experimental"] }
+
+[environments]
+default = { solve-group = "default" }
+experimental = { features = ["experimental"], solve-group = "default" }

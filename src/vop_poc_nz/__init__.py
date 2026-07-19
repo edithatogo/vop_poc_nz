@@ -23,7 +23,12 @@ Key modules:
 
 from __future__ import annotations
 
-__version__ = "0.2.2"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("vop_poc_nz")
+except PackageNotFoundError:  # pragma: no cover - only an unpackaged source tree
+    __version__ = "0.0.0.dev0"
 __author__ = "Research Team"
 
 # Core CEA functionality

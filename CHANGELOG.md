@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+* Tag-derived Hatch VCS versions and runtime metadata resolution.
+* Pydantic v2 structured logging with JSONL, run IDs, and bound context.
+* Locked Pixi/uv task parity, BasedPyright plus `ty`, Scalene profiling,
+  mutation/security/experimental evidence lanes, and SHA-pinned Actions.
+
 ## [0.2.2](https://github.com/edithatogo/vop_poc_nz/compare/v0.2.1...v0.2.2) (2025-12-07)
 
 

@@ -34,6 +34,11 @@ the linked track files contain detailed acceptance criteria.
   ledger issues; all are represented in the GitHub Project.
 - **M11 — Privacy boundary:** `.conductor/local`, credentials, unpublished
   evidence, and owner-only decisions are never promoted implicitly.
+- **M12 — Observable, reproducible engineering:** package-owned logging is
+  context-aware and machine-readable; versions derive from Git release tags;
+  uv and Pixi expose equivalent locked commands; Pydantic v2 validates runtime
+  configuration; Ruff, BasedPyright, `ty`, tests, builds, and security checks
+  are visible CI contracts.
 
 ### Should have
 
@@ -47,6 +52,8 @@ the linked track files contain detailed acceptance criteria.
   status, and whether a remaining gate is local, external, or human-controlled.
 - **S5:** closed historical ledgers retain links to the original Conductor
   registry, archived track paths, releases, commits, and pull requests.
+- **S6:** Scalene, mutation, dependency-audit, and experimental-backend evidence
+  runs on bounded scheduled/manual lanes with artifacts, not hidden local steps.
 
 ### Could have
 

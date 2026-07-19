@@ -1,0 +1,105 @@
+name: Quality Frontier
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      expensive:
+        description: Run mutation, profiling, audit, and experimental lanes
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  static-contract:
+    name: Ruff, BasedPyright, ty, and logging contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: latest
+          enable-cache: true
+      - run: uv sync --extra dev
+      - run: uv run ruff check src/vop_poc_nz/logging_config.py scripts/profile_workload.py tests/test_logging_and_version.py
+      - run: uv run ruff format --check src/vop_poc_nz/logging_config.py scripts/profile_workload.py tests/test_logging_and_version.py
+      - run: uv run basedpyright src/vop_poc_nz/logging_config.py scripts/profile_workload.py
+      - run: uv run ty check src/vop_poc_nz/logging_config.py scripts/profile_workload.py
+      - run: uv run pytest tests/test_logging_and_version.py -q
+
+  package-contract:
+    name: Dynamic version, wheel, and install smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: latest
+      - run: uv sync --extra dev
+      - run: uv build
+      - run: uv run twine check dist/*
+      - run: uv run --isolated --no-project --with dist/*.whl python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-distributions
+          path: dist/
+
+  expensive-evidence:
+    name: ${{ matrix.lane }} evidence
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.expensive)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [profile, mutation, security, experimental]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: latest
+          enable-cache: true
+      - run: uv sync --extra dev --extra experimental
+      - if: matrix.lane == 'profile'
+        run: mkdir -p .benchmarks && uv run scalene --cli --outfile .benchmarks/scalene.txt scripts/profile_workload.py
+      - if: matrix.lane == 'mutation'
+        run: uv run mutmut run
+      - if: matrix.lane == 'security'
+        run: uv run bandit -r src/vop_poc_nz && uv run pip-audit
+      - if: matrix.lane == 'experimental'
+        run: uv run python scripts/profile_workload.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: quality-${{ matrix.lane }}
+          path: |
+            .benchmarks/
+            mutants/
+          if-no-files-found: ignore

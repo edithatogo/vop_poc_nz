@@ -21,6 +21,17 @@ Turn the proof-of-concept into a clean empirical compendium and tutorial package
 - [ ] README examples import the installed package.
 - [ ] Version, licence, citation, Python support, and release metadata agree.
 
+## 2026-07-19 implementation evidence
+
+- `pixi.toml` delegates reproducible cross-platform tasks to the canonical
+  `uv.lock` environment.
+- Hatch VCS derives build and runtime versions from reviewed Git tags.
+- Pydantic v2 logging settings provide JSONL, run IDs, bound context, and
+  non-destructive handler ownership.
+- `.github/workflows/quality-frontier.yml` makes Ruff, BasedPyright, `ty`,
+  focused tests, package smoke tests, Scalene, mutation, audit, and experimental
+  evidence visible.
+
 ## Agent operating rule
 
 Map the live worktree and inspect existing implementations before editing. Prefer the smallest compatible change, record evidence in the local track state, and never promote local/private artifacts implicitly.

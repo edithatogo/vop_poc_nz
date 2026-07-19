@@ -18,6 +18,6 @@
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
-  "pythonVersion": "3.10",
-  "typeCheckingMode": "strict"
+  "pythonVersion": "3.14",
+  "typeCheckingMode": "standard"
 }

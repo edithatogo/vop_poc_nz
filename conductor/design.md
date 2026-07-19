@@ -92,3 +92,29 @@ sequenceDiagram
 - Private files, credentials, unpublished evidence, and owner decisions remain
   outside public issue bodies and promoted artifacts.
 - Publication and registry state are independent from implementation state.
+
+## Engineering harness
+
+```mermaid
+flowchart TD
+    Tag[Signed or reviewed Git tag] --> SCM[SCM dynamic version]
+    SCM --> Wheel[Wheel and sdist smoke test]
+    Config[Pydantic v2 logging settings] --> Log[Human or JSONL logging]
+    Context[Run, track and analysis context] --> Log
+    UV[uv.lock and uv commands] --> Fast[PR quality gates]
+    Pixi[Pixi cross-platform tasks] --> UV
+    Fast --> Types[Ruff + BasedPyright + ty]
+    Fast --> Tests[Unit + property + integration + E2E]
+    Schedule[Scheduled/manual frontier] --> Profile[Scalene artifacts]
+    Schedule --> Mutation[Mutation evidence]
+    Schedule --> Audit[Dependency and security audit]
+    Schedule --> Experimental[Experimental and free-threaded probes]
+    Tests --> Release[Attested release gates]
+    Profile --> Decisions[Measured backend decisions]
+```
+
+The package metadata and runtime `__version__` resolve from Git through the
+build backend. Pixi is a cross-platform task surface and delegates Python
+resolution to the same uv lock, preventing two divergent dependency truths.
+Expensive or ecosystem-sensitive experiments are explicit evidence lanes and
+cannot silently redefine the stable runtime contract.
