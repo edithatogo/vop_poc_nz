@@ -41,7 +41,9 @@ except ImportError:  # pragma: no cover - optional dependency
     PLOTNINE_AVAILABLE = False
 
 # Shared plotting helpers and defaults
-DEFAULT_DPI = 1200
+# 1200 DPI exhausts memory for ordinary dashboard-sized figures (often more
+# than 500 MiB per canvas). 300 DPI is publication quality for raster output.
+DEFAULT_DPI = 300
 DEFAULT_FORMATS = ("png", "pdf", "svg")
 
 
