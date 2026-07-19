@@ -20,7 +20,7 @@
       ],
       "depends_on": [],
       "file": "tracks/C00_repo_intake_and_agent_bootstrap.md",
-      "default_status": "planned"
+      "default_status": "in_progress"
     },
     {
       "id": "C01",
