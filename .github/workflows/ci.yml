@@ -60,7 +60,6 @@ jobs:
 
   free-threaded-observation:
     name: Python 3.14t observation
-    continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -70,9 +69,16 @@ jobs:
           python-version: "3.14t"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       - name: Exercise minimal free-threaded Arrow boundary
+        id: free_threaded_probe
+        continue-on-error: true
         run: >-
           uv run --no-project --no-build
           --with pyarrow==25.0.0
           --with polars==1.42.1
           python scripts/free_threaded_arrow_probe.py
+      - name: Record ecosystem readiness
+        if: steps.free_threaded_probe.outcome != 'success'
+        run: |
+          echo "::notice::Python 3.14t Arrow wheels are not yet available for this probe."
+          echo "Python 3.14t Arrow compatibility is currently observational." >> "$GITHUB_STEP_SUMMARY"
 
