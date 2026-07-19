@@ -197,6 +197,23 @@
       ],
       "file": "tracks/C12_github_project_and_agent_operations.md",
       "default_status": "planned"
+    },
+    {
+      "id": "C13",
+      "slug": "domain_abstraction_excellence",
+      "title": "Domain abstraction excellence",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C07",
+        "C08",
+        "C09",
+        "C12"
+      ],
+      "file": "tracks/abstraction-excellence_20260719/index.md",
+      "default_status": "in_progress"
     }
   ],
   "method_contract_version": "1.1.0"
