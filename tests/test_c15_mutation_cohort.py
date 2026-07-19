@@ -4,6 +4,9 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 from pathlib import Path
+from typing import cast
+
+import pytest
 
 from scripts.check_c15_mutation_cohort import (
     cohort_identity,
@@ -50,18 +53,30 @@ def _reviewed(identity: dict[str, object]) -> dict[str, object]:
 def _evaluate(
     identity: dict[str, object],
     *,
+    stats: dict[str, object] | None = None,
     universe: dict[str, object] | None = None,
     baseline: dict[str, object] | None = None,
     reviewed: str = ANCHOR,
 ) -> dict[str, object]:
     return evaluate_cohort(
-        BASELINE["stats"],
+        stats or BASELINE["stats"],
         baseline or _reviewed(identity),
         identity,
         universe or _universe(),
         44.0,
         baseline_sha256=ANCHOR,
         reviewed_baseline_sha256=reviewed,
+    )
+
+
+def _universe_with_final_status(status: str) -> dict[str, object]:
+    ids = [f"vop_poc_nz.example__mutmut_{number}" for number in range(827)]
+    return mutation_universe(
+        "\n".join(
+            f"{mutant}: "
+            f"{'killed' if index < 370 else status if index == 826 else 'survived'}"
+            for index, mutant in enumerate(ids)
+        )
     )
 
 
@@ -104,3 +119,59 @@ def test_runtime_and_universe_parser_reject_invalid_inputs() -> None:
             pass
         else:
             raise AssertionError("invalid universe was accepted")
+
+
+def test_status_partition_rejects_not_checked_and_accounts_for_type_checks() -> None:
+    identity = cohort_identity(ROOT, ROOT / "pyproject.toml")
+    stats = deepcopy(BASELINE["stats"])
+    stats["survived"] = 456
+    with pytest.raises(ValueError, match="not checked"):
+        _evaluate(
+            identity,
+            stats=stats,
+            universe=_universe_with_final_status("not checked"),
+        )
+
+    report = _evaluate(
+        identity,
+        stats=stats,
+        universe=_universe_with_final_status("caught by type check"),
+    )
+    assert report["passed"] is True
+    assert report["status_partition"] == {
+        "complete": True,
+        "counts": {
+            "caught by type check": 1,
+            "check was interrupted by user": 0,
+            "killed": 370,
+            "no tests": 0,
+            "not checked": 0,
+            "segfault": 0,
+            "skipped": 0,
+            "suspicious": 0,
+            "survived": 456,
+            "timeout": 0,
+        },
+        "total": 827,
+    }
+
+
+def test_status_partition_rejects_incomplete_statistics() -> None:
+    identity = cohort_identity(ROOT, ROOT / "pyproject.toml")
+    with pytest.raises(ValueError, match="statuses do not match statistics"):
+        _evaluate(
+            identity,
+            universe=_universe_with_final_status("caught by type check"),
+        )
+    incomplete = deepcopy(_universe())
+    incomplete_statuses = cast("dict[str, str]", incomplete["statuses"])
+    incomplete_ids = cast("list[str]", incomplete["ids"])
+    incomplete_statuses.pop(incomplete_ids[0])
+    with pytest.raises(ValueError, match="partition is incomplete"):
+        _evaluate(identity, universe=incomplete)
+    unknown = deepcopy(_universe())
+    unknown_statuses = cast("dict[str, str]", unknown["statuses"])
+    unknown_ids = cast("list[str]", unknown["ids"])
+    unknown_statuses[unknown_ids[0]] = "unknown"
+    with pytest.raises(ValueError, match="partition is incomplete"):
+        _evaluate(identity, universe=unknown)

@@ -76,7 +76,16 @@ def main() -> int:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     except (ArtifactMismatch, OSError, ValueError) as exc:
-        print(f"C15 artifact assurance failed: {exc}")
+        failure: dict[str, object] = {
+            "schema_version": "1.0.0",
+            "operation": args.command,
+            "status": "failure",
+            "matched": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+        _write(args.output, failure)
+        print(json.dumps(failure, indent=2, sort_keys=True))
         return 2
 
 

@@ -147,8 +147,19 @@ def main() -> int:
     try:
         report = probe()
     except (OSError, RuntimeError, ValueError) as exc:
-        print(f"C15 telemetry assurance failed: {exc}")
+        report = {
+            "schema_version": "1.0.0",
+            "status": "failure",
+            "privacy_screened": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
+        args.output.write_text(payload, encoding="utf-8", newline="\n")
+        print(payload, end="")
         return 2
+    report["status"] = "success"
     args.output.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
     args.output.write_text(payload, encoding="utf-8", newline="\n")

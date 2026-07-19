@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import tomllib
+from collections import Counter
 from hashlib import sha256
 from pathlib import Path
 from typing import cast
@@ -157,6 +158,14 @@ def evaluate_cohort(
     ):
         raise ValueError("baseline mutation universe digest mismatch")
     statuses = cast("dict[str, str]", universe["statuses"])
+    if set(statuses) != set(current_ids) or not set(statuses.values()) <= _STATUSES:
+        raise ValueError("mutation universe status partition is incomplete")
+    counts = dict.fromkeys(sorted(_STATUSES), 0)
+    counts.update(Counter(statuses.values()))
+    if len(statuses) != len(current_ids) or sum(counts.values()) != score.total:
+        raise ValueError("mutation universe status partition is incomplete")
+    if counts["not checked"]:
+        raise ValueError("mutation universe contains forbidden not checked mutants")
     expected_counts = {
         "killed": score.killed,
         "survived": score.survived,
@@ -167,18 +176,11 @@ def evaluate_cohort(
         "skipped": score.skipped,
         "check was interrupted by user": score.interrupted,
     }
-    if any(
-        sum(value == status for value in statuses.values()) != count
-        for status, count in expected_counts.items()
-    ):
+    if any(counts[status] != count for status, count in expected_counts.items()):
         raise ValueError("mutation universe statuses do not match statistics")
     omitted = score.total - sum(expected_counts.values())
-    observed_omitted = sum(
-        status in {"not checked", "caught by type check"}
-        for status in statuses.values()
-    )
-    if observed_omitted != omitted:
-        raise ValueError("mutation universe omitted statuses do not match statistics")
+    if omitted < 0 or counts["caught by type check"] != omitted:
+        raise ValueError("mutation universe statuses do not match statistics")
     added_ids = sorted(set(current_ids) - set(baseline_ids))
     removed_ids = sorted(set(baseline_ids) - set(current_ids))
     baseline_score = mutation_score_from_mapping(
@@ -217,6 +219,11 @@ def evaluate_cohort(
             "matches": not added_ids and not removed_ids,
         },
         "score": score_report,
+        "status_partition": {
+            "counts": counts,
+            "total": sum(counts.values()),
+            "complete": True,
+        },
         "debt": {
             "absolute": debt,
             "maximum_absolute": policy["maximum_absolute_debt"],

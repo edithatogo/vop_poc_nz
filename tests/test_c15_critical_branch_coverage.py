@@ -4,6 +4,7 @@ import json
 import tarfile
 import zipfile
 from copy import deepcopy
+from hashlib import sha256
 from pathlib import Path
 from typing import cast
 
@@ -321,11 +322,16 @@ def test_reproducibility_handles_binary_text_and_tar_directories(
 
 
 def test_digest_comparison_rejects_every_report_contract_surface() -> None:
+    entries = [{"path": "a", "member_type": "file", "sha256": "b" * 64, "size": 1}]
     valid: dict[str, object] = {
-        "schema_version": "1.0.0",
-        "normalization": "sorted-paths+safe-utf8-text-lf+content-sha256+record-semantics-v2",
-        "normalized_sha256": "a" * 64,
-        "entries": [{"path": "a", "sha256": "b" * 64, "size": 1}],
+        "schema_version": "1.1.0",
+        "normalization": "sorted-members+safe-utf8-text-lf+content-sha256+record-semantics-v3",
+        "artifact_name": "pkg.whl",
+        "artifact_kind": "wheel",
+        "normalized_sha256": sha256(
+            json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "entries": entries,
         "runner": "left",
     }
     for key, value in (
@@ -340,7 +346,19 @@ def test_digest_comparison_rejects_every_report_contract_surface() -> None:
             compare_digest_reports(invalid, {**valid, "runner": "right"})
     with pytest.raises(ArtifactMismatch, match="runner"):
         compare_digest_reports(valid, valid)
-    different = {**valid, "runner": "right", "entries": []}
+    different_entries = [
+        {"path": "a", "member_type": "file", "sha256": "c" * 64, "size": 1}
+    ]
+    different = {
+        **valid,
+        "runner": "right",
+        "entries": different_entries,
+        "normalized_sha256": sha256(
+            json.dumps(
+                different_entries, sort_keys=True, separators=(",", ":")
+            ).encode()
+        ).hexdigest(),
+    }
     with pytest.raises(ArtifactMismatch, match="inventories"):
         compare_digest_reports(valid, different)
 
