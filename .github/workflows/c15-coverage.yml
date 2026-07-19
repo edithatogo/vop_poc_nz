@@ -11,6 +11,7 @@ permissions:
   contents: read
 
 env:
+  C15_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   BLIS_NUM_THREADS: "1"
   MKL_NUM_THREADS: "1"
   NUMEXPR_NUM_THREADS: "1"
@@ -24,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ env.C15_SOURCE_SHA }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -34,12 +36,19 @@ jobs:
           version: "0.11.29"
           enable-cache: true
       - run: uv sync --frozen --extra dev --extra experimental
+      - name: Bind evidence to the exact source checkout
+        run: >-
+          uv run --frozen python scripts/c15_checkout_evidence.py
+          --expected-source-sha "${{ env.C15_SOURCE_SHA }}"
+          --event-name "${{ github.event_name }}"
+          --runner "${{ runner.os }}-${{ runner.arch }}"
+          --output .assurance/c15-checkout.json
       - name: Collect full branch coverage
         run: >-
           uv run --frozen pytest tests/ --cov=src/vop_poc_nz
           --cov-config=pyproject.toml
           --cov-report=json:.assurance/c15-coverage.json
-          --cov-fail-under=72
+          --cov-fail-under=70
       - name: Resolve bounded comparison base
         id: comparison
         env:

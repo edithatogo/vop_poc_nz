@@ -11,6 +11,7 @@ permissions:
   contents: read
 
 env:
+  C15_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   UV_FROZEN: "1"
 
 jobs:
@@ -24,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ env.C15_SOURCE_SHA }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -35,6 +37,13 @@ jobs:
           enable-cache: true
       - name: Install frozen build environment
         run: uv sync --frozen --extra dev
+      - name: Bind evidence to the exact source checkout
+        run: >-
+          uv run --frozen python scripts/c15_checkout_evidence.py
+          --expected-source-sha "${{ env.C15_SOURCE_SHA }}"
+          --event-name "${{ github.event_name }}"
+          --runner "${{ runner.os }}-${{ runner.arch }}"
+          --output c15-evidence/checkout.json
       - name: Build and verify reproducible distributions on this runner
         run: >-
           uv run --frozen python scripts/reproducible_build.py .
@@ -47,7 +56,9 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: c15-digest-${{ runner.os }}
-          path: c15-evidence/report-*.json
+          path: |
+            c15-evidence/checkout.json
+            c15-evidence/report-*.json
           if-no-files-found: error
           retention-days: 30
 
@@ -58,6 +69,8 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ env.C15_SOURCE_SHA }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -66,6 +79,13 @@ jobs:
         with:
           version: "0.11.29"
       - run: uv sync --frozen --extra dev
+      - name: Bind evidence to the exact source checkout
+        run: >-
+          uv run --frozen python scripts/c15_checkout_evidence.py
+          --expected-source-sha "${{ env.C15_SOURCE_SHA }}"
+          --event-name "${{ github.event_name }}"
+          --runner "${{ runner.os }}-${{ runner.arch }}"
+          --output c15-evidence/checkout.json
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           pattern: c15-digest-*
@@ -77,7 +97,9 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: c15-cross-platform-comparison
-          path: c15-evidence/comparison-*.json
+          path: |
+            c15-evidence/checkout.json
+            c15-evidence/comparison-*.json
           if-no-files-found: error
           retention-days: 30
 
@@ -91,6 +113,8 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ env.C15_SOURCE_SHA }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -100,6 +124,13 @@ jobs:
           version: "0.11.29"
           enable-cache: true
       - run: uv sync --frozen --extra dev
+      - name: Bind evidence to the exact source checkout
+        run: >-
+          uv run --frozen python scripts/c15_checkout_evidence.py
+          --expected-source-sha "${{ env.C15_SOURCE_SHA }}"
+          --event-name "${{ github.event_name }}"
+          --runner "${{ runner.os }}-${{ runner.arch }}"
+          --output c15-evidence/checkout.json
       - name: Enforce repeated-sample upper confidence bound
         id: performance
         continue-on-error: true
@@ -114,7 +145,9 @@ jobs:
         if: always()
         with:
           name: c15-performance-${{ runner.os }}
-          path: c15-evidence/performance.json
+          path: |
+            c15-evidence/checkout.json
+            c15-evidence/performance.json
           if-no-files-found: error
           retention-days: 30
       - name: Enforce performance outcome after evidence upload
@@ -127,6 +160,8 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ env.C15_SOURCE_SHA }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
@@ -136,6 +171,13 @@ jobs:
           version: "0.11.29"
           enable-cache: true
       - run: uv sync --frozen --extra dev --extra experimental
+      - name: Bind evidence to the exact source checkout
+        run: >-
+          uv run --frozen python scripts/c15_checkout_evidence.py
+          --expected-source-sha "${{ env.C15_SOURCE_SHA }}"
+          --event-name "${{ github.event_name }}"
+          --runner "${{ runner.os }}-${{ runner.arch }}"
+          --output c15-evidence/checkout.json
       - name: Exercise ephemeral OTLP collector export
         run: >-
           uv run --frozen python scripts/c15_otel_probe.py

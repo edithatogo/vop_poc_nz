@@ -260,7 +260,9 @@ def test_wheel_record_semantics_fail_closed(
         normalized_archive_report(wheel, runner="r")
 
 
-def test_record_and_archive_duplicate_or_inventory_drift_branches(tmp_path: Path) -> None:
+def test_record_and_archive_duplicate_or_inventory_drift_branches(
+    tmp_path: Path,
+) -> None:
     digest = "LXEWQrcmsEQBYnyp-6wy9chTD7GQPMTbAiWHF5IaSIE"
     duplicate_record = tmp_path / "duplicate-record.whl"
     record = (
@@ -321,7 +323,7 @@ def test_reproducibility_handles_binary_text_and_tar_directories(
 def test_digest_comparison_rejects_every_report_contract_surface() -> None:
     valid: dict[str, object] = {
         "schema_version": "1.0.0",
-        "normalization": "sorted-paths+declared-utf8-text-lf+content-sha256+record-semantics-v1",
+        "normalization": "sorted-paths+safe-utf8-text-lf+content-sha256+record-semantics-v2",
         "normalized_sha256": "a" * 64,
         "entries": [{"path": "a", "sha256": "b" * 64, "size": 1}],
         "runner": "left",

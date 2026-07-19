@@ -13,35 +13,8 @@ from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from typing import TypedDict
 
-_TEXT_SUFFIXES = frozenset(
-    {
-        ".cfg",
-        ".csv",
-        ".ini",
-        ".json",
-        ".md",
-        ".py",
-        ".rst",
-        ".toml",
-        ".template",
-        ".txt",
-        ".xml",
-        ".yaml",
-        ".yml",
-    }
-)
-_TEXT_FILENAMES = frozenset(
-    {
-        "authors",
-        "changelog",
-        "copying",
-        "license",
-        "notice",
-        "readme",
-        "snakefile",
-    }
-)
-_NORMALIZATION = "sorted-paths+declared-utf8-text-lf+content-sha256+record-semantics-v1"
+_NORMALIZATION = "sorted-paths+safe-utf8-text-lf+content-sha256+record-semantics-v2"
+_ALLOWED_TEXT_CONTROLS = frozenset("\t\n\r")
 
 
 class ArtifactMismatch(ValueError):
@@ -63,15 +36,17 @@ def _safe_path(name: str) -> str:
     return path.as_posix()
 
 
-def _normalized_content(name: str, content: bytes) -> bytes:
-    path = PurePosixPath(name)
-    filename = path.name.casefold()
-    stem = filename.split(".", maxsplit=1)[0]
-    if path.suffix.casefold() not in _TEXT_SUFFIXES and stem not in _TEXT_FILENAMES:
-        return content
+def _normalized_content(content: bytes) -> bytes:
+    """Normalize line endings only when bytes are unambiguously safe UTF-8 text."""
     try:
         text = content.decode("utf-8")
     except UnicodeDecodeError:
+        return content
+    if any(
+        (ord(character) < 32 or 0x7F <= ord(character) <= 0x9F)
+        and character not in _ALLOWED_TEXT_CONTROLS
+        for character in text
+    ):
         return content
     return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
 
@@ -169,7 +144,7 @@ def _entries(path: Path) -> list[ArchiveEntry]:
     for name, raw_content in raw.items():
         if name in record_names:
             continue
-        content = _normalized_content(name, raw_content)
+        content = _normalized_content(raw_content)
         entries.append(
             {"path": name, "sha256": sha256(content).hexdigest(), "size": len(content)}
         )

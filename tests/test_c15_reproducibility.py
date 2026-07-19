@@ -70,6 +70,66 @@ def test_tar_digest_ignores_archive_metadata_but_not_content(tmp_path: Path) -> 
     assert report["entries"][0]["path"] == "pkg/payload.json"
 
 
+def test_sdist_digest_normalizes_safe_utf8_text_independent_of_filename(
+    tmp_path: Path,
+) -> None:
+    linux = tmp_path / "linux.tar.gz"
+    windows = tmp_path / "windows.tar.gz"
+    names = (
+        "Makefile",
+        ".gitignore",
+        "CITATION.cff",
+        "build.sh",
+        "diagram.mmd",
+        "notes.bak",
+        "MANIFEST.in",
+        "paper.tex",
+        "references.bib",
+        "notebook.ipynb",
+        "uv.lock",
+        "index.html",
+        "style.css",
+        "bundle.js",
+        "bundle.js.map",
+    )
+    for archive_path, newline in ((linux, "\n"), (windows, "\r\n")):
+        with tarfile.open(archive_path, "w:gz") as archive:
+            for name in names:
+                content = f"alpha{newline}beta{newline}".encode()
+                member = tarfile.TarInfo(f"pkg/{name}")
+                member.size = len(content)
+                archive.addfile(member, io.BytesIO(content))
+
+    left = normalized_archive_report(linux, runner="linux-x64")
+    right = normalized_archive_report(windows, runner="windows-x64")
+
+    assert left["entries"] == right["entries"]
+    assert left["normalized_sha256"] == right["normalized_sha256"]
+
+
+@pytest.mark.parametrize(
+    "content", (b"alpha\x00\r\nbeta", b"alpha\x01\r\nbeta", b"\xff\r\n")
+)
+def test_sdist_digest_preserves_binary_or_control_bearing_content(
+    tmp_path: Path, content: bytes
+) -> None:
+    archive_path = tmp_path / "binary.tar.gz"
+    with tarfile.open(archive_path, "w:gz") as archive:
+        member = tarfile.TarInfo("pkg/apparently-text.txt")
+        member.size = len(content)
+        archive.addfile(member, io.BytesIO(content))
+
+    report = normalized_archive_report(archive_path, runner="linux-x64")
+
+    assert report["entries"] == [
+        {
+            "path": "pkg/apparently-text.txt",
+            "sha256": sha256(content).hexdigest(),
+            "size": len(content),
+        }
+    ]
+
+
 def test_comparison_fails_closed_for_content_or_inventory_drift(tmp_path: Path) -> None:
     left_path = tmp_path / "left.whl"
     right_path = tmp_path / "right.whl"
