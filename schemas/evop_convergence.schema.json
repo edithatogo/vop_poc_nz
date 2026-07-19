@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/evop_convergence.schema.json",
+  "title": "Directional EVoP convergence profile",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": ["draws", "repeats", "mean", "standard_deviation", "minimum", "maximum", "full_sample_estimate", "method_contract_version"],
+    "properties": {
+      "draws": {"type": "integer", "minimum": 2},
+      "repeats": {"type": "integer", "minimum": 1},
+      "mean": {"type": "number", "minimum": 0},
+      "standard_deviation": {"type": "number", "minimum": 0},
+      "minimum": {"type": "number", "minimum": 0},
+      "maximum": {"type": "number", "minimum": 0},
+      "full_sample_estimate": {"type": "number", "minimum": 0},
+      "method_contract_version": {"type": "string"}
+    },
+    "additionalProperties": false
+  }
+}

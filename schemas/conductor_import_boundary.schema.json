@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cross-repo import boundary report",
+  "type": "object",
+  "required": ["schema_version", "repo", "summary", "issues", "recommendations"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "repo": {"type": "object"},
+    "summary": {"type": "object"},
+    "issues": {"type": "array", "items": {"type": "object"}},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}

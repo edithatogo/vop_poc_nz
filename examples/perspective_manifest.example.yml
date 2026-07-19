@@ -1,0 +1,22 @@
+perspectives:
+  health_system:
+    description: Direct health-system costs and QALYs.
+    cost_components:
+      - direct_medical
+      - intervention_cost
+    welfare_measure: net_monetary_benefit
+  societal:
+    description: Health-system costs plus non-health and cross-sector effects.
+    cost_components:
+      - direct_medical
+      - intervention_cost
+      - patient_time
+      - productivity
+      - energy_savings
+      - informal_care
+    welfare_measure: net_monetary_benefit
+  deliberative_example:
+    description: Example mixture for sensitivity analysis, not an elicited stakeholder preference.
+    mixture:
+      health_system: 0.25
+      societal: 0.75

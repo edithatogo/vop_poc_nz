@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/repo_map.schema.json",
+  "title": "Conductor local repository map",
+  "type": "object",
+  "required": ["schema_version", "repo", "detected_project", "summary", "files"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo": {
+      "type": "object",
+      "required": ["root", "name", "is_git_repo", "dirty"],
+      "properties": {
+        "root": {"type": "string"},
+        "name": {"type": "string"},
+        "branch": {"type": ["string", "null"]},
+        "head": {"type": ["string", "null"]},
+        "is_git_repo": {"type": "boolean"},
+        "dirty": {"type": "boolean"}
+      }
+    },
+    "detected_project": {
+      "type": "object",
+      "required": ["kind", "package_dirs"],
+      "properties": {
+        "kind": {"enum": ["vop_poc_nz", "voiage", "unknown"]},
+        "package_dirs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "summary": {"type": "object"},
+    "recommendations": {"type": "array", "items": {"type": "string"}},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "size_bytes", "sha256", "tracked", "category", "publish_policy", "reasons"],
+        "properties": {
+          "path": {"type": "string"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "tracked": {"type": "boolean"},
+          "category": {"enum": ["source_public", "needs_review", "local_only", "generated"]},
+          "publish_policy": {"enum": ["commit", "review_before_commit", "do_not_commit"]},
+          "reasons": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local conductor track state",
+  "type": "object",
+  "required": ["schema_version", "pack_version", "repo", "updated_at", "tracks"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "pack_version": {"type": ["string", "null"]},
+    "repo": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "tracks": {
+      "type": "object",
+      "patternProperties": {
+        "^C[0-9]{2}$": {
+          "type": "object",
+          "required": ["status", "notes", "evidence", "commits", "updated_at"],
+          "properties": {
+            "status": {"enum": ["planned", "ready", "in_progress", "blocked", "completed", "superseded"]},
+            "notes": {"type": "array"},
+            "evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+            "commits": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+            "updated_at": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

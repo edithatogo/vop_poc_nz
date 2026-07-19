@@ -39,14 +39,14 @@ def load_parameters(filepath: str = "src/parameters.yaml") -> Dict:
     """Load parameters from a YAML file."""
     # Path relative to project root (assuming run from root)
     if os.path.exists(filepath):
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     # Fallback for running from src/pipeline
     project_root = Path(__file__).parent.parent.parent
     full_path = project_root / filepath
     if full_path.exists():
-        with open(full_path) as f:
+        with open(full_path, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     raise FileNotFoundError(

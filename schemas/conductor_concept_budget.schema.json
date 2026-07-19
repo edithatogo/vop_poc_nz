@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Concept budget audit report",
+  "type": "object",
+  "required": ["status", "documents_scanned", "hits", "budget"],
+  "properties": {
+    "status": {"enum": ["pass", "review"]},
+    "documents_scanned": {"type": "array", "items": {"type": "string"}},
+    "allowed_headline_concepts_seen": {"type": "array", "items": {"type": "string"}},
+    "supporting_concepts_in_headings": {"type": "array"},
+    "warning_count": {"type": "integer", "minimum": 0},
+    "hits": {"type": "array"},
+    "budget": {"type": "object"}
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact promotion plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "summary",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "repo": {
+      "type": "object"
+    },
+    "promotion_policy": {
+      "type": "object"
+    },
+    "summary": {
+      "type": "object"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "current_state",
+          "recommended_target_state",
+          "recommended_action",
+          "approval_required"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tracked": {
+            "type": "boolean"
+          },
+          "repo_category": {
+            "type": "string"
+          },
+          "repo_publish_policy": {
+            "type": "string"
+          },
+          "current_state": {
+            "enum": [
+              "local_scratch",
+              "local_reviewed",
+              "manifest_backed",
+              "external_artifact",
+              "public_fixture",
+              "public_release"
+            ]
+          },
+          "recommended_target_state": {
+            "enum": [
+              "local_scratch",
+              "local_reviewed",
+              "manifest_backed",
+              "external_artifact",
+              "public_fixture",
+              "public_release"
+            ]
+          },
+          "recommended_action": {
+            "type": "string"
+          },
+          "approval_required": {
+            "type": "boolean"
+          },
+          "metadata_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

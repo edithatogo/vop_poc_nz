@@ -1,0 +1,29 @@
+case_id: housing_insulation_nz
+case_type: empirical_tutorial
+model_family: markov
+decision_strategies:
+  - standard_care
+  - insulation
+perspectives:
+  - health_system
+  - societal
+cost_components:
+  - direct_medical
+  - intervention_cost
+  - patient_time
+  - productivity
+  - energy_savings
+  - informal_care
+source_grade:
+  clinical: empirical_published
+  costs: empirical_published
+  utilities: empirical_published
+  productivity: empirical_or_derived
+validation_status:
+  internal: pending
+  external: partial
+  face_validity: pending
+notes: >-
+  This case is designated as an empirically parameterised tutorial until the
+  model structure, parameter provenance, and validation checks are sufficient
+  for a policy-grade economic evaluation.

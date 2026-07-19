@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop-voiage/reorg-plan.schema.json",
+  "title": "Conductor repository reorganisation plan",
+  "type": "object",
+  "required": ["schema_version", "repo", "summary", "proposals"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo": {"type": "object"},
+    "detected_project": {"type": "object"},
+    "summary": {"type": "object"},
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "proposal", "priority", "tracked", "rationale"],
+        "properties": {
+          "path": {"type": "string"},
+          "proposal": {"type": "string"},
+          "priority": {"enum": ["high", "medium", "low"]},
+          "tracked": {"type": "boolean"},
+          "suggested_destination": {"type": ["string", "null"]},
+          "shell_hint": {"type": ["string", "null"]},
+          "rationale": {"type": "string"}
+        }
+      }
+    }
+  }
+}

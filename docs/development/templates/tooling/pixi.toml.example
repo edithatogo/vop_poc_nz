@@ -1,0 +1,27 @@
+# Reference only. Resolve package names/platforms against the live repository.
+[workspace]
+name = "PROJECT_NAME"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "win-64"]
+
+[dependencies]
+python = ">=3.14,<3.15"
+pip = "*"
+
+[pypi-dependencies]
+PROJECT_IMPORT_NAME = { path = ".", editable = true }
+pytest = "*"
+pytest-cov = "*"
+hypothesis = "*"
+ruff = "*"
+basedpyright = "*"
+scalene = "*"
+
+[tasks]
+format = "ruff format ."
+lint = "ruff check ."
+typecheck = "basedpyright"
+test = "pytest"
+quality = { depends-on = ["lint", "typecheck", "test"] }
+profile = "python -m scalene --cli scripts/profile_pipeline.py"
+conductor = "python scripts/run_all_local_gates.py . --keep-going"

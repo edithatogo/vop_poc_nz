@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop-voiage/artifact-promotion-plan.schema.json",
+  "title": "Conductor artifact promotion plan",
+  "type": "object",
+  "required": ["schema_version", "repo", "summary", "states", "decisions"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo": {"type": "object"},
+    "detected_project": {"type": "object"},
+    "summary": {
+      "type": "object",
+      "required": ["total_decisions", "action_counts", "target_state_counts", "tracked_publication_blockers"],
+      "properties": {
+        "total_decisions": {"type": "integer", "minimum": 0},
+        "action_counts": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "target_state_counts": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "tracked_publication_blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "states": {"type": "object", "additionalProperties": {"type": "string"}},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "artifact_class", "current_state", "target_state", "action", "publish_policy", "tracked", "size_bytes", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "artifact_class": {"type": "string"},
+          "current_state": {"type": "string"},
+          "target_state": {"type": "string"},
+          "action": {"type": "string"},
+          "publish_policy": {"type": "string"},
+          "suggested_location": {"type": ["string", "null"]},
+          "rationale": {"type": "string"},
+          "tracked": {"type": "boolean"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string"}
+        }
+      }
+    }
+  }
+}

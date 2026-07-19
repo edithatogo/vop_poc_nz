@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop_poc_nz/model_validation.schema.json",
+  "title": "Model validation report",
+  "type": "object",
+  "required": ["schema_version", "check", "valid", "metadata", "findings"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "check": {"type": "string"},
+    "valid": {"type": "boolean"},
+    "metadata": {"type": "object"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "code", "message"],
+        "properties": {
+          "severity": {"enum": ["info", "warning", "error"]},
+          "code": {"type": "string"},
+          "message": {"type": "string"},
+          "location": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

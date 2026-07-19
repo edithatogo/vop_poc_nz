@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop-voiage/release-snapshot.schema.json",
+  "title": "Conductor release snapshot",
+  "type": "object",
+  "required": ["schema_version", "repo", "git", "ready_to_release", "summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo": {"type": "object"},
+    "detected_project": {"type": "object"},
+    "git": {"type": "object"},
+    "strict": {"type": "boolean"},
+    "ready_to_release": {"type": "boolean"},
+    "summary": {"type": "object"},
+    "safe_tracked_files": {"type": "array"},
+    "review_tracked_files": {"type": "array"},
+    "blocked_tracked_files": {"type": "array"}
+  }
+}
