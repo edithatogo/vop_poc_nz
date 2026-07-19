@@ -46,6 +46,7 @@ GATES: tuple[GateSpec, ...] = (
     GateSpec("reviewer_matrix", "reviewer_matrix.py"),
     GateSpec("concept_budget", "concept_budget.py", ("--strict",)),
     GateSpec("manuscript_output_audit", "manuscript_output_audit.py", ("--strict",)),
+    GateSpec("governance_harness", "governance_harness.py", ("--strict",)),
     GateSpec("import_boundary", "import_boundary.py", ("--strict",)),
     GateSpec("issue_hygiene", "issue_hygiene.py", ("--strict",)),
     GateSpec("publication_gate", "publication_gate.py", ("--strict",)),

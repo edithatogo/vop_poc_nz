@@ -16,7 +16,8 @@ typecheck = { cmd = "uv run basedpyright && uv run ty check src/vop_poc_nz", dep
 security = { cmd = "uv run bandit -r src/vop_poc_nz && uv run pip-audit", depends-on = ["sync"] }
 build = { cmd = "uv build", depends-on = ["sync"] }
 profile = { cmd = "uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py", depends-on = ["sync"] }
-verify = { depends-on = ["lint", "format-check", "typecheck", "test", "build"] }
+governance = { cmd = "uv run python scripts/governance_harness.py . --strict", depends-on = ["sync"] }
+verify = { depends-on = ["lint", "format-check", "typecheck", "governance", "test", "build"] }
 
 [feature.experimental.tasks]
 sync-experimental = "uv sync --frozen --extra dev --extra experimental"
