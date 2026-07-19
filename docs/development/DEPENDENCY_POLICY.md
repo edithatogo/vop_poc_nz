@@ -7,3 +7,10 @@ Apache Arrow/Parquet is the canonical public tabular interchange. JSON Lines is 
 Experimental dependencies live in the `experimental` extra. DuckDB, orjson, msgspec, JAX, NumPyro, and Scalene must remain behind stable interfaces and require numerical-equivalence or serialization-round-trip tests before promotion. Polars GPU is intentionally excluded from the Windows-native environment because its open-beta backend requires Linux or WSL2; CPU LazyFrame execution remains supported.
 
 Python free-threading is a beta classifier, not a performance claim. It requires a dedicated CI job and deterministic equivalence evidence before becoming a release gate.
+
+The weekly `Dependency frontier` workflow verifies the committed lock and
+compares every direct runtime dependency with the official PyPI release
+metadata. It reports drift but does not duplicate dependency-update automation
+or mutate the lockfile. The pull-request harness separately enforces the Ruff
+debt ratchet and Arrow serialization budgets; see
+`INTERCHANGE_HARNESS.md`.

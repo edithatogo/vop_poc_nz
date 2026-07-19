@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    "perspective.parquet",
+    "perspective.arrow"
+  ],
+  "contract_version": "1.0.0",
+  "records": [
+    {
+      "case_id": "fixture-v1",
+      "draw": "0",
+      "event_time": "2026-01-01T00:00:00Z",
+      "net_benefit": 1250.5,
+      "perspective": "health-system",
+      "strategy": "usual-care",
+      "subgroup": null
+    },
+    {
+      "case_id": "fixture-v1",
+      "draw": "1",
+      "event_time": "2026-01-02T00:00:00Z",
+      "net_benefit": -42.25,
+      "perspective": "societal",
+      "strategy": "intervention",
+      "subgroup": "priority"
+    }
+  ],
+  "schema_fingerprint": "10d134e4fdb5f6a13dd7fbe4677d1d10733cb2add83c6856f16c8624d4184d95"
+}

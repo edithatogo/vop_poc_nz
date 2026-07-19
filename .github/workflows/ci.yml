@@ -33,3 +33,45 @@ jobs:
     - name: Test with tox
       run: tox
 
+  quality-ratchets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@v8
+      - name: Install locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Enforce Ruff debt ratchet
+        run: uv run python scripts/lint_ratchet.py
+      - name: Validate shared VOP-VOIAGE compatibility contract
+        run: uv run python scripts/validate_compatibility_contract.py
+      - name: Enforce Arrow serialization regression budgets
+        run: >-
+          uv run python scripts/serialization_benchmark.py
+          --output .benchmarks/serialization.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: serialization-benchmark
+          path: .benchmarks/serialization.json
+          if-no-files-found: warn
+
+  free-threaded-observation:
+    name: Python 3.14t observation
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14t"
+      - uses: astral-sh/setup-uv@v8
+      - name: Exercise minimal free-threaded Arrow boundary
+        run: >-
+          uv run --no-project
+          --with pyarrow==25.0.0
+          --with polars==1.42.1
+          python scripts/free_threaded_arrow_probe.py
+

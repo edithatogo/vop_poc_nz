@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.31.0,<2"]
 build-backend = "hatchling.build"
 
 [project]
@@ -46,7 +46,7 @@ dev = [
     "ruff>=0.15.22,<1",
     "mypy>=2.3.0,<3",
     "basedpyright>=1.39.9,<2",
-    "hypothesis>=6.156.9,<7",
+    "hypothesis>=6.157.0,<7",
     "pre-commit>=4.6.0,<5",
     "deptry>=0.25.1,<1",
     "vulture>=2.16,<3",

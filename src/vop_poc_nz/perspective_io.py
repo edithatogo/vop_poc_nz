@@ -4,15 +4,43 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable, Mapping
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
+import pyarrow.ipc as ipc
 import pyarrow.parquet as pq
 
 from .perspective import NetBenefitTensor
 
 ARROW_SCHEMA_VERSION = "1.0.0"
+
+
+def schema_fingerprint(schema: pa.Schema) -> str:
+    """Return a stable SHA-256 fingerprint for an Arrow logical schema.
+
+    Container-specific metadata is excluded so the same logical table has the
+    same cross-language identity in Parquet, Arrow IPC, PyArrow, and Polars.
+    """
+    fields = [
+        {"arrow_type": str(field.type), "name": field.name, "nullable": field.nullable}
+        for field in schema.remove_metadata()
+    ]
+    canonical = json.dumps(fields, sort_keys=True, separators=(",", ":"))
+    return sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def records_to_arrow(records: Iterable[Mapping[str, Any]]) -> pa.Table:
+    """Build a schema-bearing Arrow table from row mappings."""
+    table = pa.Table.from_pylist([dict(row) for row in records])
+    fingerprint = schema_fingerprint(table.schema)
+    return table.replace_schema_metadata(
+        {
+            b"vop.arrow_schema_version": ARROW_SCHEMA_VERSION.encode(),
+            b"vop.schema_fingerprint": fingerprint.encode(),
+        }
+    )
 
 
 def tensor_to_long_records(tensor: NetBenefitTensor) -> list[dict[str, Any]]:
@@ -59,9 +87,10 @@ def write_records(
     if (prefer_parquet and out.suffix != ".jsonl") or out.suffix == ".parquet":
         if out.suffix != ".parquet":
             out = out.with_suffix(".parquet")
-        table = pa.Table.from_pylist(rows).replace_schema_metadata(
+        table = records_to_arrow(rows)
+        table = table.replace_schema_metadata(
             {
-                b"vop.arrow_schema_version": ARROW_SCHEMA_VERSION.encode(),
+                **(table.schema.metadata or {}),
                 b"vop.interchange": b"apache-arrow-parquet",
             }
         )
@@ -84,9 +113,31 @@ def read_records(path: str | Path) -> pa.Table:
     return pq.read_table(source)
 
 
+def write_ipc_records(records: Iterable[Mapping[str, Any]], path: str | Path) -> Path:
+    """Write records as an Arrow IPC file with the shared schema identity."""
+    target = Path(path).with_suffix(".arrow")
+    table = records_to_arrow(records)
+    table = table.replace_schema_metadata(
+        {**(table.schema.metadata or {}), b"vop.interchange": b"apache-arrow-ipc"}
+    )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with ipc.new_file(target, table.schema) as writer:
+        writer.write_table(table)
+    return target
+
+
+def read_ipc_records(path: str | Path) -> pa.Table:
+    """Read an Arrow IPC file without a pandas conversion."""
+    source = Path(path)
+    if source.suffix != ".arrow":
+        raise ValueError("Arrow IPC interchange requires a .arrow artifact")
+    with ipc.open_file(source) as reader:
+        return reader.read_all()
+
+
 def to_arrow_c_stream(records: Iterable[Mapping[str, Any]]) -> object:
     """Expose records through Arrow's zero-copy PyCapsule stream protocol."""
-    table = pa.Table.from_pylist([dict(row) for row in records])
+    table = records_to_arrow(records)
     return table.__arrow_c_stream__()
 
 

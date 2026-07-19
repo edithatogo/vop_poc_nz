@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.7
+    rev: v0.15.22
     hooks:
       - id: ruff
         args: ["check", "src", "tests"]
@@ -8,14 +8,14 @@ repos:
         args: ["src", "tests"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+    rev: v2.3.0
     hooks:
       - id: mypy
         args: ["src"]
-        additional_dependencies: ["pydantic>=2.5.0", "pandas>=1.5.0", "numpy>=1.24.0"]
+        additional_dependencies: ["pydantic==2.13.4", "pandas==3.0.3", "numpy==2.5.1"]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.365
+    rev: v1.1.411
     hooks:
       - id: pyright
         additional_dependencies: []

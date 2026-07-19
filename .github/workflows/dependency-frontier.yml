@@ -1,0 +1,33 @@
+name: Dependency frontier
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@v8
+      - name: Verify lockfile and install audit environment
+        run: |
+          uv lock --check
+          uv sync --frozen --extra dev
+      - name: Compare direct dependencies with official PyPI releases
+        run: uv run python scripts/dependency_frontier.py . --strict
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-frontier
+          path: |
+            .conductor/local/dependency_frontier.json
+            .conductor/local/dependency_frontier.md
+          if-no-files-found: warn

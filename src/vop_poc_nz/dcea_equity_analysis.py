@@ -30,7 +30,8 @@ def calculate_gini(net_health_benefits: list[float]) -> float:
     # Number of observations
     n = array.shape[0]
     # Gini coefficient
-    return (np.sum((2 * index - n - 1) * array)) / (n * np.sum(array))
+    coefficient = (np.sum((2 * index - n - 1) * array)) / (n * np.sum(array))
+    return float(np.clip(coefficient, 0.0, 1.0))
 
 
 def calculate_atkinson_index(
