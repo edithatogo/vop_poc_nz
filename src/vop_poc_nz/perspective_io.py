@@ -39,6 +39,12 @@ def records_to_arrow(records: Iterable[Mapping[str, Any]]) -> pa.Table:
         {
             b"vop.arrow_schema_version": ARROW_SCHEMA_VERSION.encode(),
             b"vop.schema_fingerprint": fingerprint.encode(),
+            b"vop_voiage.contract_version": b"1.0.0",
+            b"vop_voiage.schema_id": b"net_benefit_records",
+            b"vop_voiage.schema_version": ARROW_SCHEMA_VERSION.encode(),
+            b"vop_voiage.schema_fingerprint": fingerprint.encode(),
+            b"vop_voiage.producer": b"vop_poc_nz",
+            b"vop_voiage.method_contract_version": b"1.1.0",
         }
     )
 
@@ -92,6 +98,7 @@ def write_records(
             {
                 **(table.schema.metadata or {}),
                 b"vop.interchange": b"apache-arrow-parquet",
+                b"vop_voiage.interchange": b"apache-arrow-parquet",
             }
         )
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -118,7 +125,11 @@ def write_ipc_records(records: Iterable[Mapping[str, Any]], path: str | Path) ->
     target = Path(path).with_suffix(".arrow")
     table = records_to_arrow(records)
     table = table.replace_schema_metadata(
-        {**(table.schema.metadata or {}), b"vop.interchange": b"apache-arrow-ipc"}
+        {
+            **(table.schema.metadata or {}),
+            b"vop.interchange": b"apache-arrow-ipc",
+            b"vop_voiage.interchange": b"apache-arrow-ipc",
+        }
     )
     target.parent.mkdir(parents=True, exist_ok=True)
     with ipc.new_file(target, table.schema) as writer:
