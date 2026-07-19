@@ -111,7 +111,7 @@ jobs:
           --repeats 9
           --iterations 40
           --confidence 0.95
-          --maximum-upper-seconds 0.5
+          --baseline benchmarks/c15_performance_baseline.json
           --output c15-evidence/performance.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

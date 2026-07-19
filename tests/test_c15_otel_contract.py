@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -32,12 +33,20 @@ def test_otlp_request_preserves_correlation_and_redacts_nested_secrets() -> None
         attributes={
             "cohort": "public",
             "authorization": "Bearer secret",
-            "nested": {"api_key": "private", "safe": ["ok", {"token": "no"}]},
+            "nested": {
+                "api_key": "private",
+                "safe": [
+                    "ok",
+                    {"token": "no"},
+                    {"note": "password=also-private"},
+                ],
+            },
         },
     )
     encoded = json.dumps(payload, sort_keys=True)
     assert "Bearer secret" not in encoded
     assert "private" not in encoded
+    assert "also-private" not in encoded
     assert '"stringValue": "[REDACTED]"' in encoded
     record = payload["resourceLogs"][0]["scopeLogs"][0]["logRecords"][0]
     assert record["traceId"] == _context().trace_id
@@ -49,6 +58,60 @@ def test_otlp_request_preserves_correlation_and_redacts_nested_secrets() -> None
         "analysis.fallback",
         "analysis.numerical_policy_id",
     } <= attribute_keys
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Authorization: Bearer top-secret",
+        "password=hunter2",
+        "api key: private-value",
+        "token=private-value",
+    ],
+)
+def test_otlp_request_rejects_secret_bearing_message_body(message: str) -> None:
+    with pytest.raises(TelemetryContractError, match="secret-bearing"):
+        build_otlp_log_request(message, _context())
+
+
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
+def test_otlp_request_rejects_non_finite_nested_attributes(value: float) -> None:
+    with pytest.raises(TelemetryContractError, match="finite"):
+        build_otlp_log_request(
+            "analysis.completed",
+            _context(),
+            attributes={"nested": {"values": [1.0, value]}},
+        )
+
+
+@pytest.mark.parametrize("timestamp", [0, -1, True, 1.5, 2**64])
+def test_otlp_request_rejects_invalid_timestamp(timestamp: object) -> None:
+    with pytest.raises(TelemetryContractError, match="positive uint64"):
+        build_otlp_log_request(
+            "analysis.completed",
+            _context(),
+            observed_time_unix_nano=timestamp,  # type: ignore[arg-type]
+        )
+
+
+def test_correlation_rejects_secret_bearing_text() -> None:
+    with pytest.raises(TelemetryContractError, match="secret-bearing"):
+        CorrelationContext(
+            run_id="token=private",
+            trace_id="0123456789abcdef0123456789abcdef",
+            span_id="0123456789abcdef",
+            backend="numpy",
+            fallback="none",
+            numerical_policy_id="policy-sha256",
+        )
+
+
+def test_export_rejects_non_finite_arbitrary_payload_before_network() -> None:
+    with pytest.raises(TelemetryContractError, match="finite JSON"):
+        export_otlp_http(
+            "http://127.0.0.1:1/v1/logs",
+            {"unsafe": math.nan},
+        )
 
 
 def test_ephemeral_collector_simulator_receives_otlp_json() -> None:

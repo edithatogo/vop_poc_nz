@@ -12,6 +12,7 @@ from typing import ClassVar
 
 from vop_poc_nz.c15_otel_contract import (
     CorrelationContext,
+    TelemetryContractError,
     build_otlp_log_request,
     export_otlp_http,
 )
@@ -56,6 +57,15 @@ def probe() -> dict[str, object]:
         numerical_policy_id="c15-policy",
     )
     try:
+        build_otlp_log_request(
+            "Authorization: Bearer must-not-export-body",
+            context,
+        )
+    except TelemetryContractError:
+        secret_body_rejected = True
+    else:
+        raise RuntimeError("secret-bearing telemetry body was accepted")
+    try:
         payload = build_otlp_log_request(
             "analysis.completed",
             context,
@@ -74,6 +84,7 @@ def probe() -> dict[str, object]:
         "collector": "ephemeral-loopback-otlp-http-json-simulator",
         "exports_received": 1,
         "privacy_screened": True,
+        "secret_body_rejected": secret_body_rejected,
         "correlation": {
             "run_id": context.run_id,
             "trace_id": context.trace_id,

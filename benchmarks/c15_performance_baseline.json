@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "workload_id": "c15-evpi-4096x4-f64-v1",
+  "workload": "c15 higher-dimensional EVPI kernel; 4096x4 float64 values; 40 iterations; 9 samples",
+  "parameters": {
+    "repeats": 9,
+    "iterations": 40,
+    "rows": 4096,
+    "strategies": 4,
+    "dtype": "float64"
+  },
+  "source": {
+    "commit": "bc7e60daa8a7f29f01aa29c05924f94d5522099e",
+    "workflow": "C15 Cross-platform Assurance",
+    "workflow_run_id": "29698214287",
+    "captured_at": "2026-07-20",
+    "derivation": "Upper 95% confidence bounds retained from independent GitHub-hosted Linux and Windows jobs; three-fold cohort allowance capped at 0.05 seconds"
+  },
+  "cohorts": {
+    "Linux": {
+      "reference_upper_seconds": 0.01014,
+      "maximum_regression_factor": 3.0,
+      "absolute_ceiling_seconds": 0.05
+    },
+    "Windows": {
+      "reference_upper_seconds": 0.007994,
+      "maximum_regression_factor": 3.0,
+      "absolute_ceiling_seconds": 0.05
+    }
+  }
+}

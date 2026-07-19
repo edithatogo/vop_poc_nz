@@ -7,6 +7,7 @@ import argparse
 import json
 import time
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -15,6 +16,8 @@ from vop_poc_nz.c15_performance import (
     performance_ratchet,
 )
 from vop_poc_nz.c15_scientific_oracles import numpy_evpi
+
+_WORKLOAD_ID = "c15-evpi-4096x4-f64-v1"
 
 
 def measure(*, repeats: int, iterations: int) -> list[float]:
@@ -40,14 +43,35 @@ def main() -> int:
     parser.add_argument("--repeats", type=int, default=9)
     parser.add_argument("--iterations", type=int, default=40)
     parser.add_argument("--confidence", type=float, default=0.95)
-    parser.add_argument("--maximum-upper-seconds", type=float, default=2.0)
+    parser.add_argument(
+        "--baseline",
+        type=Path,
+        default=Path("benchmarks/c15_performance_baseline.json"),
+    )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
+        baseline: Any = json.loads(args.baseline.read_text(encoding="utf-8"))
+        if not isinstance(baseline, dict):
+            raise ValueError("performance baseline must be a JSON object")
+        if baseline.get("workload_id") != _WORKLOAD_ID:
+            raise ValueError("performance baseline workload identity mismatch")
+        parameters = baseline.get("parameters")
+        expected_parameters = {
+            "repeats": args.repeats,
+            "iterations": args.iterations,
+            "rows": 4096,
+            "strategies": 4,
+            "dtype": "float64",
+        }
+        if parameters != expected_parameters:
+            raise ValueError(
+                "performance baseline parameters do not match the workload"
+            )
         samples = measure(repeats=args.repeats, iterations=args.iterations)
         report = performance_ratchet(
             samples,
-            maximum_upper_seconds=args.maximum_upper_seconds,
+            baseline=baseline,
             confidence=args.confidence,
         )
     except (PerformanceRegression, RuntimeError, ValueError) as exc:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import math
 import re
 import time
 from collections.abc import Mapping, Sequence
@@ -15,6 +16,11 @@ _HEX_32 = re.compile(r"^[0-9a-f]{32}$")
 _HEX_16 = re.compile(r"^[0-9a-f]{16}$")
 _SENSITIVE_KEY = re.compile(
     r"(^|[._-])(authorization|api[_-]?key|cookie|password|secret|token)($|[._-])",
+    re.IGNORECASE,
+)
+_SENSITIVE_TEXT = re.compile(
+    r"(?:\b(?:authorization|api[_ -]?key|cookie|password|secret|token)\b"
+    r"\s*[:=]\s*\S+|\bbearer\s+\S+)",
     re.IGNORECASE,
 )
 _REDACTED = "[REDACTED]"
@@ -44,6 +50,10 @@ class CorrelationContext:
         )
         if any(not value.strip() for value in text_fields):
             raise TelemetryContractError("correlation fields must not be empty")
+        if any(_SENSITIVE_TEXT.search(value) for value in text_fields):
+            raise TelemetryContractError(
+                "correlation fields contain secret-bearing text"
+            )
         if _HEX_32.fullmatch(self.trace_id) is None:
             raise TelemetryContractError("trace_id must be 32 lowercase hex characters")
         if _HEX_16.fullmatch(self.span_id) is None:
@@ -57,6 +67,10 @@ def _safe_value(key: str, value: object) -> object:
         return {str(name): _safe_value(str(name), item) for name, item in value.items()}
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [_safe_value(key, item) for item in value]
+    if isinstance(value, float) and not math.isfinite(value):
+        raise TelemetryContractError("telemetry numbers must be finite")
+    if isinstance(value, str) and _SENSITIVE_TEXT.search(value):
+        return _REDACTED
     if value is None or isinstance(value, (bool, int, float, str)):
         return value
     return str(value)
@@ -95,8 +109,10 @@ def build_otlp_log_request(
     observed_time_unix_nano: int | None = None,
 ) -> dict[str, object]:
     """Build an OTLP/HTTP JSON logs request with mandatory safe correlation."""
-    if not message.strip():
+    if not isinstance(message, str) or not message.strip():
         raise TelemetryContractError("telemetry message must not be empty")
+    if _SENSITIVE_TEXT.search(message):
+        raise TelemetryContractError("telemetry message contains secret-bearing text")
     safe = {
         str(key): _safe_value(str(key), value)
         for key, value in (attributes or {}).items()
@@ -109,7 +125,15 @@ def build_otlp_log_request(
             "analysis.numerical_policy_id": correlation.numerical_policy_id,
         }
     )
-    timestamp = observed_time_unix_nano or time.time_ns()
+    timestamp = (
+        time.time_ns() if observed_time_unix_nano is None else observed_time_unix_nano
+    )
+    if (
+        isinstance(timestamp, bool)
+        or not isinstance(timestamp, int)
+        or not 0 < timestamp < 2**64
+    ):
+        raise TelemetryContractError("observed timestamp must be a positive uint64")
     record = {
         "timeUnixNano": str(timestamp),
         "observedTimeUnixNano": str(timestamp),
@@ -165,7 +189,15 @@ def export_otlp_http(
 ) -> None:
     """POST one privacy-screened OTLP JSON request to a collector endpoint."""
     _safe_endpoint(endpoint)
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    try:
+        encoded = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode()
+    except (TypeError, ValueError) as exc:
+        raise TelemetryContractError("OTLP payload must be finite JSON") from exc
     request = Request(
         endpoint,
         data=encoded,

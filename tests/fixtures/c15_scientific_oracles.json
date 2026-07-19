@@ -9,32 +9,41 @@
     {
       "case_id": "decision-boundary",
       "class": "boundary",
+      "assumptions": ["Equal draw weights", "Risk-neutral expected net benefit"],
+      "units": {"net_benefit": "NZD_2025_per_person", "expected_evpi": "NZD_2025_per_person"},
       "net_benefit": [[0, 0], [0, 0]],
       "expected_evpi": "0",
       "production_expected_evpi": "0",
-      "production_zero_tolerance": "0.00001"
+      "tolerances": {"decimal_absolute": "0", "numpy_absolute": "1e-15", "numpy_relative": "1e-12", "production_absolute": "1e-15", "production_relative": "1e-12", "jax_absolute": "1e-6"}
     },
     {
       "case_id": "near-tie",
       "class": "near_tie",
-      "net_benefit": [[0, 0.0000000001], [0.0000000001, 0]],
-      "expected_evpi": "0.00000000005",
-      "production_expected_evpi": "0",
-      "production_zero_tolerance": "0.00001"
+      "assumptions": ["Equal draw weights", "Risk-neutral expected net benefit", "Signal exceeds the production zero-clamp"],
+      "units": {"net_benefit": "NZD_2025_per_person", "expected_evpi": "NZD_2025_per_person"},
+      "net_benefit": [[0, 0.0001], [0.0001, 0]],
+      "expected_evpi": "0.00005",
+      "production_expected_evpi": "0.00005",
+      "tolerances": {"decimal_absolute": "0", "numpy_absolute": "1e-15", "numpy_relative": "1e-12", "production_absolute": "1e-12", "production_relative": "1e-12", "jax_absolute": "1e-6"}
     },
     {
       "case_id": "extreme-tail",
       "class": "extreme_tail",
+      "assumptions": ["Equal draw weights", "Risk-neutral expected net benefit", "Finite signed tail values"],
+      "units": {"net_benefit": "NZD_2025_per_person", "expected_evpi": "NZD_2025_per_person"},
       "net_benefit": [[1000000000000, -1000000000000], [-1000000000000, 1000000000000], [0, 0], [0, 0]],
       "expected_evpi": "500000000000",
       "production_expected_evpi": "500000000000",
-      "production_zero_tolerance": "0.00001"
+      "tolerances": {"decimal_absolute": "0", "numpy_absolute": "0.000001", "numpy_relative": "1e-12", "production_absolute": "0.000001", "production_relative": "1e-12", "jax_absolute": "100000"}
     },
     {
       "case_id": "three-strategy",
       "class": "higher_dimensional",
+      "assumptions": ["Equal draw weights", "Risk-neutral expected net benefit", "Three mutually exclusive strategies"],
+      "units": {"net_benefit": "NZD_2025_per_person", "expected_evpi": "NZD_2025_per_person"},
       "net_benefit": [[0, 10, 5], [9, 0, 5], [0, 0, 20], [4, 4, 4]],
-      "expected_evpi": "2.25"
+      "expected_evpi": "2.25",
+      "tolerances": {"decimal_absolute": "0", "numpy_absolute": "1e-15", "numpy_relative": "1e-12", "production_absolute": "1e-12", "production_relative": "1e-12", "jax_absolute": "1e-6"}
     }
   ]
 }
