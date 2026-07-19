@@ -92,9 +92,29 @@ def build_audit(repo: Path) -> dict[str, Any]:
     tag = _git(repo, "describe", "--tags", "--abbrev=0")
     values["latest_tag"] = tag
 
-    versions = {str(value).removeprefix("v") for key, value in values.items() if key in {"pyproject_version", "citation_version", "package_version", "latest_tag"} and value}
-    if len(versions) > 1:
-        findings.append(Finding("error", "version_mismatch", f"Version values disagree: {sorted(versions)}"))
+    declared_versions = {
+        str(value).removeprefix("v")
+        for key, value in values.items()
+        if key in {"pyproject_version", "citation_version", "package_version"}
+        and value
+    }
+    if len(declared_versions) > 1:
+        findings.append(
+            Finding(
+                "error",
+                "version_mismatch",
+                f"Declared version values disagree: {sorted(declared_versions)}",
+            )
+        )
+    latest_tag = str(values.get("latest_tag") or "").removeprefix("v")
+    if latest_tag and declared_versions and latest_tag not in declared_versions:
+        findings.append(
+            Finding(
+                "warning",
+                "unreleased_version",
+                f"Declared version {sorted(declared_versions)[0]} is newer than latest tag {latest_tag}; do not describe it as released.",
+            )
+        )
 
     detected_license = values.get("detected_license")
     citation_license = values.get("citation_license")
