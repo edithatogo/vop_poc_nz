@@ -2,6 +2,12 @@
 
 The v6 conductor has one active registry: `conductor/manifest.json`.
 
+Programme context:
+
+- [MoSCoW requirements](./requirements.md)
+- [Mermaid design](./design.md)
+- [GitHub Project roadmap](https://github.com/users/edithatogo/projects/28)
+
 ## Stable tracks
 
 | ID | Scope |

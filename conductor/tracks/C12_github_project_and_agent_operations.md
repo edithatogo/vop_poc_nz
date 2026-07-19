@@ -18,9 +18,17 @@ Maintain a deduplicated issue registry, dependency-aware conductor dashboard, re
 
 ## Acceptance criteria
 
-- [ ] Track and issue IDs are unique.
-- [ ] Dependencies are acyclic and resolvable.
-- [ ] Agents can resume from local state without replaying completed work.
+- [x] Track and issue IDs are unique.
+- [x] Dependencies are acyclic and resolvable.
+- [x] Agents can resume from local state without replaying completed work.
+
+## Evidence
+
+- C00–C12 issues: https://github.com/edithatogo/vop_poc_nz/issues
+- Historical track and development ledgers: issues 26–40
+- Shared roadmap: https://github.com/users/edithatogo/projects/28
+- MoSCoW requirements: `conductor/requirements.md`
+- Mermaid design: `conductor/design.md`
 
 ## Agent operating rule
 
