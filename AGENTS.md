@@ -80,6 +80,7 @@ Before editing this repository:
 7. Never overwrite an existing implementation merely because an overlay contains a file with the same purpose. Merge reference contracts and fixtures into the native architecture.
 8. Keep raw data, reviewer correspondence, generated outputs, submission files, credentials, and exploratory artifacts local unless explicitly promoted through the artifact ledger.
 9. Before commit, release, arXiv update, or journal submission, run `python scripts/run_all_local_gates.py . --pack-root "$VOP_CONDUCTOR_PACK" --keep-going` and resolve or explicitly document every failure.
+10. Before dependency work, run `uv lock --upgrade` and `python scripts/dependency_frontier.py . --strict`; record the report in the local context pack. Keep experiments behind extras and equivalence tests.
 
 For `vop_poc_nz`, keep generalisable EVoP/PAF methods compatible with the canonical `voiage` contract. For `voiage`, integrate into the existing API, registry, CLI, fixtures, and binding conventions rather than creating a parallel perspective package.
 <!-- END VOP-CONDUCTOR MANAGED BLOCK -->
