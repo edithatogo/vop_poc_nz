@@ -11,6 +11,8 @@ import pytest
 
 from vop_poc_nz.mutation_policy import (
     mutation_score_from_mapping,
+    mutation_score_from_meta,
+    mutation_target_report,
     validate_threshold,
 )
 
@@ -77,6 +79,63 @@ def test_exact_baseline_comparison_rejects_a_rounded_regression() -> None:
     assert report["score_percent"] == 89.9
     assert report["non_decreasing"] is False
     assert report["passed"] is False
+
+
+def test_target_ratchet_allows_only_killed_universe_growth() -> None:
+    improved = mutation_score_from_mapping(
+        _stats(
+            killed=91,
+            survived=5,
+            no_tests=2,
+            suspicious=1,
+            timeout=1,
+            segfault=1,
+            total=104,
+        )
+    )
+    report = mutation_target_report(improved, baseline_killed=90, baseline_eligible=100)
+    assert report["universe_delta"] == 1
+    assert report["unresolved"] == report["baseline_unresolved"] == 10
+    assert report["score_non_decreasing"] is True
+    assert report["debt_non_increasing"] is True
+    assert report["passed"] is True
+
+
+def test_target_ratchet_rejects_new_unresolved_mutation_debt() -> None:
+    regressed = mutation_score_from_mapping(_stats(total=104))
+    report = mutation_target_report(
+        regressed, baseline_killed=90, baseline_eligible=100
+    )
+    assert report["universe_delta"] == 1
+    assert report["unresolved"] == 11
+    assert report["score_non_decreasing"] is False
+    assert report["debt_non_increasing"] is False
+    assert report["passed"] is False
+
+
+def test_mutmut_meta_preserves_unreported_statuses_as_debt(tmp_path: Path) -> None:
+    meta = tmp_path / "target.py.meta"
+    meta.write_text(
+        json.dumps(
+            {
+                "exit_code_by_key": {
+                    "pkg.x__mutmut_1": 1,
+                    "pkg.x__mutmut_2": 0,
+                    "pkg.x__mutmut_3": 33,
+                    "pkg.x__mutmut_4": None,
+                    "pkg.x__mutmut_5": 37,
+                    "pkg.x__mutmut_6": 34,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    score = mutation_score_from_meta(meta)
+    assert score.total == 6
+    assert score.skipped == 1
+    assert score.eligible == 5
+    assert score.killed == 1
+    assert score.survived == score.no_tests == 1
 
 
 @pytest.mark.parametrize(
@@ -203,3 +262,51 @@ def test_cli_rejects_score_regression_even_above_floor(tmp_path: Path) -> None:
     report = json.loads(completed.stdout)
     assert report["score_percent"] == 89.9
     assert report["non_decreasing"] is False
+
+
+def test_target_cli_passes_baseline_and_rejects_new_debt(tmp_path: Path) -> None:
+    cache = tmp_path / "mutants"
+    meta = cache / "src/target.py.meta"
+    meta.parent.mkdir(parents=True)
+    statuses = {
+        "pkg.x__mutmut_1": 1,
+        "pkg.x__mutmut_2": 1,
+        "pkg.x__mutmut_3": 0,
+    }
+    meta.write_text(json.dumps({"exit_code_by_key": statuses}), encoding="utf-8")
+    baseline = tmp_path / "baseline.json"
+    baseline.write_text(
+        json.dumps(
+            {
+                "targets": {
+                    "src/target.py": {
+                        "cache_metadata": "src/target.py.meta",
+                        "killed": 2,
+                        "eligible": 3,
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    command = [
+        sys.executable,
+        "scripts/check_mutation_targets.py",
+        "--baseline",
+        str(baseline),
+        "--cache-root",
+        str(cache),
+    ]
+    passed = subprocess.run(
+        command, cwd=ROOT, capture_output=True, text=True, check=False
+    )
+    assert passed.returncode == 0
+    assert json.loads(passed.stdout)["passed"] is True
+
+    statuses["pkg.x__mutmut_4"] = 0
+    meta.write_text(json.dumps({"exit_code_by_key": statuses}), encoding="utf-8")
+    failed = subprocess.run(
+        command, cwd=ROOT, capture_output=True, text=True, check=False
+    )
+    assert failed.returncode == 2
+    assert json.loads(failed.stdout)["targets"]["src/target.py"]["unresolved"] == 2

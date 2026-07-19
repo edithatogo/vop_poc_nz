@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -106,6 +108,82 @@ def mutation_score_from_mapping(raw: Mapping[str, object]) -> MutationScore:
     return score
 
 
+_STATUS_FIELD_BY_EXIT_CODE: dict[int | None, str | None] = {
+    None: None,
+    0: "survived",
+    1: "killed",
+    2: "interrupted",
+    3: "killed",
+    5: "no_tests",
+    24: "timeout",
+    33: "no_tests",
+    34: "skipped",
+    35: "suspicious",
+    36: "timeout",
+    37: None,
+    152: "timeout",
+    255: "timeout",
+    -24: "timeout",
+    -11: "segfault",
+    -9: "segfault",
+}
+
+
+def mutation_score_from_meta(path: Path) -> MutationScore:
+    """Read one Mutmut 3.6 per-source metadata file without hiding statuses."""
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    statuses = raw.get("exit_code_by_key") if isinstance(raw, dict) else None
+    if not isinstance(statuses, dict):
+        raise ValueError(f"invalid Mutmut cache metadata: {path}")
+    counts = {field: 0 for field in _FIELDS if field != "total"}
+    for mutant, exit_code in statuses.items():
+        if not isinstance(mutant, str):
+            raise ValueError(f"invalid mutant name in cache metadata: {path}")
+        if exit_code is not None and (
+            isinstance(exit_code, bool) or not isinstance(exit_code, int)
+        ):
+            raise ValueError(f"invalid Mutmut exit code {exit_code!r} for {mutant}")
+        if exit_code not in _STATUS_FIELD_BY_EXIT_CODE:
+            raise ValueError(f"unknown Mutmut exit code {exit_code!r} for {mutant}")
+        field = _STATUS_FIELD_BY_EXIT_CODE[exit_code]
+        if field is not None:
+            counts[field] += 1
+    return MutationScore(total=len(statuses), **counts)
+
+
+def mutation_target_report(
+    score: MutationScore, *, baseline_killed: int, baseline_eligible: int
+) -> dict[str, Any]:
+    """Ratchet exact target score and unresolved mutation debt independently."""
+    if not 0 <= baseline_killed <= baseline_eligible or baseline_eligible == 0:
+        raise ValueError("target baseline counts are inconsistent")
+    unresolved = score.eligible - score.killed
+    baseline_unresolved = baseline_eligible - baseline_killed
+    score_non_decreasing = (
+        score.eligible > 0
+        and score.killed * baseline_eligible >= baseline_killed * score.eligible
+    )
+    debt_non_increasing = unresolved <= baseline_unresolved
+    return {
+        **asdict(score),
+        "eligible": score.eligible,
+        "score_percent": round(score.percent, 3),
+        "baseline_killed": baseline_killed,
+        "baseline_eligible": baseline_eligible,
+        "baseline_unresolved": baseline_unresolved,
+        "unresolved": unresolved,
+        "universe_delta": score.eligible - baseline_eligible,
+        "score_non_decreasing": score_non_decreasing,
+        "debt_non_increasing": debt_non_increasing,
+        "passed": (
+            score.interrupted == 0
+            and score.eligible > 0
+            and score_non_decreasing
+            and debt_non_increasing
+        ),
+    }
+
+
 def validate_threshold(threshold: float) -> float:
     """Require a meaningful percentage threshold."""
     if not 0.0 < threshold <= 100.0:
@@ -116,5 +194,7 @@ def validate_threshold(threshold: float) -> float:
 __all__ = [
     "MutationScore",
     "mutation_score_from_mapping",
+    "mutation_score_from_meta",
+    "mutation_target_report",
     "validate_threshold",
 ]

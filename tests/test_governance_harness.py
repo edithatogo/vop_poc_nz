@@ -111,7 +111,7 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
             encoding="utf-8"
         )
     )
-    assert baseline["scope"] == project["tool"]["mutmut"]["only_mutate"]
+    assert set(baseline["targets"]) == set(project["tool"]["mutmut"]["only_mutate"])
     mutation_tests = project["tool"]["mutmut"]["pytest_add_cli_args_test_selection"]
     assert mutation_tests == [
         "tests/test_logging_and_version.py",
@@ -119,6 +119,10 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
         "tests/test_mutation_score.py",
     ]
     assert "mutmut export-cicd-stats" in workflow
-    assert "--baseline-stats .github/mutation-baselines/vop-broad.json" in workflow
-    assert "scripts/run_critical_mutation_lane.py . --threshold 90" in workflow
+    assert "scripts/check_mutation_targets.py" in workflow
+    assert "scripts/run_critical_mutation_lane.py ." in workflow
+    assert "--threshold 90" in workflow
+    assert "continue-on-error: true" in workflow
+    assert "steps.broad-mutation.outcome" in workflow
+    assert "steps.critical-mutation.outcome" in workflow
     assert "mutation-score" in pixi["tasks"]

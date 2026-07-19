@@ -1,16 +1,17 @@
 {
-  "scope": [
-    "src/vop_poc_nz/logging_config.py",
-    "src/vop_poc_nz/github_sync_planner.py"
-  ],
-  "provenance": "GitHub Actions run 29690164219",
-  "killed": 312,
-  "survived": 189,
-  "total": 740,
-  "no_tests": 239,
-  "skipped": 0,
-  "suspicious": 0,
-  "timeout": 0,
-  "check_was_interrupted_by_user": 0,
-  "segfault": 0
+  "schema_version": "1.0.0",
+  "provenance": "GitHub Actions run 29690746269 at bea1cd3c5767628d067a80a790128996caceb6dd",
+  "policy": "Per-target exact score and unresolved-debt non-regression",
+  "targets": {
+    "src/vop_poc_nz/github_sync_planner.py": {
+      "cache_metadata": "src/vop_poc_nz/github_sync_planner.py.meta",
+      "killed": 221,
+      "eligible": 492
+    },
+    "src/vop_poc_nz/logging_config.py": {
+      "cache_metadata": "src/vop_poc_nz/logging_config.py.meta",
+      "killed": 68,
+      "eligible": 213
+    }
+  }
 }

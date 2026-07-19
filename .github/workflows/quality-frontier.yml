@@ -95,14 +95,39 @@ jobs:
           mkdir -p .benchmarks
           uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py
           uv run python scripts/profile_governance_workload.py --iterations 1000 --output .benchmarks/governance-profile.json
-      - if: matrix.lane == 'mutation'
+      - name: Generate broad mutation evidence
+        if: matrix.lane == 'mutation'
         run: |
-            uv run mutmut run
-            uv run mutmut export-cicd-stats
-            # Broad C13/logging score must not regress from the exact 312/740 baseline.
-            uv run python scripts/check_mutation_score.py --threshold 42 --baseline-stats .github/mutation-baselines/vop-broad.json --output .benchmarks/mutation-score-broad.json
-            # Production-used C13 safety invariants must independently remain >=90%.
-            uv run python scripts/run_critical_mutation_lane.py . --threshold 90 --output .benchmarks/mutation-critical.json
+          uv run mutmut run
+          uv run mutmut export-cicd-stats
+      - name: Check broad per-target mutation ratchets
+        id: broad-mutation
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        run: >-
+          uv run python scripts/check_mutation_targets.py
+          --baseline .github/mutation-baselines/vop-broad.json
+          --cache-root mutants
+          --output .benchmarks/mutation-score-broad.json
+      - name: Run critical C13 mutation gate
+        id: critical-mutation
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        run: >-
+          uv run python scripts/run_critical_mutation_lane.py .
+          --threshold 90
+          --output .benchmarks/mutation-critical.json
+      - name: Enforce both mutation gates
+        if: always() && matrix.lane == 'mutation'
+        env:
+          BROAD_OUTCOME: ${{ steps.broad-mutation.outcome }}
+          CRITICAL_OUTCOME: ${{ steps.critical-mutation.outcome }}
+        run: |
+          echo "broad mutation gate: ${BROAD_OUTCOME}"
+          echo "critical mutation gate: ${CRITICAL_OUTCOME}"
+          if [ "${BROAD_OUTCOME}" != success ] || [ "${CRITICAL_OUTCOME}" != success ]; then
+            exit 1
+          fi
       - if: matrix.lane == 'security'
         run: uv run bandit -r src/vop_poc_nz && uv run pip-audit
       - if: matrix.lane == 'experimental'
