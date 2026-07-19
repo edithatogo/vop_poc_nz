@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import base64
+import csv
+import io
 import json
 import tarfile
 import zipfile
@@ -38,9 +41,7 @@ _TEXT_FILENAMES = frozenset(
         "snakefile",
     }
 )
-_NORMALIZATION = (
-    "sorted-paths+declared-utf8-text-lf+content-sha256+derived-record-excluded"
-)
+_NORMALIZATION = "sorted-paths+declared-utf8-text-lf+content-sha256+record-semantics-v1"
 
 
 class ArtifactMismatch(ValueError):
@@ -93,28 +94,88 @@ def _tar_entries(path: Path) -> Iterable[tuple[str, bytes]]:
             yield member.name, extracted.read()
 
 
-def _entries(path: Path) -> list[ArchiveEntry]:
+def _wheel_record_entry(
+    raw: dict[str, bytes], record_name: str, normalized: list[ArchiveEntry]
+) -> ArchiveEntry:
+    """Validate raw wheel RECORD integrity and bind its normalized semantics."""
+    try:
+        rows = list(csv.reader(io.StringIO(raw[record_name].decode("utf-8"))))
+    except (UnicodeDecodeError, csv.Error) as exc:
+        raise ValueError("wheel RECORD is not valid UTF-8 CSV") from exc
+    recorded: set[str] = set()
+    for row in rows:
+        if len(row) != 3:
+            raise ValueError("wheel RECORD rows must contain path, digest, and size")
+        name = _safe_path(row[0])
+        if name in recorded:
+            raise ValueError(f"duplicate wheel RECORD path: {name}")
+        recorded.add(name)
+        digest, size = row[1], row[2]
+        if name == record_name:
+            if digest or size:
+                raise ValueError("wheel RECORD must not hash itself")
+            continue
+        content = raw.get(name)
+        if content is None:
+            raise ValueError(f"wheel RECORD references missing member: {name}")
+        expected_digest = (
+            base64.urlsafe_b64encode(sha256(content).digest()).rstrip(b"=").decode()
+        )
+        if digest != f"sha256={expected_digest}" or size != str(len(content)):
+            raise ValueError(f"wheel RECORD integrity mismatch: {name}")
+    if recorded != set(raw):
+        raise ValueError("wheel RECORD inventory does not match archive inventory")
+
+    normalized_rows = [
+        [entry["path"], f"sha256={entry['sha256']}", str(entry["size"])]
+        for entry in normalized
+    ]
+    normalized_rows.append([record_name, "", ""])
+    stream = io.StringIO(newline="")
+    csv.writer(stream, lineterminator="\n").writerows(sorted(normalized_rows))
+    content = stream.getvalue().encode("utf-8")
+    return {
+        "path": record_name,
+        "sha256": sha256(content).hexdigest(),
+        "size": len(content),
+    }
+
+
+def _raw_archive(path: Path) -> dict[str, bytes]:
     if zipfile.is_zipfile(path):
         raw_entries = _zip_entries(path)
     elif tarfile.is_tarfile(path):
         raw_entries = _tar_entries(path)
     else:
         raise ValueError(f"unsupported archive format: {path.name}")
-    entries: list[ArchiveEntry] = []
-    seen: set[str] = set()
+    raw: dict[str, bytes] = {}
     for raw_name, raw_content in raw_entries:
         name = _safe_path(raw_name)
-        if name.endswith(".dist-info/RECORD"):
-            # RECORD hashes raw wheel bytes, including platform checkout line endings.
-            # Every underlying member is independently normalized and hashed below.
-            continue
-        if name in seen:
+        if name in raw:
             raise ValueError(f"duplicate archive path: {name}")
-        seen.add(name)
+        raw[name] = raw_content
+    return raw
+
+
+def _entries(path: Path) -> list[ArchiveEntry]:
+    raw = _raw_archive(path)
+    record_names = [name for name in raw if name.endswith(".dist-info/RECORD")]
+    if path.suffix == ".whl" and len(record_names) != 1:
+        raise ValueError("wheel must contain exactly one .dist-info/RECORD")
+    if len(record_names) > 1:
+        raise ValueError("archive contains multiple .dist-info/RECORD files")
+
+    entries: list[ArchiveEntry] = []
+    for name, raw_content in raw.items():
+        if name in record_names:
+            continue
         content = _normalized_content(name, raw_content)
         entries.append(
             {"path": name, "sha256": sha256(content).hexdigest(), "size": len(content)}
         )
+    entries.sort(key=lambda item: item["path"])
+    if record_names:
+        entries.append(_wheel_record_entry(raw, record_names[0], entries))
     if not entries:
         raise ValueError("archive contains no regular files")
     return sorted(entries, key=lambda item: item["path"])

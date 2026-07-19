@@ -102,6 +102,7 @@ jobs:
           uv run --frozen pytest -q --no-cov tests/test_contract_bundle.py tests/test_github_governance_drift.py tests/test_reproducible_build.py tests/test_serialization_benchmark.py
           uv run --frozen mutmut run
           uv run --frozen mutmut export-cicd-stats
+          uv run --frozen mutmut results --all true > mutants/mutmut-universe.txt
       - name: Check broad per-target mutation ratchets
         id: broad-mutation
         if: always() && matrix.lane == 'mutation'
@@ -119,15 +120,30 @@ jobs:
           uv run --frozen python scripts/run_critical_mutation_lane.py .
           --threshold 90
           --output .benchmarks/mutation-critical.json
+      - name: Enforce immutable C15 mutation cohort
+        id: c15-cohort
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        env:
+          REVIEWED_BASELINE_SHA256: ${{ vars.VOP_MUTATION_BASELINE_SHA256 }}
+        run: >-
+          uv run --frozen python scripts/check_c15_mutation_cohort.py
+          --stats mutants/mutmut-cicd-stats.json
+          --universe mutants/mutmut-universe.txt
+          --baseline .github/mutation-baselines/vop-c15-cohort.json
+          --reviewed-baseline-sha256 "${REVIEWED_BASELINE_SHA256}"
+          --output .benchmarks/mutation-c15-cohort.json
       - name: Enforce both mutation gates
         if: always() && matrix.lane == 'mutation'
         env:
           BROAD_OUTCOME: ${{ steps.broad-mutation.outcome }}
           CRITICAL_OUTCOME: ${{ steps.critical-mutation.outcome }}
+          COHORT_OUTCOME: ${{ steps.c15-cohort.outcome }}
         run: |
           echo "broad mutation gate: ${BROAD_OUTCOME}"
           echo "critical mutation gate: ${CRITICAL_OUTCOME}"
-          if [ "${BROAD_OUTCOME}" != success ] || [ "${CRITICAL_OUTCOME}" != success ]; then
+          echo "C15 cohort gate: ${COHORT_OUTCOME}"
+          if [ "${BROAD_OUTCOME}" != success ] || [ "${CRITICAL_OUTCOME}" != success ] || [ "${COHORT_OUTCOME}" != success ]; then
             exit 1
           fi
       - if: matrix.lane == 'security'

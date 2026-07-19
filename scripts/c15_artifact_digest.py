@@ -37,7 +37,11 @@ def _single_archive(directory: Path, *, kind: str | None = None) -> Path:
         for path in directory.iterdir()
         if path.is_file()
         and (path.suffix in {".whl", ".zip"} or path.name.endswith(".tar.gz"))
-        and (kind is None or (kind == "wheel" and path.suffix == ".whl"))
+        and (
+            kind is None
+            or (kind == "wheel" and path.suffix == ".whl")
+            or (kind == "sdist" and path.name.endswith(".tar.gz"))
+        )
     )
     if len(candidates) != 1:
         raise ValueError(
@@ -52,7 +56,7 @@ def main() -> int:
     record = commands.add_parser("record")
     record.add_argument("--archive", type=Path)
     record.add_argument("--archive-dir", type=Path)
-    record.add_argument("--kind", choices=["wheel"])
+    record.add_argument("--kind", choices=["wheel", "sdist"])
     record.add_argument("--runner", required=True)
     record.add_argument("--output", type=Path, required=True)
     compare = commands.add_parser("compare")

@@ -1,0 +1,73 @@
+name: C15 Coverage Assurance
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BLIS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  NUMEXPR_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  VECLIB_MAXIMUM_THREADS: "1"
+
+jobs:
+  coverage-policy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - run: uv sync --frozen --extra dev --extra experimental
+      - name: Collect full branch coverage
+        run: >-
+          uv run --frozen pytest tests/ --cov=src/vop_poc_nz
+          --cov-config=pyproject.toml
+          --cov-report=json:.assurance/c15-coverage.json
+          --cov-fail-under=72
+      - name: Resolve bounded comparison base
+        id: comparison
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+          C15_PROVENANCE_FLOOR: 00e5dec9cff2a385fb551772c5722c9907633aca
+        run: |
+          base="${PUSH_BASE}"
+          if [ "${EVENT_NAME}" = pull_request ]; then base="${PR_BASE}"; fi
+          if [ -z "${base}" ] || [ "${base}" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${base}^{commit}"; then
+            base="HEAD^"
+          fi
+          if git merge-base --is-ancestor "${base}" "${C15_PROVENANCE_FLOOR}"; then
+            base="${C15_PROVENANCE_FLOOR}"
+          fi
+          echo "base=${base}" >> "$GITHUB_OUTPUT"
+      - name: Enforce coverage policy
+        run: >-
+          uv run --frozen python scripts/check_c15_coverage.py
+          --coverage .assurance/c15-coverage.json
+          --base "${{ steps.comparison.outputs.base }}"
+          --output .assurance/c15-coverage-policy.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: c15-coverage-evidence
+          path: .assurance/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

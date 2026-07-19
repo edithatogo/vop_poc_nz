@@ -21,6 +21,13 @@ from vop_poc_nz.c15_scientific_oracles import numpy_evpi
 _WORKLOAD_ID = "c15-evpi-4096x4-f64-v1"
 
 
+def _write(path: Path, report: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    path.write_text(payload, encoding="utf-8", newline="\n")
+    print(payload, end="")
+
+
 def measure(*, repeats: int, iterations: int) -> list[float]:
     """Return repeated wall times for a deterministic higher-dimensional EVPI kernel."""
     if repeats < 5 or iterations <= 0:
@@ -81,13 +88,25 @@ def main() -> int:
             confidence=args.confidence,
             config_digest=config_digest,
         )
-    except (PerformanceRegression, RuntimeError, ValueError) as exc:
+    except (OSError, PerformanceRegression, RuntimeError, ValueError) as exc:
+        _write(
+            args.output,
+            {
+                "schema_version": "1.0.0",
+                "passed": False,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "baseline": str(args.baseline),
+                "parameters": {
+                    "repeats": args.repeats,
+                    "iterations": args.iterations,
+                    "confidence": args.confidence,
+                },
+            },
+        )
         print(f"C15 performance assurance failed: {exc}")
         return 2
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
-    args.output.write_text(payload, encoding="utf-8", newline="\n")
-    print(payload, end="")
+    _write(args.output, report)
     return 0
 
 

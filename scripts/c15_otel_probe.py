@@ -8,7 +8,7 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from vop_poc_nz.c15_otel_contract import (
     CorrelationContext,
@@ -40,6 +40,56 @@ class _Collector(BaseHTTPRequestHandler):
     def log_message(self, format: str, *_args: object) -> None:
         del format
         return
+
+
+def _received_contract(
+    payload: dict[str, object], expected: CorrelationContext
+) -> dict[str, object]:
+    """Independently parse collector bytes and validate every required field."""
+    try:
+        resource_logs = cast("list[dict[str, object]]", payload["resourceLogs"])
+        resource = resource_logs[0]
+        scope_logs = cast("list[dict[str, object]]", resource["scopeLogs"])
+        records = cast("list[dict[str, object]]", scope_logs[0]["logRecords"])
+        record = records[0]
+        raw_attributes = cast("list[dict[str, object]]", record["attributes"])
+        attributes: dict[str, object] = {}
+        for item in raw_attributes:
+            key = cast("str", item["key"])
+            value = cast("dict[str, object]", item["value"])
+            attributes[key] = next(iter(value.values()))
+    except (IndexError, KeyError, StopIteration, TypeError) as exc:
+        raise RuntimeError(
+            "collector received malformed OTLP correlation payload"
+        ) from exc
+    if len(resource_logs) != 1 or len(records) != 1:
+        raise RuntimeError("collector must receive exactly one OTLP log record")
+    observed = {
+        "run_id": attributes.get("run.id"),
+        "trace_id": record.get("traceId"),
+        "span_id": record.get("spanId"),
+        "backend": attributes.get("analysis.backend"),
+        "fallback": attributes.get("analysis.fallback"),
+        "numerical_policy_id": attributes.get("analysis.numerical_policy_id"),
+    }
+    required = {
+        "run_id": expected.run_id,
+        "trace_id": expected.trace_id,
+        "span_id": expected.span_id,
+        "backend": expected.backend,
+        "fallback": expected.fallback,
+        "numerical_policy_id": expected.numerical_policy_id,
+    }
+    if observed != required:
+        raise RuntimeError("collector-observed correlation does not match the export")
+    encoded = json.dumps(payload, sort_keys=True).casefold()
+    if "must-not-export" in encoded:
+        raise RuntimeError("collector received privacy-sensitive telemetry")
+    if attributes.get("authorization") != "[REDACTED]":
+        raise RuntimeError("collector did not receive the required redaction marker")
+    if attributes.get("safe") != "retained":
+        raise RuntimeError("collector did not receive the expected safe attribute")
+    return observed
 
 
 def probe() -> dict[str, object]:
@@ -76,23 +126,17 @@ def probe() -> dict[str, object]:
         server.shutdown()
         thread.join(timeout=2)
         server.server_close()
-    encoded = json.dumps(_Collector.payloads, sort_keys=True)
-    if len(_Collector.payloads) != 1 or "must-not-export" in encoded:
+    if len(_Collector.payloads) != 1:
         raise RuntimeError("ephemeral collector privacy contract failed")
+    observed = _received_contract(_Collector.payloads[0], context)
     return {
         "schema_version": "1.0.0",
         "collector": "ephemeral-loopback-otlp-http-json-simulator",
         "exports_received": 1,
         "privacy_screened": True,
         "secret_body_rejected": secret_body_rejected,
-        "correlation": {
-            "run_id": context.run_id,
-            "trace_id": context.trace_id,
-            "span_id": context.span_id,
-            "backend": context.backend,
-            "fallback": context.fallback,
-            "numerical_policy_id": context.numerical_policy_id,
-        },
+        "correlation": observed,
+        "correlation_source": "collector_received_payload",
     }
 
 

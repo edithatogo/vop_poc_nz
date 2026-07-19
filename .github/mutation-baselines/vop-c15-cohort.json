@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "cohort": {
+    "tool": "mutmut",
+    "tool_version": "3.6.0",
+    "lock_sha256": "3353f83b08b799d48163334936477be453c61593a09f57e09bd68cc2d6a12394",
+    "configuration_sha256": "59d61c7e9632cc57c453fb3a721fe2bd1723b2bf135d5c31ac10ba18691470df",
+    "sources": [
+      {
+        "path": "src/vop_poc_nz/github_sync_planner.py",
+        "sha256": "318fd9e88477fe8d730e9b245be02dcf365a57c8f748ef051288d65c0fdcd444"
+      },
+      {
+        "path": "src/vop_poc_nz/logging_config.py",
+        "sha256": "e7714c42fa9969b44e8ab51f7b107d6d6ab607879536a0b4a66aecc1bd068f63"
+      }
+    ],
+    "source_logical_lines": 644,
+    "cohort_sha256": "693652d2c6864f56a6ff8171950bc061d2542c52ddd691258d36ef81a21066c7"
+  },
+  "universe": {
+    "ids": [],
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promotion_state": "pending_hosted_capture_and_external_review"
+  },
+  "stats": {
+    "killed": 370,
+    "survived": 457,
+    "total": 827,
+    "no_tests": 0,
+    "skipped": 0,
+    "suspicious": 0,
+    "timeout": 0,
+    "check_was_interrupted_by_user": 0,
+    "segfault": 0
+  },
+  "policy": {
+    "minimum_score_percent": 44.0,
+    "maximum_absolute_debt": 457,
+    "maximum_debt_density": 0.5526,
+    "replacement_requires_human_approval": true
+  },
+  "promotion_provenance": {
+    "review_state": "requires_external_anchor",
+    "run_id": 29698752432,
+    "commit": "700852f61a367a8bf3365e267009f2460e44fc00",
+    "evidence_url": "https://github.com/edithatogo/vop_poc_nz/actions/runs/29698752432"
+  }
+}

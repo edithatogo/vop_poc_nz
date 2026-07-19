@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import base64
+import csv
+import io
 import json
 import tarfile
 import zipfile
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
@@ -14,14 +18,31 @@ from vop_poc_nz.c15_reproducibility import (
 )
 
 
+def _record(contents: dict[str, bytes], record_name: str) -> bytes:
+    stream = io.StringIO(newline="")
+    writer = csv.writer(stream, lineterminator="\n")
+    for name, content in contents.items():
+        digest = (
+            base64.urlsafe_b64encode(sha256(content).digest()).rstrip(b"=").decode()
+        )
+        writer.writerow([name, f"sha256={digest}", len(content)])
+    writer.writerow([record_name, "", ""])
+    return stream.getvalue().encode("utf-8")
+
+
 def _zip(path: Path, newline: str) -> None:
+    contents = {
+        "pkg/data.txt": f"alpha{newline}beta{newline}".encode(),
+        "pkg/parameters.yaml.template": f"value: 1{newline}".encode(),
+        "pkg/templates/Snakefile": f"rule all:{newline}    pass{newline}".encode(),
+        "pkg-1.dist-info/licenses/LICENSE": f"terms{newline}".encode(),
+        "pkg/data.bin": b"\x00\x01",
+    }
+    record_name = "pkg-1.dist-info/RECORD"
     with zipfile.ZipFile(path, "w") as archive:
-        archive.writestr("pkg/data.txt", f"alpha{newline}beta{newline}")
-        archive.writestr("pkg/parameters.yaml.template", f"value: 1{newline}")
-        archive.writestr("pkg/templates/Snakefile", f"rule all:{newline}    pass{newline}")
-        archive.writestr("pkg-1.dist-info/licenses/LICENSE", f"terms{newline}")
-        archive.writestr("pkg/data.bin", b"\x00\x01")
-        archive.writestr("pkg-1.dist-info/RECORD", f"platform-derived-{newline}")
+        for name, content in contents.items():
+            archive.writestr(name, content)
+        archive.writestr(record_name, _record(contents, record_name))
 
 
 def test_zip_digest_is_stable_across_timestamps_order_and_line_endings(
@@ -30,13 +51,7 @@ def test_zip_digest_is_stable_across_timestamps_order_and_line_endings(
     linux = tmp_path / "linux.whl"
     windows = tmp_path / "windows.whl"
     _zip(linux, "\n")
-    with zipfile.ZipFile(windows, "w") as archive:
-        archive.writestr("pkg/data.bin", b"\x00\x01")
-        archive.writestr("pkg/data.txt", "alpha\r\nbeta\r\n")
-        archive.writestr("pkg/parameters.yaml.template", "value: 1\r\n")
-        archive.writestr("pkg/templates/Snakefile", "rule all:\r\n    pass\r\n")
-        archive.writestr("pkg-1.dist-info/licenses/LICENSE", "terms\r\n")
-        archive.writestr("pkg-1.dist-info/RECORD", "different-derived-record\r\n")
+    _zip(windows, "\r\n")
 
     left = normalized_archive_report(linux, runner="linux-x64")
     right = normalized_archive_report(windows, runner="windows-x64")
@@ -60,10 +75,26 @@ def test_comparison_fails_closed_for_content_or_inventory_drift(tmp_path: Path) 
     right_path = tmp_path / "right.whl"
     _zip(left_path, "\n")
     with zipfile.ZipFile(right_path, "w") as archive:
-        archive.writestr("pkg/data.txt", "changed\n")
+        contents = {"pkg/data.txt": b"changed\n"}
+        archive.writestr("pkg/data.txt", contents["pkg/data.txt"])
+        archive.writestr(
+            "pkg-1.dist-info/RECORD", _record(contents, "pkg-1.dist-info/RECORD")
+        )
     left = normalized_archive_report(left_path, runner="linux-x64")
     right = normalized_archive_report(right_path, runner="windows-x64")
     with pytest.raises(ArtifactMismatch, match="normalized artifact digests differ"):
         compare_digest_reports(left, right)
 
     json.dumps(left)
+
+
+def test_wheel_record_integrity_is_validated(tmp_path: Path) -> None:
+    wheel = tmp_path / "tampered.whl"
+    original = {"pkg/data.txt": b"original\n"}
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("pkg/data.txt", b"tampered")
+        archive.writestr(
+            "pkg-1.dist-info/RECORD", _record(original, "pkg-1.dist-info/RECORD")
+        )
+    with pytest.raises(ValueError, match="RECORD integrity mismatch"):
+        normalized_archive_report(wheel, runner="linux-x64")

@@ -56,7 +56,8 @@ def confidence_interval(
     if len(samples) >= 5:
         if bootstrap_resamples < 1_000:
             raise ValueError("bootstrap_resamples must be at least 1000")
-        generator = random.Random(0xC15)
+        # This PRNG is intentionally reproducible statistical resampling, not security.
+        generator = random.Random(0xC15)  # nosec B311
         size = len(samples)
         means = sorted(
             statistics.fmean(samples[generator.randrange(size)] for _ in range(size))

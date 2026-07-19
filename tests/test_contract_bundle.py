@@ -152,7 +152,13 @@ def test_identical_and_nullable_additive_schema_evolution_is_declared() -> None:
 
 def test_committed_previous_current_migration_matches_producer_identity() -> None:
     migration = json.loads(MIGRATION.read_text(encoding="utf-8"))
+    manifest = json.loads((BUNDLE / "manifest.json").read_text(encoding="utf-8"))
     assert migration["previous"] == _identity()
+    assert migration["provenance"]["source_bundle_sha256"] == manifest["bundle_sha256"]
+    assert (
+        migration["provenance"]["source_arrow_schema_fingerprint"]
+        == migration["previous"]["schema_fingerprint"]
+    )
 
     report = assess_arrow_evolution(migration["previous"], migration["current"])
 

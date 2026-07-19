@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "aggregate_percent": 72.0,
+  "aggregate_provenance": {
+    "measured_percent": 72.471563,
+    "calibration_commit": "00e5dec9cff2a385fb551772c5722c9907633aca",
+    "suite": "pytest tests/ with branch coverage",
+    "platform": "windows-python-3.14",
+    "policy": "truthful full-suite non-regression floor"
+  },
+  "critical_modules": {
+    "src/vop_poc_nz/c15_otel_contract.py": 95.0,
+    "src/vop_poc_nz/c15_performance.py": 90.0,
+    "src/vop_poc_nz/c15_reproducibility.py": 94.0,
+    "src/vop_poc_nz/c15_scientific_oracles.py": 95.0
+  },
+  "changed_line_percent": 95.0,
+  "changed_branch_percent": 100.0
+}
