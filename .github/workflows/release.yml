@@ -4,11 +4,18 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing signed release tag to publish"
+        required: true
+        type: string
 
 jobs:
   build:
     name: Build distributions
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     permissions:
       attestations: write
       contents: read
@@ -18,7 +25,22 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
           persist-credentials: false
+
+      - name: Validate exact signed remote release tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          remote_oid="$(git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" | cut -f1)"
+          test "$remote_oid" = "$(git rev-parse "refs/tags/$RELEASE_TAG")"
+          test "$(git cat-file -t "$RELEASE_TAG")" = tag
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
+          git verify-tag "$RELEASE_TAG"
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$remote_oid" --jq '.verification.verified' | grep -Fx true
 
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -35,13 +57,18 @@ jobs:
         run: uv sync --frozen --extra dev
 
       - name: Build distributions
-        run: uv build
+        run: uv run python scripts/reproducible_build.py . --output .assurance/reproducible-build.json --dist-dir dist
 
       - name: Verify distributions
         run: uv run twine check dist/*
 
       - name: Generate release SBOM
-        run: uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment --of JSON -o .assurance/sbom.cdx.json
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file .assurance/release-requirements.txt
+          uv venv .assurance/sbom-env --python 3.14
+          uv pip install --python .assurance/sbom-env/bin/python --require-hashes -r .assurance/release-requirements.txt
+          uv pip install --python .assurance/sbom-env/bin/python --no-deps dist/*.whl
+          uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment .assurance/sbom-env --pyproject pyproject.toml --mc-type library --output-reproducible --of JSON -o .assurance/sbom.cdx.json
 
       - name: Attest distributions and SBOM
         uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35
@@ -51,16 +78,20 @@ jobs:
 
       - name: Upload distributions
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
         with:
           name: dist
           path: dist/
+          if-no-files-found: warn
 
       - name: Upload supply-chain evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
         with:
           name: release-supply-chain
           path: .assurance/
           include-hidden-files: true
+          if-no-files-found: warn
 
   publish-testpypi:
     name: Publish to TestPyPI
@@ -102,6 +133,8 @@ jobs:
     name: Smoke test
     needs: publish-pypi
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -113,8 +146,9 @@ jobs:
 
       - name: Test installation
         run: |
-          pip install vop-poc-nz
-          python -c "import vop_poc_nz; print(f'Installed version: {vop_poc_nz.__version__}')"
+          version="${RELEASE_TAG#v}"
+          pip install "vop-poc-nz==$version"
+          python -c "import importlib.metadata; assert importlib.metadata.version('vop-poc-nz') == '$version'"
 
   github-release:
     name: Attach artifacts to release

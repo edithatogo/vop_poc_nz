@@ -98,6 +98,9 @@ exclude = [
   "/.pytest_cache",
   "/.ruff_cache",
   "/mutants",
+  "/arxiv_figures.zip",
+  "/debug_log*.txt",
+  "/manuscript/figures",
 ]
 
 [tool.hatch.envs.default]

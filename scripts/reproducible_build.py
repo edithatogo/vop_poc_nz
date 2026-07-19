@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -79,6 +80,11 @@ def compare_build_directories(first: Path, second: Path) -> dict[str, Any]:
     first_paths = distributions(first)
     second_paths = distributions(second)
     names_match = first_paths.keys() == second_paths.keys()
+    artifact_set_complete = (
+        len(first_paths) == 2
+        and sum(name.endswith(".whl") for name in first_paths) == 1
+        and sum(name.endswith(".tar.gz") for name in first_paths) == 1
+    )
     artifacts: list[dict[str, Any]] = []
     for name in sorted(first_paths.keys() & second_paths.keys()):
         left = artifact_evidence(first_paths[name])
@@ -96,7 +102,9 @@ def compare_build_directories(first: Path, second: Path) -> dict[str, Any]:
     return {
         "schema_version": "1.0.0",
         "names_match": names_match,
+        "artifact_set_complete": artifact_set_complete,
         "reproducible": names_match
+        and artifact_set_complete
         and bool(artifacts)
         and all(item["byte_identical"] for item in artifacts),
         "artifacts": artifacts,
@@ -114,7 +122,9 @@ def _source_date_epoch(repo: Path) -> str:
     return completed.stdout.strip()
 
 
-def verify_reproducible_build(repo: Path) -> dict[str, Any]:
+def verify_reproducible_build(
+    repo: Path, *, output_dir: Path | None = None
+) -> dict[str, Any]:
     """Run two isolated uv builds from the same source revision."""
     environment = {**os.environ, "SOURCE_DATE_EPOCH": _source_date_epoch(repo)}
     with (
@@ -130,15 +140,22 @@ def verify_reproducible_build(repo: Path) -> dict[str, Any]:
                 env=environment,
                 check=True,
             )
-        return compare_build_directories(first, second)
+        report = compare_build_directories(first, second)
+        if output_dir is not None and report["reproducible"]:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            for artifact in first.iterdir():
+                if artifact.is_file():
+                    shutil.copy2(artifact, output_dir / artifact.name)
+        return report
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repo", type=Path, nargs="?", default=Path.cwd())
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dist-dir", type=Path)
     args = parser.parse_args()
-    report = verify_reproducible_build(args.repo.resolve())
+    report = verify_reproducible_build(args.repo.resolve(), output_dir=args.dist_dir)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
