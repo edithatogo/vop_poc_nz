@@ -1,0 +1,8 @@
+{
+  "description": "Hardware-normalised write-time budgets; tighten after hosted-run history is available.",
+  "maximum_ratios": {
+    "ipc_write_vs_jsonl": 3.0,
+    "parquet_write_vs_jsonl": 5.0
+  },
+  "schema_version": "1.0.0"
+}
