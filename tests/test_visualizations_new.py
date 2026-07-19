@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from src import visualizations as viz
+from vop_poc_nz import visualizations as viz
 
 OUTPUT_DIR = "output/test_figures"
 
@@ -16,7 +16,10 @@ def setup_module(module):
 def test_markov_trace_saves_files():
     trace = pd.DataFrame({"Healthy": [0.9, 0.8], "Sick": [0.1, 0.2]}, index=[0, 1])
     viz.plot_markov_trace(
-        {"trace_dataframe": trace}, output_dir=OUTPUT_DIR, intervention_name="Test"
+        trace.to_numpy(),
+        state_names=list(trace.columns),
+        title="Test",
+        output_dir=OUTPUT_DIR,
     )
     assert any(f.startswith("markov_trace_test") for f in os.listdir(OUTPUT_DIR))
 

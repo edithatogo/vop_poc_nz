@@ -4,8 +4,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.cea_model_core import _validate_model_parameters
-from src.value_of_information import ProbabilisticSensitivityAnalysis
+from vop_poc_nz.cea_model_core import _validate_model_parameters
+from vop_poc_nz.value_of_information import ProbabilisticSensitivityAnalysis
 
 
 def build_param_strategy():

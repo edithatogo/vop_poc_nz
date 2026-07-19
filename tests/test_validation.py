@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaError
 
-from src.validation import ParametersModel, validate_psa_results
+from vop_poc_nz.validation import ParametersModel, validate_psa_results
 
 
 def test_validate_psa_results_passes():

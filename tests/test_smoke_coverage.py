@@ -1,8 +1,8 @@
 import pandas as pd
 
-from src.main_analysis import generate_policy_implications_report
-from src.value_of_information import generate_voi_report
-from src.visualizations import (
+from vop_poc_nz.main_analysis import generate_policy_implications_report
+from vop_poc_nz.value_of_information import generate_voi_report
+from vop_poc_nz.visualizations import (
     plot_cost_qaly_breakdown,
     plot_density_ce_plane,
     plot_markov_trace,
@@ -16,9 +16,10 @@ def test_visualization_smoke(tmp_path):
 
     trace = pd.DataFrame({"Healthy": [0.9, 0.8], "Sick": [0.1, 0.2]}, index=[0, 1])
     plot_markov_trace(
-        {"trace_dataframe": trace},
+        trace.to_numpy(),
+        state_names=list(trace.columns),
+        title="smoke",
         output_dir=str(out_dir),
-        intervention_name="smoke",
     )
 
     plot_density_ce_plane(

@@ -1,16 +1,16 @@
 import pandas as pd
 
-from src.cea_model_core import run_cea
-from src.cluster_analysis import ClusterAnalysis
-from src.dsa_analysis import perform_one_way_dsa
-from src.threshold_analysis import run_threshold_analysis
-from src.value_of_information import (
+from vop_poc_nz.cea_model_core import run_cea
+from vop_poc_nz.cluster_analysis import ClusterAnalysis
+from vop_poc_nz.dsa_analysis import perform_one_way_dsa
+from vop_poc_nz.threshold_analysis import run_threshold_analysis
+from vop_poc_nz.value_of_information import (
     calculate_evpi,
     calculate_evppi,
     calculate_population_evpi,
     explain_value_of_information_benefits,
 )
-from src.visualizations import plot_cumulative_nmb, plot_efficiency_frontier
+from vop_poc_nz.visualizations import plot_cumulative_nmb, plot_efficiency_frontier
 
 MINIMAL_PARAMS = {
     "states": ["Healthy", "Dead"],

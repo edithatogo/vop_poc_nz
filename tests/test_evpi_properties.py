@@ -3,7 +3,7 @@ import pandas as pd
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from src.value_of_information import calculate_evpi
+from vop_poc_nz.value_of_information import calculate_evpi
 
 
 @settings(max_examples=50, suppress_health_check=[HealthCheck.too_slow], deadline=None)
