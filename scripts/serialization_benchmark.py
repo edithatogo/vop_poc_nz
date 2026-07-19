@@ -17,6 +17,7 @@ from typing import Any, cast
 
 import psutil
 
+from vop_poc_nz.assurance_policy import exceeds_upper_bound
 from vop_poc_nz.perspective_io import write_ipc_records, write_records
 
 BLAS_THREAD_VARIABLES = (
@@ -61,7 +62,7 @@ def _measure(operation: Callable[[], Path]) -> dict[str, float | int]:
         sampler.join(timeout=1)
         peak_rss[0] = max(peak_rss[0], process.memory_info().rss)
         tracemalloc.stop()
-    retained_allocations = sum(
+    positive_snapshot_allocations = sum(
         max(0, statistic.count_diff) for statistic in after.compare_to(before, "lineno")
     )
     return {
@@ -71,7 +72,7 @@ def _measure(operation: Callable[[], Path]) -> dict[str, float | int]:
         "peak_rss_delta_bytes": max(0, peak_rss[0] - initial_rss),
         "tracemalloc_current_bytes": current_traced,
         "tracemalloc_peak_bytes": traced_peak,
-        "retained_allocation_count": retained_allocations,
+        "positive_snapshot_allocation_count": positive_snapshot_allocations,
         "serialized_bytes": output.stat().st_size,
     }
 
@@ -100,7 +101,9 @@ def _summarise(samples: list[dict[str, float | int]], rows: int) -> dict[str, An
         "tracemalloc_peak_bytes_max": max(
             int(sample["tracemalloc_peak_bytes"]) for sample in samples
         ),
-        "retained_allocation_count_median": median("retained_allocation_count"),
+        "positive_snapshot_allocation_count_median": median(
+            "positive_snapshot_allocation_count"
+        ),
         "serialized_bytes": serialized_bytes,
         "bytes_per_row": serialized_bytes / rows,
         "throughput_rows_per_second_median": rows / wall_seconds,
@@ -136,7 +139,7 @@ def benchmark_serialization(rows: int = 20_000, repeats: int = 3) -> dict[str, o
         }
     jsonl_wall = float(formats["jsonl"]["wall_seconds_median"])
     return {
-        "schema_version": "2.0.0",
+        "schema_version": "2.1.0",
         "rows": rows,
         "repeats": repeats,
         "thread_controls": {
@@ -194,7 +197,7 @@ def _format_failures(
             if error:
                 failures.append(error)
             elif actual is not None and (
-                (direction == "max" and actual > float(raw_limit))
+                (direction == "max" and exceeds_upper_bound(actual, float(raw_limit)))
                 or (direction == "min" and actual < float(raw_limit))
             ):
                 failures.append(
@@ -215,7 +218,7 @@ def _ratio_failures(
         actual, error = _number(ratios, name, "ratios")
         if error:
             failures.append(error)
-        elif actual is not None and actual > float(raw_limit):
+        elif actual is not None and exceeds_upper_bound(actual, float(raw_limit)):
             failures.append(
                 f"ratios.{name}: {actual:.3f} exceeds {float(raw_limit):.3f}"
             )

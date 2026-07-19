@@ -6,7 +6,7 @@
       "max_cpu_seconds_median": 10.0,
       "max_peak_rss_bytes_max": 2147483648,
       "max_peak_rss_delta_bytes_max": 1073741824,
-      "max_retained_allocation_count_median": 1000000,
+      "max_positive_snapshot_allocation_count_median": 1000000,
       "max_tracemalloc_peak_bytes_max": 536870912,
       "max_wall_seconds_median": 15.0,
       "min_throughput_rows_per_second_median": 500.0
@@ -16,7 +16,7 @@
       "max_cpu_seconds_median": 10.0,
       "max_peak_rss_bytes_max": 2147483648,
       "max_peak_rss_delta_bytes_max": 1073741824,
-      "max_retained_allocation_count_median": 1000000,
+      "max_positive_snapshot_allocation_count_median": 1000000,
       "max_tracemalloc_peak_bytes_max": 536870912,
       "max_wall_seconds_median": 15.0,
       "min_throughput_rows_per_second_median": 500.0
@@ -26,7 +26,7 @@
       "max_cpu_seconds_median": 10.0,
       "max_peak_rss_bytes_max": 2147483648,
       "max_peak_rss_delta_bytes_max": 1073741824,
-      "max_retained_allocation_count_median": 1000000,
+      "max_positive_snapshot_allocation_count_median": 1000000,
       "max_tracemalloc_peak_bytes_max": 536870912,
       "max_wall_seconds_median": 15.0,
       "min_throughput_rows_per_second_median": 500.0
@@ -36,5 +36,5 @@
     "ipc_write_vs_jsonl": 3.0,
     "parquet_write_vs_jsonl": 5.0
   },
-  "schema_version": "2.0.0"
+  "schema_version": "2.1.0"
 }

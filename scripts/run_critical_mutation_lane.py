@@ -17,9 +17,15 @@ pythonpath = ["src"]
 
 [tool.mutmut]
 source_paths = ["src/vop_poc_nz/"]
-only_mutate = ["src/vop_poc_nz/critical_invariants.py"]
+only_mutate = [
+    "src/vop_poc_nz/assurance_policy.py",
+    "src/vop_poc_nz/critical_invariants.py",
+]
 pytest_add_cli_args = ["-x", "--no-cov", "-p", "no:cacheprovider"]
-pytest_add_cli_args_test_selection = ["tests/test_critical_invariants.py"]
+pytest_add_cli_args_test_selection = [
+    "tests/test_assurance_policy.py",
+    "tests/test_critical_invariants.py",
+]
 """
 
 
@@ -85,7 +91,12 @@ def _run(repo: Path, output: Path, threshold: float) -> int:
             repo / "src/vop_poc_nz/critical_invariants.py",
             package / "critical_invariants.py",
         )
+        shutil.copy2(
+            repo / "src/vop_poc_nz/assurance_policy.py",
+            package / "assurance_policy.py",
+        )
         shutil.copy2(repo / "tests/test_critical_invariants.py", tests)
+        shutil.copy2(repo / "tests/test_assurance_policy.py", tests)
         (sandbox / "pyproject.toml").write_text(_CONFIG, encoding="utf-8", newline="\n")
         subprocess.run([sys.executable, "-m", "mutmut", "run"], cwd=sandbox, check=True)
         subprocess.run(

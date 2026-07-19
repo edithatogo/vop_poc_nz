@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from scripts import run_critical_mutation_lane
 from scripts.run_critical_mutation_lane import mutation_report
 
 
@@ -70,3 +71,11 @@ def test_report_rejects_total_smaller_than_accounted_statuses() -> None:
 def test_report_rejects_invalid_threshold(threshold: float) -> None:
     with pytest.raises(ValueError, match="threshold"):
         mutation_report(_stats(), threshold=threshold)
+
+
+def test_critical_lane_covers_existing_and_new_assurance_policy_universes() -> None:
+    config = run_critical_mutation_lane._CONFIG
+    assert '"src/vop_poc_nz/critical_invariants.py"' in config
+    assert '"src/vop_poc_nz/assurance_policy.py"' in config
+    assert '"tests/test_critical_invariants.py"' in config
+    assert '"tests/test_assurance_policy.py"' in config

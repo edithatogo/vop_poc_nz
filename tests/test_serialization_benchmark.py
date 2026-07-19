@@ -66,7 +66,7 @@ def test_benchmark_reports_multidimensional_deterministic_envelope() -> None:
         assert numeric["peak_rss_bytes_max"] > 0
         assert numeric["peak_rss_delta_bytes_max"] >= 0
         assert numeric["tracemalloc_peak_bytes_max"] > 0
-        assert numeric["retained_allocation_count_median"] >= 0
+        assert numeric["positive_snapshot_allocation_count_median"] >= 0
         assert numeric["serialized_bytes"] > 0
         assert numeric["bytes_per_row"] > 0
         assert numeric["throughput_rows_per_second_median"] > 0

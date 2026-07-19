@@ -160,3 +160,49 @@ def test_context_redaction_is_recursive_and_reserved_fields_fail_closed(
         "headers": {"Authorization": "[REDACTED]"},
         "items": [{"api_token": "[REDACTED]"}],
     }
+
+
+def test_redaction_covers_token_families_cookies_queries_and_exception_args(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "credential-families.jsonl"
+    logger = configure_logging(
+        LoggingSettings(console=False, log_file=destination, run_id="redaction-run")
+    )
+    github_token = "ghp_abcdefghijklmnopqrstuvwxyz1234567890"
+    jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml2YXRlIn0.signature_value"
+    opaque_exception_secret = "opaque-exception-value-987654"
+    with log_context(
+        Cookie="sessionid=cookie-value",
+        private_key="private-value",
+        session_key="session-value",
+    ):
+        try:
+            raise RuntimeError(opaque_exception_secret)
+        except RuntimeError:
+            logger.exception(
+                "request %s jwt=%s url=%s",
+                github_token,
+                jwt,
+                "https://example.invalid/callback?access_token=query-value&safe=visible",
+            )
+    for handler in logger.handlers:
+        handler.flush()
+
+    rendered = destination.read_text(encoding="utf-8")
+    for secret in (
+        github_token,
+        jwt,
+        "cookie-value",
+        "private-value",
+        "session-value",
+        "query-value",
+        opaque_exception_secret,
+    ):
+        assert secret not in rendered
+    record = _records(destination)[-1]
+    assert record["Cookie"] == "[REDACTED]"
+    assert record["private_key"] == "[REDACTED]"
+    assert record["session_key"] == "[REDACTED]"
+    assert "safe=visible" in str(record["message"])
+    assert record["exception"] == "RuntimeError: [REDACTED]"

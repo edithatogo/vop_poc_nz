@@ -14,6 +14,7 @@ import pyarrow as pa
 import pyarrow.ipc as ipc
 import pyarrow.parquet as pq
 
+from vop_poc_nz.assurance_policy import has_exact_keys, has_name_collision
 from vop_poc_nz.perspective_io import attach_contract_metadata, schema_fingerprint
 from vop_poc_nz.pipeline.typed import TYPED_PIPELINE_ARROW_SCHEMA
 
@@ -22,6 +23,15 @@ BUNDLE_VERSION = "1.0.0"
 CONTRACT_VERSION = "1.0.0"
 METHOD_CONTRACT_VERSION = "1.1.0"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_ARROW_IDENTITY_KEYS = frozenset(
+    {
+        "fields",
+        "required_metadata",
+        "schema_fingerprint",
+        "schema_id",
+        "schema_version",
+    }
+)
 
 _FIXTURE_RECORDS: tuple[dict[str, object], ...] = (
     {
@@ -319,7 +329,23 @@ def _validate_fingerprint_transition(
         raise IncompatibleContractChange("schema fingerprint transition is invalid")
 
 
-def _added_field_names(additions: Sequence[object]) -> list[str]:
+def _field_names(fields: Sequence[object], *, document: str) -> list[str]:
+    names: list[str] = []
+    for field in fields:
+        if not isinstance(field, dict):
+            raise IncompatibleContractChange(f"{document} schema fields are invalid")
+        name = field.get("name")
+        if not isinstance(name, str):
+            raise IncompatibleContractChange(f"{document} schema fields are invalid")
+        names.append(name)
+    if has_name_collision(names):
+        raise IncompatibleContractChange(f"{document} schema field names collide")
+    return names
+
+
+def _added_field_names(
+    additions: Sequence[object], *, existing_names: set[str]
+) -> list[str]:
     names: list[str] = []
     for addition in additions:
         if not isinstance(addition, dict):
@@ -327,6 +353,8 @@ def _added_field_names(additions: Sequence[object]) -> list[str]:
         name = addition.get("name")
         if addition.get("nullable") is not True or not isinstance(name, str):
             raise IncompatibleContractChange("new fields must be nullable")
+        if has_name_collision((*names, name), existing_names):
+            raise IncompatibleContractChange("new schema field names collide")
         names.append(name)
     return names
 
@@ -400,6 +428,10 @@ def assess_arrow_evolution(
     previous: Mapping[str, object], current: Mapping[str, object]
 ) -> dict[str, object]:
     """Assess an identity transition, rejecting all undeclared incompatibility."""
+    if not has_exact_keys(previous, _ARROW_IDENTITY_KEYS) or not has_exact_keys(
+        current, _ARROW_IDENTITY_KEYS
+    ):
+        raise IncompatibleContractChange("unknown top-level schema semantics")
     if previous.get("schema_id") != current.get("schema_id"):
         raise IncompatibleContractChange("schema identity changed")
     previous_version = _semantic_version(previous.get("schema_version"))
@@ -410,6 +442,8 @@ def assess_arrow_evolution(
     current_fields = current.get("fields")
     if not isinstance(previous_fields, list) or not isinstance(current_fields, list):
         raise IncompatibleContractChange("schema fields must be ordered arrays")
+    previous_names = _field_names(previous_fields, document="previous")
+    _field_names(current_fields, document="current")
     if len(current_fields) < len(previous_fields):
         raise IncompatibleContractChange("schema fields were removed")
     if current_fields[: len(previous_fields)] != previous_fields:
@@ -417,7 +451,7 @@ def assess_arrow_evolution(
             "existing dtype, unit, nullability, or order changed"
         )
     additions = current_fields[len(previous_fields) :]
-    added_fields = _added_field_names(additions)
+    added_fields = _added_field_names(additions, existing_names=set(previous_names))
     _validate_fingerprint_transition(
         previous.get("schema_fingerprint"),
         current.get("schema_fingerprint"),

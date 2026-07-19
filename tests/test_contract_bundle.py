@@ -145,3 +145,31 @@ def test_incompatible_schema_evolution_fails_closed(change: str) -> None:
         current["required_metadata"] = []
     with pytest.raises(IncompatibleContractChange):
         assess_arrow_evolution(previous, current)
+
+
+@pytest.mark.parametrize("document", ["previous", "current"])
+def test_unknown_top_level_schema_semantics_fail_closed(document: str) -> None:
+    previous = _identity()
+    current = deepcopy(previous)
+    target = previous if document == "previous" else current
+    target["consumer_hint"] = "silently-ignore-me"
+    with pytest.raises(IncompatibleContractChange, match="unknown top-level"):
+        assess_arrow_evolution(previous, current)
+
+
+@pytest.mark.parametrize("collision", ["existing", "duplicate_append"])
+def test_appended_field_name_collisions_fail_closed(collision: str) -> None:
+    previous = _identity()
+    current = deepcopy(previous)
+    appended_name = previous["fields"][0]["name"] if collision == "existing" else "note"
+    current["fields"].append(
+        {"name": appended_name, "arrow_type": "string", "nullable": True, "unit": None}
+    )
+    if collision == "duplicate_append":
+        current["fields"].append(
+            {"name": "note", "arrow_type": "string", "nullable": True, "unit": None}
+        )
+    current["schema_version"] = "1.1.0"
+    current["schema_fingerprint"] = "1" * 64
+    with pytest.raises(IncompatibleContractChange, match="field names collide"):
+        assess_arrow_evolution(previous, current)

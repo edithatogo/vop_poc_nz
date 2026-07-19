@@ -15,13 +15,26 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
+from types import TracebackType
 from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 _OWNED_HANDLER = "_vop_poc_nz_handler"
-_SENSITIVE_FRAGMENTS = ("authorization", "password", "secret", "token", "api_key")
+_SENSITIVE_FRAGMENTS = (
+    "api_key",
+    "authorization",
+    "cookie",
+    "credential",
+    "csrf",
+    "password",
+    "private",
+    "secret",
+    "session",
+    "signing",
+    "token",
+)
 _RESERVED_FIELDS = frozenset(
     {
         "analysis_id",
@@ -46,8 +59,17 @@ _TRACE_ID_RE = re.compile(r"^[0-9a-f]{32}$")
 _SPAN_ID_RE = re.compile(r"^[0-9a-f]{16}$")
 _TRACE_FLAGS_RE = re.compile(r"^[0-9a-f]{2}$")
 _BEARER_RE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+")
+_GITHUB_TOKEN_RE = re.compile(
+    r"(?<![A-Za-z0-9_])(?:github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,})"
+)
+_JWT_RE = re.compile(
+    r"(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"
+)
 _ASSIGNMENT_RE = re.compile(
-    r"(?i)\b(authorization|password|secret|token|api[_-]?key)\s*([:=])\s*([^\s,;]+)"
+    r"(?i)\b(authorization|cookie|credential|csrf|password|private[_-]?key|secret|session(?:[_-]?(?:id|key|token))?|signing[_-]?key|token|api[_-]?key)\s*([:=])\s*([^\s,;]+)"
+)
+_QUERY_CREDENTIAL_RE = re.compile(
+    r"(?i)([?&](?:access[_-]?token|api[_-]?key|auth|authorization|client[_-]?secret|credential|password|private[_-]?key|session(?:[_-]?(?:id|key|token))?|signature|token)=)([^&#\s]+)"
 )
 
 
@@ -68,8 +90,24 @@ def _current_context() -> _LogContextState:
 
 
 def _redact_text(value: str) -> str:
+    value = _QUERY_CREDENTIAL_RE.sub(r"\1[REDACTED]", value)
     value = _BEARER_RE.sub("Bearer [REDACTED]", value)
+    value = _GITHUB_TOKEN_RE.sub("[REDACTED]", value)
+    value = _JWT_RE.sub("[REDACTED]", value)
     return _ASSIGNMENT_RE.sub(r"\1\2[REDACTED]", value)
+
+
+def _exception_summary(
+    exc_info: tuple[
+        type[BaseException] | None,
+        BaseException | None,
+        TracebackType | None,
+    ],
+) -> str:
+    """Keep exception type while suppressing arbitrary exception arguments."""
+    exception_type = exc_info[0]
+    name = exception_type.__name__ if exception_type is not None else "Exception"
+    return f"{name}: [REDACTED]"
 
 
 def _sensitive_key(key: str) -> bool:
@@ -229,6 +267,16 @@ class RedactingFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         return _redact_text(super().format(record))
 
+    def formatException(
+        self,
+        ei: tuple[
+            type[BaseException] | None,
+            BaseException | None,
+            TracebackType | None,
+        ],
+    ) -> str:
+        return _exception_summary(ei)
+
 
 class JsonFormatter(logging.Formatter):
     """Emit newline-delimited JSON suitable for CI artifact ingestion."""
@@ -245,7 +293,7 @@ class JsonFormatter(logging.Formatter):
         payload.update(getattr(record, "correlation", {}))
         payload.update(getattr(record, "context", {}))
         if record.exc_info:
-            payload["exception"] = _redact_text(self.formatException(record.exc_info))
+            payload["exception"] = _exception_summary(record.exc_info)
         return json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str)
 
 
