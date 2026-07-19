@@ -209,7 +209,6 @@ source_paths = ["src/vop_poc_nz/"]
 only_mutate = [
     "src/vop_poc_nz/logging_config.py",
     "src/vop_poc_nz/github_sync_planner.py",
-    "src/vop_poc_nz/mutation_policy.py",
 ]
 pytest_add_cli_args = ["-x", "--no-cov", "-p", "no:cacheprovider"]
 pytest_add_cli_args_test_selection = [

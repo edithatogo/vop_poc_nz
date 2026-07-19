@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import tomllib
@@ -104,8 +105,13 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
     assert project["tool"]["mutmut"]["only_mutate"] == [
         "src/vop_poc_nz/logging_config.py",
         "src/vop_poc_nz/github_sync_planner.py",
-        "src/vop_poc_nz/mutation_policy.py",
     ]
+    baseline = json.loads(
+        (REPO_ROOT / ".github/mutation-baselines/vop-broad.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert baseline["scope"] == project["tool"]["mutmut"]["only_mutate"]
     mutation_tests = project["tool"]["mutmut"]["pytest_add_cli_args_test_selection"]
     assert mutation_tests == [
         "tests/test_logging_and_version.py",
@@ -113,5 +119,6 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
         "tests/test_mutation_score.py",
     ]
     assert "mutmut export-cicd-stats" in workflow
-    assert "scripts/check_mutation_score.py --threshold 44" in workflow
+    assert "--baseline-stats .github/mutation-baselines/vop-broad.json" in workflow
+    assert "scripts/run_critical_mutation_lane.py . --threshold 90" in workflow
     assert "mutation-score" in pixi["tasks"]

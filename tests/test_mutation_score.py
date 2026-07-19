@@ -49,6 +49,36 @@ def test_unreported_mutmut_statuses_cannot_inflate_score() -> None:
     assert report["passed"] is False
 
 
+def test_exact_baseline_comparison_rejects_a_rounded_regression() -> None:
+    baseline = mutation_score_from_mapping(
+        _stats(
+            killed=90,
+            survived=10,
+            no_tests=0,
+            suspicious=0,
+            timeout=0,
+            segfault=0,
+            total=103,
+        )
+    )
+    regressed = mutation_score_from_mapping(
+        _stats(
+            killed=899,
+            survived=101,
+            no_tests=0,
+            suspicious=0,
+            timeout=0,
+            segfault=0,
+            skipped=0,
+            total=1000,
+        )
+    )
+    report = regressed.report(89.0, baseline=baseline)
+    assert report["score_percent"] == 89.9
+    assert report["non_decreasing"] is False
+    assert report["passed"] is False
+
+
 @pytest.mark.parametrize(
     "changes",
     [
@@ -119,3 +149,57 @@ def test_cli_reports_counts_and_returns_pass_or_fail(tmp_path: Path) -> None:
     )
     assert failed.returncode == 2
     assert json.loads(failed.stdout)["passed"] is False
+
+
+def test_cli_rejects_score_regression_even_above_floor(tmp_path: Path) -> None:
+    stats = tmp_path / "stats.json"
+    baseline = tmp_path / "baseline.json"
+    stats.write_text(
+        json.dumps(
+            _stats(
+                killed=899,
+                survived=101,
+                no_tests=0,
+                suspicious=0,
+                timeout=0,
+                segfault=0,
+                skipped=0,
+                total=1000,
+            )
+        ),
+        encoding="utf-8",
+    )
+    baseline.write_text(
+        json.dumps(
+            _stats(
+                killed=90,
+                survived=10,
+                no_tests=0,
+                suspicious=0,
+                timeout=0,
+                segfault=0,
+                total=103,
+            )
+        ),
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/check_mutation_score.py",
+            "--stats",
+            str(stats),
+            "--threshold",
+            "89",
+            "--baseline-stats",
+            str(baseline),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 2
+    report = json.loads(completed.stdout)
+    assert report["score_percent"] == 89.9
+    assert report["non_decreasing"] is False

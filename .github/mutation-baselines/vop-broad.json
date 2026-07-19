@@ -1,0 +1,16 @@
+{
+  "scope": [
+    "src/vop_poc_nz/logging_config.py",
+    "src/vop_poc_nz/github_sync_planner.py"
+  ],
+  "provenance": "GitHub Actions run 29690164219",
+  "killed": 312,
+  "survived": 189,
+  "total": 740,
+  "no_tests": 239,
+  "skipped": 0,
+  "suspicious": 0,
+  "timeout": 0,
+  "check_was_interrupted_by_user": 0,
+  "segfault": 0
+}
