@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "name": "vop-voiage-conductor-implementation",
+  "version": "6.0.0",
+  "method_contract_version": "1.1.0",
+  "minimum_source_pack": "5.0.0",
+  "repositories": ["vop_poc_nz", "voiage"],
+  "integration_policy": "map_first_merge_required",
+  "headline_concepts": [
+    "directional_expected_value_of_perspective",
+    "perspective_acceptability_frontier",
+    "perspective_regime_discovery"
+  ]
+}
