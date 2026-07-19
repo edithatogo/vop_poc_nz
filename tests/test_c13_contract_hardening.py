@@ -21,14 +21,25 @@ from vop_poc_nz.domain.contracts import (
     DistributionFamily,
     DistributionParameter,
     DistributionSpec,
+    MetadataStatus,
     NumericalPolicySpec,
     ParameterSpec,
     ProvenanceSpec,
     UnitDimension,
     UnitSpec,
 )
-from vop_poc_nz.github_sync_planner import GitHubIssueSnapshot, plan_github_sync
-from vop_poc_nz.pipeline.typed import TypedPipelineSpec, typed_pipeline_spec_from_legacy
+from vop_poc_nz.github_sync_planner import (
+    GitHubIssueSnapshot,
+    issue_snapshot_from_json,
+    plan_github_sync,
+)
+from vop_poc_nz.perspective_io import schema_fingerprint
+from vop_poc_nz.pipeline.typed import (
+    TypedPipelineSpec,
+    pipeline_result_arrow_table,
+    run_typed_analysis_pipeline,
+    typed_pipeline_spec_from_legacy,
+)
 from vop_poc_nz.results.base import ResultMaturity
 
 
@@ -118,20 +129,125 @@ def test_typed_contracts_carry_units_policy_provenance_and_result_identity() -> 
         unit=currency,
         provenance=provenance,
     )
-    result = run_typed_cea(_parameters())
+    intervention = intervention_spec_from_legacy(_parameters()).model_copy(
+        update={"cost_unit": currency, "provenance": (provenance,)}
+    )
+    result = run_typed_cea(intervention)
 
     assert analysis.parameters[0].unit.currency_year == 2026
     assert distribution.family is DistributionFamily.GAMMA
     assert result.metadata.maturity is ResultMaturity.STABLE
     assert len(result.metadata.arrow_schema.schema_fingerprint) == 64
+    assert result.cost_unit == currency
+    assert result.health_outcome_unit.symbol == "QALY"
+    assert result.metadata.provenance == (provenance,)
 
 
 def test_typed_kernel_emits_no_legacy_logs_or_warnings(caplog) -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        run_typed_cea(_parameters())
+        result = run_typed_cea(_parameters())
     assert caught == []
     assert caplog.records == []
+    assert result.metadata.diagnostics
+    assert "negative values" in result.metadata.diagnostics[0].message
+    assert result.metadata.provenance[0].source_id == "legacy-mapping"
+
+
+def test_extreme_icer_warning_is_preserved_as_structured_diagnostic() -> None:
+    parameters = _parameters()
+    parameters["cycles"] = 1
+    parameters["costs"] = {
+        "health_system": {
+            "standard_care": [0.0, 0.0],
+            "new_treatment": [100.0, 0.0],
+        },
+        "societal": {
+            "standard_care": [0.0, 0.0],
+            "new_treatment": [0.0, 0.0],
+        },
+    }
+    parameters["qalys"] = {
+        "standard_care": [1.0, 0.0],
+        "new_treatment": [1.000000000001, 0.0],
+    }
+
+    result = run_typed_cea(parameters)
+
+    assert any(
+        "Extremely large ICER" in diagnostic.message
+        for diagnostic in result.metadata.diagnostics
+    )
+
+
+def test_pipeline_skips_unsupported_optional_societal_methods() -> None:
+    spec = typed_pipeline_spec_from_legacy(
+        {"minimal": _parameters()},
+        run_id="minimal",
+        created_at_utc=datetime(2026, 1, 1, tzinfo=UTC),
+    )
+    result = run_typed_analysis_pipeline(spec)
+
+    assert result.interventions[0].societal == ()
+    with pytest.raises(ValueError, match="requires productivity_costs"):
+        run_typed_cea(_parameters(), perspective="societal")
+    with pytest.raises(ValueError, match="requires friction_cost_params"):
+        run_typed_cea(
+            _parameters(),
+            perspective="societal",
+            productivity_cost_method="friction_cost",
+        )
+
+
+def test_pipeline_arrow_identity_matches_canonical_emitted_schema() -> None:
+    spec = typed_pipeline_spec_from_legacy(
+        {"minimal": _parameters()},
+        run_id="arrow",
+        created_at_utc=datetime(2026, 1, 1, tzinfo=UTC),
+    )
+    result = run_typed_analysis_pipeline(spec)
+    table = pipeline_result_arrow_table(result)
+
+    assert result.metadata.arrow_schema.schema_fingerprint == schema_fingerprint(
+        table.schema
+    )
+
+
+def test_legacy_metadata_is_explicitly_unknown_not_invented_nzd() -> None:
+    spec = intervention_spec_from_legacy(_parameters())
+
+    assert spec.cost_unit.symbol == "currency-unspecified"
+    assert spec.cost_unit.currency_code is None
+    assert spec.cost_unit.currency_year is None
+    assert spec.cost_unit.metadata_status is MetadataStatus.UNKNOWN
+    assert spec.provenance[0].metadata_status is MetadataStatus.UNKNOWN
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("github_repository", 123),
+        ("issue_number", True),
+        ("title", False),
+        ("project_number", "28"),
+        ("labels", [1]),
+        ("project_fields", [["Field", 1]]),
+    ],
+)
+def test_snapshot_json_rejects_coercive_values(field: str, value: object) -> None:
+    payload: dict[str, object] = {
+        "github_repository": "owner/repository",
+        "issue_number": 1,
+        "state": "open",
+        "title": "title",
+        "body": "body",
+        "labels": ["managed"],
+        "project_number": 28,
+        "project_fields": [["Field", "Value"]],
+    }
+    payload[field] = value
+    with pytest.raises(ValueError):
+        issue_snapshot_from_json(json.dumps(payload))
 
 
 def test_sync_preserves_human_metadata_present_in_base() -> None:

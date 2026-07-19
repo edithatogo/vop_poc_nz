@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from typing import Any
 
+import pyarrow as pa
 from pydantic import Field, field_validator, model_validator
 
 from vop_poc_nz.compat.legacy import (
@@ -27,6 +28,7 @@ from vop_poc_nz.domain.cea import (
 )
 from vop_poc_nz.domain.contracts import ProvenanceSpec
 from vop_poc_nz.logging_config import log_context
+from vop_poc_nz.perspective_io import attach_contract_metadata, schema_fingerprint
 from vop_poc_nz.results.base import ArrowSchemaIdentity, ResultMaturity, ResultMetadata
 from vop_poc_nz.results.cea import CEAAnalysisResult
 from vop_poc_nz.results.pipeline import (
@@ -36,6 +38,31 @@ from vop_poc_nz.results.pipeline import (
 )
 
 logger = logging.getLogger(__name__)
+
+TYPED_PIPELINE_ARROW_SCHEMA = pa.schema(
+    (
+        pa.field("run_id", pa.string()),
+        pa.field("created_at_utc", pa.string()),
+        pa.field("software_version", pa.string()),
+        pa.field("random_seed", pa.int64()),
+        pa.field("spec_fingerprint", pa.string()),
+        pa.field("contract_version", pa.string()),
+        pa.field("intervention", pa.string()),
+        pa.field("perspective", pa.string()),
+        pa.field("productivity_cost_method", pa.string()),
+        pa.field("incremental_cost", pa.float64()),
+        pa.field("incremental_qalys", pa.float64()),
+        pa.field("incremental_nmb", pa.float64()),
+        pa.field("icer_status", pa.string()),
+        pa.field("icer_value", pa.float64()),
+        pa.field("is_cost_effective", pa.bool_()),
+        pa.field("wtp_threshold", pa.float64()),
+        pa.field("cost_unit", pa.string()),
+        pa.field("cost_currency_code", pa.string()),
+        pa.field("cost_currency_year", pa.int64()),
+        pa.field("health_outcome_unit", pa.string()),
+    )
+)
 
 
 class NamedInterventionSpec(FrozenDomainModel):
@@ -121,6 +148,20 @@ def _calculate_intervention(
             item.spec,
             perspective=Perspective.HEALTH_SYSTEM,
         )
+        supported_methods: tuple[ProductivityCostMethod, ...] = tuple(
+            method
+            for method, supported in (
+                (
+                    ProductivityCostMethod.HUMAN_CAPITAL,
+                    item.spec.productivity_costs is not None,
+                ),
+                (
+                    ProductivityCostMethod.FRICTION_COST,
+                    item.spec.friction_cost_params is not None,
+                ),
+            )
+            if supported
+        )
         societal = tuple(
             SocietalCEAResult(
                 method=method,
@@ -130,10 +171,7 @@ def _calculate_intervention(
                     productivity_cost_method=method,
                 ),
             )
-            for method in (
-                ProductivityCostMethod.HUMAN_CAPITAL,
-                ProductivityCostMethod.FRICTION_COST,
-            )
+            for method in supported_methods
         )
         logger.info("typed_cea_calculation_completed")
     return InterventionPipelineResult(
@@ -154,27 +192,10 @@ def run_typed_analysis_pipeline(spec: TypedPipelineSpec) -> TypedPipelineResult:
         metadata=ResultMetadata(
             contract_version="1.0.0",
             maturity=ResultMaturity.STABLE,
-            arrow_schema=ArrowSchemaIdentity.from_logical_fields(
+            arrow_schema=ArrowSchemaIdentity(
                 schema_id="typed_pipeline_records",
                 schema_version="1.0.0",
-                logical_fields=(
-                    "run_id",
-                    "created_at_utc",
-                    "software_version",
-                    "random_seed",
-                    "spec_fingerprint",
-                    "contract_version",
-                    "intervention",
-                    "perspective",
-                    "productivity_cost_method",
-                    "incremental_cost",
-                    "incremental_qalys",
-                    "incremental_nmb",
-                    "icer_status",
-                    "icer_value",
-                    "is_cost_effective",
-                    "wtp_threshold",
-                ),
+                schema_fingerprint=schema_fingerprint(TYPED_PIPELINE_ARROW_SCHEMA),
             ),
             provenance=(
                 ProvenanceSpec(
@@ -215,6 +236,10 @@ def _result_record(
         "icer_value": result.icer.value,
         "is_cost_effective": result.is_cost_effective,
         "wtp_threshold": result.wtp_threshold,
+        "cost_unit": result.cost_unit.symbol,
+        "cost_currency_code": result.cost_unit.currency_code,
+        "cost_currency_year": result.cost_unit.currency_year,
+        "health_outcome_unit": result.health_outcome_unit.symbol,
     }
 
 
@@ -238,3 +263,23 @@ def pipeline_result_records(result: TypedPipelineResult) -> list[dict[str, objec
             for societal in intervention.societal
         )
     return records
+
+
+def pipeline_result_arrow_table(result: TypedPipelineResult) -> pa.Table:
+    """Project a result through the canonical schema named by its metadata."""
+    table = pa.Table.from_pylist(
+        pipeline_result_records(result), schema=TYPED_PIPELINE_ARROW_SCHEMA
+    )
+    provenance_json = json.dumps(
+        [item.model_dump(mode="json") for item in result.metadata.provenance],
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return attach_contract_metadata(
+        table,
+        schema_id=result.metadata.arrow_schema.schema_id,
+        schema_version=result.metadata.arrow_schema.schema_version,
+        contract_version=result.metadata.contract_version,
+        expected_fingerprint=result.metadata.arrow_schema.schema_fingerprint,
+        provenance_json=provenance_json,
+    )

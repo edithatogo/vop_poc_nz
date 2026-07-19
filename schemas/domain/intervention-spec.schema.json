@@ -62,6 +62,16 @@
       "title": "FrictionCostSpec",
       "type": "object"
     },
+    "MetadataStatus": {
+      "description": "Epistemic status of imported unit or provenance metadata.",
+      "enum": [
+        "known",
+        "provisional",
+        "unknown"
+      ],
+      "title": "MetadataStatus",
+      "type": "string"
+    },
     "NamedSubgroupSpec": {
       "additionalProperties": false,
       "properties": {
@@ -236,6 +246,10 @@
           ],
           "default": null,
           "title": "Content Sha256"
+        },
+        "metadata_status": {
+          "$ref": "#/$defs/MetadataStatus",
+          "default": "known"
         },
         "observed_at_utc": {
           "anyOf": [
@@ -461,6 +475,10 @@
         "dimension": {
           "$ref": "#/$defs/UnitDimension"
         },
+        "metadata_status": {
+          "$ref": "#/$defs/MetadataStatus",
+          "default": "known"
+        },
         "symbol": {
           "minLength": 1,
           "title": "Symbol",
@@ -481,10 +499,11 @@
     "cost_unit": {
       "$ref": "#/$defs/UnitSpec",
       "default": {
-        "currency_code": "NZD",
+        "currency_code": null,
         "currency_year": null,
         "dimension": "currency",
-        "symbol": "NZD"
+        "metadata_status": "unknown",
+        "symbol": "currency-unspecified"
       }
     },
     "costs": {
@@ -496,6 +515,7 @@
         "currency_code": null,
         "currency_year": null,
         "dimension": "time",
+        "metadata_status": "known",
         "symbol": "cycle"
       }
     },
@@ -528,6 +548,7 @@
         "currency_code": null,
         "currency_year": null,
         "dimension": "health",
+        "metadata_status": "known",
         "symbol": "QALY"
       }
     },
@@ -540,6 +561,7 @@
         "currency_code": null,
         "currency_year": null,
         "dimension": "count",
+        "metadata_status": "known",
         "symbol": "person"
       }
     },
@@ -563,10 +585,10 @@
       "type": "array"
     },
     "provenance": {
-      "default": [],
       "items": {
         "$ref": "#/$defs/ProvenanceSpec"
       },
+      "minItems": 1,
       "title": "Provenance",
       "type": "array"
     },
@@ -599,7 +621,8 @@
     "initial_population",
     "transition_matrices",
     "costs",
-    "qalys"
+    "qalys",
+    "provenance"
   ],
   "title": "InterventionSpec",
   "type": "object"

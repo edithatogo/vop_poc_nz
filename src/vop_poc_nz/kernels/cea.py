@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import ClassVar, cast
 
 from vop_poc_nz.domain.cea import (
@@ -9,6 +10,8 @@ from vop_poc_nz.domain.cea import (
     Perspective,
     ProductivityCostMethod,
 )
+from vop_poc_nz.domain.contracts import QALY, UNKNOWN_CURRENCY, UnitSpec
+from vop_poc_nz.results.base import DiagnosticSeverity, ResultDiagnostic
 from vop_poc_nz.results.cea import CEAAnalysisResult
 
 from .base import CalculationContext
@@ -65,6 +68,8 @@ class CEACalculationContext(CalculationContext):
     productivity_cost_method: ProductivityCostMethod = (
         ProductivityCostMethod.HUMAN_CAPITAL
     )
+    cost_unit: UnitSpec = UNKNOWN_CURRENCY
+    health_outcome_unit: UnitSpec = QALY
 
 
 class CEACalculationKernel:
@@ -78,10 +83,38 @@ class CEACalculationKernel:
     ) -> CEAAnalysisResult:
         from vop_poc_nz.cea_model_core import calculate_cea
 
-        legacy = calculate_cea(
-            _core_mapping(spec),
-            perspective=context.perspective.value,
-            wtp_threshold=context.wtp_threshold,
-            productivity_cost_method=context.productivity_cost_method.value,
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            legacy = calculate_cea(
+                _core_mapping(spec),
+                perspective=context.perspective.value,
+                wtp_threshold=context.wtp_threshold,
+                productivity_cost_method=context.productivity_cost_method.value,
+            )
+        if context.cost_unit != spec.cost_unit:
+            raise ValueError("context cost_unit must match intervention cost_unit")
+        if context.health_outcome_unit != spec.health_outcome_unit:
+            raise ValueError(
+                "context health_outcome_unit must match intervention health_outcome_unit"
+            )
+        result = CEAAnalysisResult.from_legacy(
+            legacy,
+            cost_unit=spec.cost_unit,
+            health_outcome_unit=spec.health_outcome_unit,
+            provenance=spec.provenance,
         )
-        return CEAAnalysisResult.from_legacy(legacy)
+        diagnostics = tuple(
+            ResultDiagnostic(
+                code=f"PYTHON_WARNING_{warning.category.__name__.upper()}",
+                severity=DiagnosticSeverity.WARNING,
+                message=str(warning.message),
+            )
+            for warning in caught
+        )
+        metadata = result.metadata.model_copy(
+            update={
+                "diagnostics": (*result.metadata.diagnostics, *diagnostics),
+                "provenance": spec.provenance,
+            }
+        )
+        return result.model_copy(update={"metadata": metadata})

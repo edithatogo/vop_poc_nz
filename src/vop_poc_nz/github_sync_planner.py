@@ -12,7 +12,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from hashlib import sha256
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from .concerns import GitHubSyncPayload
 
@@ -299,28 +299,40 @@ def issue_snapshot_from_json(content: str) -> GitHubIssueSnapshot:
     optional = {"managed_labels", "managed_project_field_names"}
     if not required <= set(raw) or set(raw) - required - optional:
         raise ValueError("GitHub issue snapshot has missing or unexpected fields")
-    state = raw["state"]
-    if state not in {"open", "closed"}:
+    string_fields = ("github_repository", "title", "body")
+    if any(type(raw[field]) is not str for field in string_fields):
+        raise ValueError("snapshot repository, title, and body must be strings")
+    raw_state = raw["state"]
+    if type(raw_state) is not str or raw_state not in {"open", "closed"}:
         raise ValueError("snapshot state must be open or closed")
+    state = cast(Literal["open", "closed"], raw_state)
+    for field in ("issue_number", "project_number"):
+        value = raw[field]
+        if value is not None and (type(value) is not int or value <= 0):
+            raise ValueError(f"snapshot {field} must be a positive integer or null")
+    for field in ("labels", "managed_labels", "managed_project_field_names"):
+        values = raw.get(field, [])
+        if type(values) is not list or any(type(item) is not str for item in values):
+            raise ValueError(f"snapshot {field} must be an array of strings")
+    project_fields = raw["project_fields"]
+    if type(project_fields) is not list or any(
+        type(item) is not list
+        or len(item) != 2
+        or any(type(component) is not str for component in item)
+        for item in project_fields
+    ):
+        raise ValueError("snapshot project_fields must contain string pairs")
     return GitHubIssueSnapshot(
-        github_repository=str(raw["github_repository"]),
-        issue_number=int(raw["issue_number"])
-        if raw["issue_number"] is not None
-        else None,
+        github_repository=raw["github_repository"],
+        issue_number=raw["issue_number"],
         state=state,
-        title=str(raw["title"]),
-        body=str(raw["body"]),
-        labels=tuple(str(item) for item in raw["labels"]),
-        project_number=int(raw["project_number"])
-        if raw["project_number"] is not None
-        else None,
-        project_fields=tuple(
-            (str(item[0]), str(item[1])) for item in raw["project_fields"]
-        ),
-        managed_labels=tuple(str(item) for item in raw.get("managed_labels", ())),
-        managed_project_field_names=tuple(
-            str(item) for item in raw.get("managed_project_field_names", ())
-        ),
+        title=raw["title"],
+        body=raw["body"],
+        labels=tuple(raw["labels"]),
+        project_number=raw["project_number"],
+        project_fields=tuple((item[0], item[1]) for item in project_fields),
+        managed_labels=tuple(raw.get("managed_labels", [])),
+        managed_project_field_names=tuple(raw.get("managed_project_field_names", [])),
     )
 
 

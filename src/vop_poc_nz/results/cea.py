@@ -8,36 +8,49 @@ from enum import StrEnum
 from typing import Any, ClassVar
 
 import numpy as np
+import pyarrow as pa
 from pydantic import Field, model_validator
 
 from vop_poc_nz.domain.base import FrozenDomainModel
 from vop_poc_nz.domain.cea import Perspective, ProductivityCostMethod
+from vop_poc_nz.domain.contracts import (
+    QALY,
+    UNKNOWN_CURRENCY,
+    ProvenanceSpec,
+    UnitSpec,
+)
+from vop_poc_nz.perspective_io import schema_fingerprint
 from vop_poc_nz.results.base import (
     ArrowSchemaIdentity,
     ResultMaturity,
     ResultMetadata,
 )
 
+CEA_RESULT_ARROW_SCHEMA = pa.schema(
+    (
+        pa.field("perspective", pa.string()),
+        pa.field("productivity_cost_method", pa.string()),
+        pa.field("incremental_cost", pa.float64()),
+        pa.field("incremental_qalys", pa.float64()),
+        pa.field("incremental_nmb", pa.float64()),
+        pa.field("icer_status", pa.string()),
+        pa.field("icer_value", pa.float64()),
+        pa.field("is_cost_effective", pa.bool_()),
+        pa.field("wtp_threshold", pa.float64()),
+    )
+)
 
-def _cea_metadata() -> ResultMetadata:
+
+def _cea_metadata(provenance: tuple[ProvenanceSpec, ...] = ()) -> ResultMetadata:
     return ResultMetadata(
         contract_version="1.0.0",
         maturity=ResultMaturity.STABLE,
-        arrow_schema=ArrowSchemaIdentity.from_logical_fields(
+        arrow_schema=ArrowSchemaIdentity(
             schema_id="cea_analysis_result",
             schema_version="1.0.0",
-            logical_fields=(
-                "perspective",
-                "productivity_cost_method",
-                "incremental_cost",
-                "incremental_qalys",
-                "incremental_nmb",
-                "icer_status",
-                "icer_value",
-                "is_cost_effective",
-                "wtp_threshold",
-            ),
+            schema_fingerprint=schema_fingerprint(CEA_RESULT_ARROW_SCHEMA),
         ),
+        provenance=provenance,
     )
 
 
@@ -105,13 +118,22 @@ class CEAAnalysisResult(FrozenDomainModel):
     incremental_nmb: float
     is_cost_effective: bool
     wtp_threshold: float
+    cost_unit: UnitSpec = UNKNOWN_CURRENCY
+    health_outcome_unit: UnitSpec = QALY
     subgroup_results: tuple[NamedSubgroupResult, ...] = ()
     trace_standard_care: Trace | None = None
     trace_new_treatment: Trace | None = None
     metadata: ResultMetadata = Field(default_factory=_cea_metadata)
 
     @classmethod
-    def from_legacy(cls, result: Mapping[str, Any]) -> CEAAnalysisResult:
+    def from_legacy(
+        cls,
+        result: Mapping[str, Any],
+        *,
+        cost_unit: UnitSpec = UNKNOWN_CURRENCY,
+        health_outcome_unit: UnitSpec = QALY,
+        provenance: tuple[ProvenanceSpec, ...] = (),
+    ) -> CEAAnalysisResult:
         def trace(value: object) -> Trace | None:
             if value is None:
                 return None
@@ -120,7 +142,15 @@ class CEAAnalysisResult(FrozenDomainModel):
 
         subgroup_mapping = result.get("subgroup_results") or {}
         subgroups = tuple(
-            NamedSubgroupResult(name=str(name), result=cls.from_legacy(value))
+            NamedSubgroupResult(
+                name=str(name),
+                result=cls.from_legacy(
+                    value,
+                    cost_unit=cost_unit,
+                    health_outcome_unit=health_outcome_unit,
+                    provenance=provenance,
+                ),
+            )
             for name, value in subgroup_mapping.items()
         )
         return cls(
@@ -138,9 +168,12 @@ class CEAAnalysisResult(FrozenDomainModel):
             incremental_nmb=float(result["incremental_nmb"]),
             is_cost_effective=bool(result["is_cost_effective"]),
             wtp_threshold=float(result["wtp_threshold"]),
+            cost_unit=cost_unit,
+            health_outcome_unit=health_outcome_unit,
             subgroup_results=subgroups,
             trace_standard_care=trace(result.get("trace_standard_care")),
             trace_new_treatment=trace(result.get("trace_new_treatment")),
+            metadata=_cea_metadata(provenance),
         )
 
     def to_legacy_dict(self) -> dict[str, object]:

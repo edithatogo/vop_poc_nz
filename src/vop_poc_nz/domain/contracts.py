@@ -22,6 +22,14 @@ class UnitDimension(StrEnum):
     DIMENSIONLESS = "dimensionless"
 
 
+class MetadataStatus(StrEnum):
+    """Epistemic status of imported unit or provenance metadata."""
+
+    KNOWN = "known"
+    PROVISIONAL = "provisional"
+    UNKNOWN = "unknown"
+
+
 class UnitSpec(FrozenDomainModel):
     """Machine-readable unit identity, including currency price year."""
 
@@ -29,14 +37,25 @@ class UnitSpec(FrozenDomainModel):
     dimension: UnitDimension
     currency_code: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
     currency_year: int | None = Field(default=None, ge=1900, le=2200)
+    metadata_status: MetadataStatus = MetadataStatus.KNOWN
 
     @model_validator(mode="after")
     def currency_metadata_is_consistent(self) -> UnitSpec:
         is_currency = self.dimension is UnitDimension.CURRENCY
-        if is_currency != (self.currency_code is not None):
-            raise ValueError("currency units require an ISO currency_code")
-        if not is_currency and self.currency_year is not None:
-            raise ValueError("currency_year is only valid for currency units")
+        if not is_currency and (
+            self.currency_code is not None or self.currency_year is not None
+        ):
+            raise ValueError("currency metadata is only valid for currency units")
+        if (
+            is_currency
+            and self.metadata_status is MetadataStatus.KNOWN
+            and (self.currency_code is None or self.currency_year is None)
+        ):
+            raise ValueError(
+                "known currency units require currency_code and currency_year"
+            )
+        if self.currency_year is not None and self.currency_code is None:
+            raise ValueError("currency_year requires currency_code")
         return self
 
 
@@ -47,6 +66,7 @@ class ProvenanceSpec(FrozenDomainModel):
     observed_at_utc: datetime | None = None
     source_version: str | None = None
     content_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    metadata_status: MetadataStatus = MetadataStatus.KNOWN
 
     @field_validator("observed_at_utc")
     @classmethod
@@ -205,11 +225,12 @@ class RunContextSpec(FrozenDomainModel):
         return value.astimezone(UTC)
 
 
-NZD_UNSPECIFIED = UnitSpec(
-    symbol="NZD",
+UNKNOWN_CURRENCY = UnitSpec(
+    symbol="currency-unspecified",
     dimension=UnitDimension.CURRENCY,
-    currency_code="NZD",
+    metadata_status=MetadataStatus.UNKNOWN,
 )
+NZD_UNSPECIFIED = UNKNOWN_CURRENCY
 QALY = UnitSpec(symbol="QALY", dimension=UnitDimension.HEALTH)
 PERSON = UnitSpec(symbol="person", dimension=UnitDimension.COUNT)
 CYCLE = UnitSpec(symbol="cycle", dimension=UnitDimension.TIME)
@@ -220,10 +241,12 @@ __all__ = [
     "NZD_UNSPECIFIED",
     "PERSON",
     "QALY",
+    "UNKNOWN_CURRENCY",
     "AnalysisSpec",
     "DistributionFamily",
     "DistributionParameter",
     "DistributionSpec",
+    "MetadataStatus",
     "NonFinitePolicy",
     "NumericalPolicySpec",
     "ParameterSpec",

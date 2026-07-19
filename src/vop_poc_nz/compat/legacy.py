@@ -25,6 +25,7 @@ from vop_poc_nz.domain.cea import (
     TransitionMatrices,
     TransitionMatrix,
 )
+from vop_poc_nz.domain.contracts import MetadataStatus, ProvenanceSpec
 from vop_poc_nz.kernels.cea import CEACalculationContext, CEACalculationKernel
 from vop_poc_nz.results.cea import CEAAnalysisResult
 
@@ -182,6 +183,13 @@ def intervention_spec_from_legacy(data: Mapping[str, Any]) -> InterventionSpec:
             _subgroup(str(name), override)
             for name, override in data.get("subgroups", {}).items()
         ),
+        provenance=(
+            ProvenanceSpec(
+                source_id="legacy-mapping",
+                source_version="unknown",
+                metadata_status=MetadataStatus.UNKNOWN,
+            ),
+        ),
     )
 
 
@@ -308,9 +316,28 @@ def run_typed_cea(
         if isinstance(model_parameters, InterventionSpec)
         else intervention_spec_from_legacy(model_parameters)
     )
+    resolved_perspective = Perspective(perspective)
+    resolved_method = ProductivityCostMethod(productivity_cost_method)
+    if resolved_perspective is Perspective.SOCIETAL:
+        if (
+            resolved_method is ProductivityCostMethod.HUMAN_CAPITAL
+            and spec.productivity_costs is None
+        ):
+            raise ValueError(
+                "human-capital societal analysis requires productivity_costs"
+            )
+        if (
+            resolved_method is ProductivityCostMethod.FRICTION_COST
+            and spec.friction_cost_params is None
+        ):
+            raise ValueError(
+                "friction-cost societal analysis requires friction_cost_params"
+            )
     context = CEACalculationContext(
-        perspective=Perspective(perspective),
+        perspective=resolved_perspective,
         wtp_threshold=_number(wtp_threshold, field="wtp_threshold"),
-        productivity_cost_method=ProductivityCostMethod(productivity_cost_method),
+        productivity_cost_method=resolved_method,
+        cost_unit=spec.cost_unit,
+        health_outcome_unit=spec.health_outcome_unit,
     )
     return CEACalculationKernel().calculate(spec, context=context)

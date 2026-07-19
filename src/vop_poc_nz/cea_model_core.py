@@ -9,7 +9,6 @@ import collections.abc
 import copy
 import logging
 import warnings
-from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -315,16 +314,14 @@ def calculate_cea(
     wtp_threshold: float = 50000.0,
     productivity_cost_method: str = "human_capital",
 ) -> dict:
-    """Calculate CEA deterministically without emitting logs, warnings, or I/O."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        return _run_cea_impl(
-            model_parameters,
-            perspective,
-            wtp_threshold,
-            productivity_cost_method,
-            emit_diagnostics=False,
-        )
+    """Calculate CEA without logging or I/O while preserving numerical warnings."""
+    return _run_cea_impl(
+        model_parameters,
+        perspective,
+        wtp_threshold,
+        productivity_cost_method,
+        emit_diagnostics=False,
+    )
 
 
 def _validate_model_parameters(params: dict):
@@ -524,7 +521,7 @@ def _get_costs_qalys_by_perspective(
     return costs_standard, costs_new, qalys_standard, qalys_new
 
 
-def _calculate_icer(inc_cost: float, inc_qalys: float) -> Union[float, str]:
+def _calculate_icer(inc_cost: float, inc_qalys: float) -> float | str:
     """
     Calculate ICER with proper handling of edge cases.
 
@@ -549,7 +546,7 @@ def _calculate_icer(inc_cost: float, inc_qalys: float) -> Union[float, str]:
     return icer
 
 
-def _calculate_cer(cost: float, qalys: float) -> Union[float, str]:
+def _calculate_cer(cost: float, qalys: float) -> float | str:
     """Calculate cost-effectiveness ratio (cost per QALY) for each intervention."""
     if qalys == 0:
         if cost > 0:
@@ -561,7 +558,7 @@ def _calculate_cer(cost: float, qalys: float) -> Union[float, str]:
 
 
 def create_parameters_table(
-    model_parameters: dict, sources: Optional[dict] = None
+    model_parameters: dict, sources: dict | None = None
 ) -> pd.DataFrame:
     """
     Create a comprehensive parameters/assumptions/sources table as requested by reviewers.

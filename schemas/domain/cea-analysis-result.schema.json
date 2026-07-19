@@ -186,6 +186,16 @@
       "title": "ICERStatus",
       "type": "string"
     },
+    "MetadataStatus": {
+      "description": "Epistemic status of imported unit or provenance metadata.",
+      "enum": [
+        "known",
+        "provisional",
+        "unknown"
+      ],
+      "title": "MetadataStatus",
+      "type": "string"
+    },
     "NamedSubgroupResult": {
       "additionalProperties": false,
       "properties": {
@@ -236,6 +246,10 @@
           ],
           "default": null,
           "title": "Content Sha256"
+        },
+        "metadata_status": {
+          "$ref": "#/$defs/MetadataStatus",
+          "default": "known"
         },
         "observed_at_utc": {
           "anyOf": [
