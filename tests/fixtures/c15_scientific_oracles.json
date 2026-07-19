@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "provenance": {
+    "method": "literal hand-derived arithmetic",
+    "implementation_dependency": "none",
+    "review_status": "producer-authored pending external replication"
+  },
+  "cases": [
+    {
+      "case_id": "decision-boundary",
+      "class": "boundary",
+      "net_benefit": [[0, 0], [0, 0]],
+      "expected_evpi": "0",
+      "production_expected_evpi": "0",
+      "production_zero_tolerance": "0.00001"
+    },
+    {
+      "case_id": "near-tie",
+      "class": "near_tie",
+      "net_benefit": [[0, 0.0000000001], [0.0000000001, 0]],
+      "expected_evpi": "0.00000000005",
+      "production_expected_evpi": "0",
+      "production_zero_tolerance": "0.00001"
+    },
+    {
+      "case_id": "extreme-tail",
+      "class": "extreme_tail",
+      "net_benefit": [[1000000000000, -1000000000000], [-1000000000000, 1000000000000], [0, 0], [0, 0]],
+      "expected_evpi": "500000000000",
+      "production_expected_evpi": "500000000000",
+      "production_zero_tolerance": "0.00001"
+    },
+    {
+      "case_id": "three-strategy",
+      "class": "higher_dimensional",
+      "net_benefit": [[0, 10, 5], [9, 0, 5], [0, 0, 20], [4, 4, 4]],
+      "expected_evpi": "2.25"
+    }
+  ]
+}
