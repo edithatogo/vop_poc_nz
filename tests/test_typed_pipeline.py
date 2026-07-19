@@ -4,13 +4,15 @@ import copy
 import json
 from datetime import UTC, datetime
 
+import pyarrow.parquet as pq
 import pytest
 from pydantic import ValidationError
 
 from vop_poc_nz.cea_model_core import run_cea
 from vop_poc_nz.logging_config import LoggingSettings, configure_logging
-from vop_poc_nz.perspective_io import read_records, write_records
+from vop_poc_nz.perspective_io import read_records
 from vop_poc_nz.pipeline.typed import (
+    pipeline_result_arrow_table,
     pipeline_result_records,
     run_typed_analysis_pipeline,
     typed_pipeline_spec_from_legacy,
@@ -140,11 +142,22 @@ def test_pipeline_emits_structured_context_and_provenance(capsys) -> None:
 def test_pipeline_records_support_arrow_and_result_manifest(tmp_path) -> None:
     result = run_typed_analysis_pipeline(_pipeline_spec())
     records = pipeline_result_records(result)
-    artifact = write_records(records, tmp_path / "typed-pipeline.parquet")
+    assert {record["health_outcome_unit"] for record in records} == {"QALY"}
+    table_to_write = pipeline_result_arrow_table(result)
+    artifact = tmp_path / "typed-pipeline.parquet"
+    pq.write_table(table_to_write, artifact)
     table = read_records(artifact)
 
     assert table.num_rows == 6
     assert set(table.column("perspective").to_pylist()) == {"health_system", "societal"}
+    metadata = table.schema.metadata or {}
+    assert metadata[b"vop_voiage.schema_id"] == b"typed_pipeline_records"
+    assert metadata[b"vop_voiage.schema_fingerprint"].decode() == (
+        result.metadata.arrow_schema.schema_fingerprint
+    )
+    assert metadata[b"vop_voiage.producer"] == b"vop_poc_nz"
+    assert metadata[b"vop_voiage.interchange"] == b"apache-arrow"
+    assert metadata[b"vop_voiage.provenance_sha256"]
     manifest = build_result_manifest(
         run_id=result.run_id,
         script="vop_poc_nz.pipeline.typed",

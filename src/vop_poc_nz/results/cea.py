@@ -37,6 +37,10 @@ CEA_RESULT_ARROW_SCHEMA = pa.schema(
         pa.field("icer_value", pa.float64()),
         pa.field("is_cost_effective", pa.bool_()),
         pa.field("wtp_threshold", pa.float64()),
+        pa.field("cost_unit", pa.string()),
+        pa.field("cost_currency_code", pa.string()),
+        pa.field("cost_currency_year", pa.int64()),
+        pa.field("health_outcome_unit", pa.string()),
     )
 )
 

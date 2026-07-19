@@ -31,22 +31,44 @@ def schema_fingerprint(schema: pa.Schema) -> str:
     return sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def attach_contract_metadata(
+    table: pa.Table,
+    *,
+    schema_id: str,
+    schema_version: str = ARROW_SCHEMA_VERSION,
+    contract_version: str = "1.0.0",
+    method_contract_version: str = "1.1.0",
+    producer: str = "vop_poc_nz",
+    expected_fingerprint: str | None = None,
+    provenance_json: str | None = None,
+) -> pa.Table:
+    """Attach verifiable shared-contract identity to an Arrow table."""
+    fingerprint = schema_fingerprint(table.schema)
+    if expected_fingerprint is not None and fingerprint != expected_fingerprint:
+        raise ValueError("Arrow schema does not match declared result identity")
+    metadata = {
+        **(table.schema.metadata or {}),
+        b"vop.arrow_schema_version": schema_version.encode(),
+        b"vop.schema_fingerprint": fingerprint.encode(),
+        b"vop_voiage.contract_version": contract_version.encode(),
+        b"vop_voiage.schema_id": schema_id.encode(),
+        b"vop_voiage.schema_version": schema_version.encode(),
+        b"vop_voiage.schema_fingerprint": fingerprint.encode(),
+        b"vop_voiage.producer": producer.encode(),
+        b"vop_voiage.method_contract_version": method_contract_version.encode(),
+        b"vop_voiage.interchange": b"apache-arrow",
+    }
+    if provenance_json is not None:
+        encoded = provenance_json.encode("utf-8")
+        metadata[b"vop_voiage.provenance_json"] = encoded
+        metadata[b"vop_voiage.provenance_sha256"] = sha256(encoded).hexdigest().encode()
+    return table.replace_schema_metadata(metadata)
+
+
 def records_to_arrow(records: Iterable[Mapping[str, Any]]) -> pa.Table:
     """Build a schema-bearing Arrow table from row mappings."""
     table = pa.Table.from_pylist([dict(row) for row in records])
-    fingerprint = schema_fingerprint(table.schema)
-    return table.replace_schema_metadata(
-        {
-            b"vop.arrow_schema_version": ARROW_SCHEMA_VERSION.encode(),
-            b"vop.schema_fingerprint": fingerprint.encode(),
-            b"vop_voiage.contract_version": b"1.0.0",
-            b"vop_voiage.schema_id": b"net_benefit_records",
-            b"vop_voiage.schema_version": ARROW_SCHEMA_VERSION.encode(),
-            b"vop_voiage.schema_fingerprint": fingerprint.encode(),
-            b"vop_voiage.producer": b"vop_poc_nz",
-            b"vop_voiage.method_contract_version": b"1.1.0",
-        }
-    )
+    return attach_contract_metadata(table, schema_id="net_benefit_records")
 
 
 def tensor_to_long_records(tensor: NetBenefitTensor) -> list[dict[str, Any]]:
