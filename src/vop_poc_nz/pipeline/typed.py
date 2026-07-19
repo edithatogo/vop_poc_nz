@@ -11,8 +11,9 @@ import logging
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from hashlib import sha256
-from typing import Any
+from typing import Any, Literal
 
+import numpy as np
 import pyarrow as pa
 from pydantic import Field, field_validator, model_validator
 
@@ -85,6 +86,9 @@ class TypedPipelineSpec(FrozenDomainModel):
     random_seed: int | None = None
     software_version: str | None = None
     spec_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+    numerical_policy: NumericalPolicySpec = NumericalPolicySpec()
+    backend_requested: Literal["numpy"] = "numpy"
+    fallback_policy: Literal["forbid"] = "forbid"
     interventions: tuple[NamedInterventionSpec, ...] = Field(min_length=1)
 
     @field_validator("created_at_utc")
@@ -126,6 +130,9 @@ def typed_pipeline_spec_from_legacy(
     created_at_utc: datetime | None = None,
     random_seed: int | None = None,
     software_version: str | None = None,
+    numerical_policy: NumericalPolicySpec | None = None,
+    backend_requested: Literal["numpy"] = "numpy",
+    fallback_policy: Literal["forbid"] = "forbid",
 ) -> TypedPipelineSpec:
     """Validate and deep-freeze legacy intervention mappings without mutation."""
     typed = tuple(
@@ -139,6 +146,9 @@ def typed_pipeline_spec_from_legacy(
         created_at_utc=created_at_utc or datetime.now(UTC),
         random_seed=random_seed,
         software_version=software_version,
+        numerical_policy=numerical_policy or NumericalPolicySpec(),
+        backend_requested=backend_requested,
+        fallback_policy=fallback_policy,
         spec_fingerprint=_fingerprint(typed),
         interventions=typed,
     )
@@ -159,6 +169,7 @@ def _calculate_intervention(
         health_system = run_typed_cea(
             item.spec,
             perspective=Perspective.HEALTH_SYSTEM,
+            numerical_policy=pipeline.numerical_policy,
         )
         supported_methods = tuple(
             ProductivityCostMethod(method)
@@ -174,6 +185,7 @@ def _calculate_intervention(
                     item.spec,
                     perspective=Perspective.SOCIETAL,
                     productivity_cost_method=method,
+                    numerical_policy=pipeline.numerical_policy,
                 ),
             )
             for method in supported_methods
@@ -188,14 +200,13 @@ def _calculate_intervention(
 
 def run_typed_analysis_pipeline(spec: TypedPipelineSpec) -> TypedPipelineResult:
     """Calculate immutable CEA bundles without reporting or artifact writes."""
-    numerical_policy = NumericalPolicySpec()
     correlation = AnalysisLogContext(
         run_id=spec.run_id,
         analysis_id="typed-cea",
-        backend_requested="numpy",
-        backend_selected="numpy",
-        fallback_code="none",
-        numerical_policy_id=numerical_policy_digest(numerical_policy),
+        backend_requested=spec.backend_requested,
+        backend_selected=spec.backend_requested,
+        fallback_code="not_applicable_fallback_forbidden",
+        numerical_policy_id=numerical_policy_digest(spec.numerical_policy),
     )
     with analysis_log_context(correlation):
         return TypedPipelineResult(
@@ -218,6 +229,14 @@ def run_typed_analysis_pipeline(spec: TypedPipelineSpec) -> TypedPipelineResult:
                         observed_at_utc=spec.created_at_utc,
                         source_version=spec.software_version,
                         content_sha256=spec.spec_fingerprint,
+                    ),
+                    ProvenanceSpec(
+                        source_id=(
+                            f"execution-backend:{spec.backend_requested};"
+                            f"fallback:{spec.fallback_policy}"
+                        ),
+                        source_version=np.__version__,
+                        content_sha256=numerical_policy_digest(spec.numerical_policy),
                     ),
                 ),
             ),

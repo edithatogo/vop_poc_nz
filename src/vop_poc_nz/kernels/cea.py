@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import warnings
 from typing import ClassVar, cast
 
@@ -10,7 +11,12 @@ from vop_poc_nz.domain.cea import (
     Perspective,
     ProductivityCostMethod,
 )
-from vop_poc_nz.domain.contracts import QALY, UNKNOWN_CURRENCY, UnitSpec
+from vop_poc_nz.domain.contracts import (
+    QALY,
+    UNKNOWN_CURRENCY,
+    NonFinitePolicy,
+    UnitSpec,
+)
 from vop_poc_nz.results.base import DiagnosticSeverity, ResultDiagnostic
 from vop_poc_nz.results.cea import CEAAnalysisResult
 
@@ -83,6 +89,8 @@ class CEACalculationKernel:
     ) -> CEAAnalysisResult:
         from vop_poc_nz.cea_model_core import calculate_cea
 
+        if not context.numerical_policy.deterministic:
+            raise ValueError("CEA kernel requires a deterministic numerical policy")
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             legacy = calculate_cea(
@@ -103,6 +111,46 @@ class CEACalculationKernel:
             health_outcome_unit=spec.health_outcome_unit,
             provenance=spec.provenance,
         )
+        policy = context.numerical_policy
+        identities = (
+            (
+                result.incremental_cost,
+                result.cost_new_treatment - result.cost_standard_care,
+                "incremental cost",
+            ),
+            (
+                result.incremental_qalys,
+                result.qalys_new_treatment - result.qalys_standard_care,
+                "incremental QALY",
+            ),
+            (
+                result.incremental_nmb,
+                result.incremental_qalys * result.wtp_threshold
+                - result.incremental_cost,
+                "incremental NMB",
+            ),
+        )
+        for actual, expected, name in identities:
+            if not math.isclose(
+                actual,
+                expected,
+                rel_tol=policy.relative_tolerance,
+                abs_tol=policy.absolute_tolerance,
+            ):
+                raise ArithmeticError(f"{name} violates the numerical policy")
+        finite_values = (
+            result.cost_standard_care,
+            result.qalys_standard_care,
+            result.cost_new_treatment,
+            result.qalys_new_treatment,
+            result.incremental_cost,
+            result.incremental_qalys,
+            result.incremental_nmb,
+        )
+        if policy.non_finite_policy is NonFinitePolicy.RAISE and not all(
+            math.isfinite(value) for value in finite_values
+        ):
+            raise ArithmeticError("CEA result contains a non-finite policy value")
         diagnostics = tuple(
             ResultDiagnostic(
                 code=f"PYTHON_WARNING_{warning.category.__name__.upper()}",

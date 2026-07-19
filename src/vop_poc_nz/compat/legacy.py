@@ -26,7 +26,11 @@ from vop_poc_nz.domain.cea import (
     TransitionMatrices,
     TransitionMatrix,
 )
-from vop_poc_nz.domain.contracts import MetadataStatus, ProvenanceSpec
+from vop_poc_nz.domain.contracts import (
+    MetadataStatus,
+    NumericalPolicySpec,
+    ProvenanceSpec,
+)
 from vop_poc_nz.kernels.cea import CEACalculationContext, CEACalculationKernel
 from vop_poc_nz.results.cea import CEAAnalysisResult
 
@@ -310,6 +314,7 @@ def run_typed_cea(
     wtp_threshold: float = 50_000.0,
     productivity_cost_method: str
     | ProductivityCostMethod = ProductivityCostMethod.HUMAN_CAPITAL,
+    numerical_policy: NumericalPolicySpec | None = None,
 ) -> CEAAnalysisResult:
     """Run CEA through typed contracts without changing the legacy `run_cea`."""
     spec = (
@@ -331,5 +336,6 @@ def run_typed_cea(
         productivity_cost_method=resolved_method,
         cost_unit=spec.cost_unit,
         health_outcome_unit=spec.health_outcome_unit,
+        numerical_policy=numerical_policy or NumericalPolicySpec(),
     )
     return CEACalculationKernel().calculate(spec, context=context)

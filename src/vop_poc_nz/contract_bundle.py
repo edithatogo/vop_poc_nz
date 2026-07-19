@@ -79,6 +79,219 @@ _UNITS: dict[str, object] = {
 }
 
 
+def analytical_reference_document() -> dict[str, object]:
+    """Return hand-derived, implementation-independent policy reference cases."""
+    return {
+        "schema_version": "1.0.0",
+        "reference_id": "vop-voiage-analytical-reference",
+        "reference_version": "1.0.0",
+        "method_contract_version": METHOD_CONTRACT_VERSION,
+        "binding": "language_runtime_neutral",
+        "provenance": {
+            "source_id": "manual-algebra:vop-voiage-reference-v1",
+            "derivation_method": "hand_calculated_closed_form",
+            "implementation_dependency": "none",
+            "review_status": "producer_authored_pending_external_replication",
+            "derivation_date": "2026-07-20",
+        },
+        "comparison": {
+            "rule": "abs(actual-expected) <= atol + rtol*abs(expected)",
+            "absolute_tolerance": 1e-12,
+            "relative_tolerance": 1e-12,
+            "boolean_comparison": "exact",
+            "string_comparison": "exact_utf8",
+        },
+        "assumptions": [
+            "Costs and health outcomes accrue at the start of each cycle.",
+            "Expected values use an equally weighted arithmetic mean over draws.",
+            "A treatment is cost effective only when incremental NMB is greater than zero.",
+            "Population EVPI is undiscounted per-person EVPI multiplied by population size.",
+            "Directional EVoP chooses by expected NMB under one perspective and evaluates regret under another.",
+        ],
+        "units": {
+            "cost": {
+                "symbol": "NZD",
+                "dimension": "currency",
+                "currency_code": "NZD",
+                "currency_year": 2026,
+            },
+            "health": {"symbol": "QALY", "dimension": "health"},
+            "wtp": {"symbol": "NZD/QALY", "dimension": "currency_per_health"},
+            "population": {"symbol": "person", "dimension": "count"},
+        },
+        "cases": [
+            {
+                "case_id": "cea_one_state_two_cycle",
+                "calculation": "discounted_markov_cost_effectiveness",
+                "derivation": [
+                    "With identity transition and discount rate 0, each two-cycle total is 2*per_cycle_value.",
+                    "Health incremental cost = 2*(130-100) = 60 NZD.",
+                    "Incremental QALY = 2*(1.01-1.00) = 0.02 QALY.",
+                    "Health ICER = 60/0.02 = 3000 NZD/QALY.",
+                    "Health incremental NMB = 5000*0.02-60 = 40 NZD.",
+                    "Societal per-cycle costs are health + additional societal + human-capital productivity.",
+                    "Societal incremental cost = 2*((130+5+10)-(100+20+30)) = -10 NZD.",
+                    "Societal ICER = -10/0.02 = -500 NZD/QALY; incremental NMB = 5000*0.02-(-10) = 110 NZD.",
+                ],
+                "inputs": {
+                    "states": ["alive"],
+                    "cycles": 2,
+                    "initial_population": [1.0],
+                    "transition_matrices": {
+                        "standard_care": [[1.0]],
+                        "new_treatment": [[1.0]],
+                    },
+                    "discount_rate": 0.0,
+                    "costs": {
+                        "health_system": {
+                            "standard_care": [100.0],
+                            "new_treatment": [130.0],
+                        },
+                        "societal": {
+                            "standard_care": [20.0],
+                            "new_treatment": [5.0],
+                        },
+                    },
+                    "productivity_costs": {
+                        "human_capital": {
+                            "standard_care": [30.0],
+                            "new_treatment": [10.0],
+                        }
+                    },
+                    "qalys": {
+                        "standard_care": [1.0],
+                        "new_treatment": [1.01],
+                    },
+                    "wtp_threshold": 5000.0,
+                },
+                "expected": {
+                    "health_system": {
+                        "cost_standard_care": 200.0,
+                        "cost_new_treatment": 260.0,
+                        "qalys_standard_care": 2.0,
+                        "qalys_new_treatment": 2.02,
+                        "incremental_cost": 60.0,
+                        "incremental_qalys": 0.02,
+                        "icer_status": "finite",
+                        "icer_value": 3000.0,
+                        "incremental_nmb": 40.0,
+                        "is_cost_effective": True,
+                    },
+                    "societal_human_capital": {
+                        "cost_standard_care": 300.0,
+                        "cost_new_treatment": 290.0,
+                        "qalys_standard_care": 2.0,
+                        "qalys_new_treatment": 2.02,
+                        "incremental_cost": -10.0,
+                        "incremental_qalys": 0.02,
+                        "icer_status": "finite",
+                        "icer_value": -500.0,
+                        "incremental_nmb": 110.0,
+                        "is_cost_effective": True,
+                    },
+                },
+            },
+            {
+                "case_id": "evpi_two_draw_crossing",
+                "calculation": "expected_value_of_perfect_information",
+                "derivation": [
+                    "Standard-care NMB is [0,0] NZD and new-treatment NMB is [100,-100] NZD.",
+                    "Perfect-information expected NMB = mean([100,0]) = 50 NZD.",
+                    "Current-information NMB = max(mean([0,0]),mean([100,-100])) = 0 NZD.",
+                    "EVPI per person = 50-0 = 50 NZD; population EVPI = 50*1000 = 50000 NZD.",
+                ],
+                "inputs": {
+                    "wtp_threshold": 100.0,
+                    "draws": [
+                        {
+                            "cost_sc": 0.0,
+                            "qaly_sc": 0.0,
+                            "cost_nt": 0.0,
+                            "qaly_nt": 1.0,
+                        },
+                        {
+                            "cost_sc": 0.0,
+                            "qaly_sc": 0.0,
+                            "cost_nt": 100.0,
+                            "qaly_nt": 0.0,
+                        },
+                    ],
+                    "target_population_size": 1000,
+                },
+                "expected": {"evpi_per_person": 50.0, "population_evpi": 50000.0},
+            },
+            {
+                "case_id": "directional_evop_opposed_choices",
+                "calculation": "directional_expected_value_of_perspective",
+                "derivation": [
+                    "Expected NMB under health_system selects A (10 versus 0).",
+                    "Evaluating A instead of societal-optimal B under societal loses 100 NZD per draw.",
+                    "The reverse direction selects B then loses 10 NZD per draw under health_system.",
+                    "The draw-level optimal strategies disagree on both draws, so discordance is 1.",
+                ],
+                "inputs": {
+                    "axis_order": ["draw", "strategy", "perspective"],
+                    "strategies": ["A", "B"],
+                    "perspectives": ["health_system", "societal"],
+                    "net_benefit": [
+                        [[10.0, 0.0], [0.0, 100.0]],
+                        [[10.0, 0.0], [0.0, 100.0]],
+                    ],
+                    "decision_rule": "expected_value",
+                    "selection_tie_policy": "first",
+                },
+                "expected": {
+                    "health_system_to_societal": 100.0,
+                    "societal_to_health_system": 10.0,
+                    "discordance_probability": 1.0,
+                },
+            },
+        ],
+    }
+
+
+def fixture_metadata_document() -> dict[str, object]:
+    """Describe fixture validation without assuming a consumer language or binding."""
+    return {
+        "schema_version": "1.0.0",
+        "fixture_id": "typed-pipeline-records-v1",
+        "fixture_version": "1.0.0",
+        "binding": "language_runtime_neutral",
+        "logical_schema_id": "typed_pipeline_records",
+        "logical_schema_version": CONTRACT_VERSION,
+        "logical_schema_fingerprint": schema_fingerprint(TYPED_PIPELINE_ARROW_SCHEMA),
+        "record_identity_fields": [
+            "run_id",
+            "intervention",
+            "perspective",
+            "productivity_cost_method",
+        ],
+        "record_order": "preserved",
+        "null_semantics": "JSON null equals Arrow null",
+        "float_comparison": {
+            "rule": "abs(actual-expected) <= atol + rtol*abs(expected)",
+            "absolute_tolerance": 1e-12,
+            "relative_tolerance": 1e-12,
+        },
+        "cross_format_invariants": [
+            "logical field names, order, Arrow types, and nullability match the declared schema",
+            "record values and record order match canonical JSON",
+            "Arrow IPC and Parquet carry the declared fixture metadata digest",
+            "schema fingerprints exclude container metadata",
+        ],
+        "formats": {
+            "canonical_values": "typed-pipeline-records.json",
+            "arrow_ipc": "typed-pipeline-records.arrow",
+            "parquet": "typed-pipeline-records.parquet",
+        },
+        "provenance": {
+            "source_id": "fixture:typed-pipeline-records-v1",
+            "producer": "vop_poc_nz",
+            "status": "synthetic_conformance_fixture",
+        },
+    }
+
+
 class IncompatibleContractChange(ValueError):
     """Raised when schema evolution is not permitted by the shared policy."""
 
@@ -146,6 +359,10 @@ def arrow_identity_document(
         "required_metadata": [
             "vop_voiage.contract_version",
             "vop_voiage.interchange",
+            "vop_voiage.fixture_binding",
+            "vop_voiage.fixture_id",
+            "vop_voiage.fixture_metadata_sha256",
+            "vop_voiage.fixture_version",
             "vop_voiage.method_contract_version",
             "vop_voiage.producer",
             "vop_voiage.provenance_json",
@@ -235,6 +452,14 @@ def _write_fixture(output: Path) -> None:
     table = pa.Table.from_pylist(
         list(_FIXTURE_RECORDS), schema=TYPED_PIPELINE_ARROW_SCHEMA
     )
+    fixture = output / "fixtures"
+    fixture.mkdir(parents=True, exist_ok=True)
+    fixture_metadata = fixture_metadata_document()
+    fixture_metadata_bytes = canonical_json_bytes(fixture_metadata)
+    fixture_metadata_digest = sha256(fixture_metadata_bytes).hexdigest()
+    (fixture / "typed-pipeline-records.metadata.json").write_bytes(
+        fixture_metadata_bytes
+    )
     table = attach_contract_metadata(
         table,
         schema_id="typed_pipeline_records",
@@ -244,11 +469,23 @@ def _write_fixture(output: Path) -> None:
         expected_fingerprint=schema_fingerprint(TYPED_PIPELINE_ARROW_SCHEMA),
         provenance_json=provenance,
     )
-    fixture = output / "fixtures"
-    fixture.mkdir(parents=True, exist_ok=True)
+    table = table.replace_schema_metadata(
+        {
+            **(table.schema.metadata or {}),
+            b"vop_voiage.fixture_binding": b"language_runtime_neutral",
+            b"vop_voiage.fixture_id": b"typed-pipeline-records-v1",
+            b"vop_voiage.fixture_version": b"1.0.0",
+            b"vop_voiage.fixture_metadata_sha256": fixture_metadata_digest.encode(),
+        }
+    )
     (fixture / "typed-pipeline-records.json").write_bytes(
         canonical_json_bytes(
             {
+                "fixture_binding": "language_runtime_neutral",
+                "fixture_id": "typed-pipeline-records-v1",
+                "fixture_metadata": "typed-pipeline-records.metadata.json",
+                "fixture_metadata_sha256": fixture_metadata_digest,
+                "fixture_version": "1.0.0",
                 "schema_id": "typed_pipeline_records",
                 "schema_fingerprint": schema_fingerprint(table.schema),
                 "records": _FIXTURE_RECORDS,
@@ -264,6 +501,14 @@ def _write_fixture(output: Path) -> None:
         version="2.6",
         write_statistics=True,
     )
+
+
+def _write_analytical_reference(output: Path) -> tuple[str, str]:
+    reference = output / "references" / "analytical-reference-manifest.json"
+    reference.parent.mkdir(parents=True, exist_ok=True)
+    content = canonical_json_bytes(analytical_reference_document())
+    reference.write_bytes(content)
+    return reference.relative_to(output).as_posix(), sha256(content).hexdigest()
 
 
 def _media_type(path: Path) -> str:
@@ -311,6 +556,7 @@ def export_contract_bundle(output: Path, schema_source: Path) -> Path:
     (output / "migration-policy.json").write_bytes(
         canonical_json_bytes(migration_policy_document())
     )
+    reference_path, reference_digest = _write_analytical_reference(output)
     _write_fixture(output)
     entries = _file_entries(output)
     manifest = {
@@ -326,6 +572,12 @@ def export_contract_bundle(output: Path, schema_source: Path) -> Path:
         "integrity_algorithm": "sha256",
         "signature_policy": "unsigned_sha256_manifest",
         "schema_source": schema_source.as_posix(),
+        "analytical_reference": {
+            "path": reference_path,
+            "reference_id": "vop-voiage-analytical-reference",
+            "reference_version": "1.0.0",
+            "sha256": reference_digest,
+        },
         "files": entries,
         "bundle_sha256": sha256(canonical_json_bytes(entries)).hexdigest(),
     }
@@ -393,6 +645,15 @@ def verify_contract_bundle(output: Path) -> dict[str, Any]:
     expected_bundle = sha256(canonical_json_bytes(files)).hexdigest()
     if raw.get("bundle_sha256") != expected_bundle:
         raise ValueError("contract bundle aggregate digest mismatch")
+    reference = raw.get("analytical_reference")
+    reference_path = "references/analytical-reference-manifest.json"
+    if not isinstance(reference, dict) or reference != {
+        "path": reference_path,
+        "reference_id": "vop-voiage-analytical-reference",
+        "reference_version": "1.0.0",
+        "sha256": sha256((output / reference_path).read_bytes()).hexdigest(),
+    }:
+        raise ValueError("contract bundle analytical reference identity mismatch")
     return raw
 
 
@@ -400,10 +661,12 @@ __all__ = [
     "BUNDLE_ID",
     "BUNDLE_VERSION",
     "IncompatibleContractChange",
+    "analytical_reference_document",
     "arrow_identity_document",
     "assess_arrow_evolution",
     "canonical_json_bytes",
     "export_contract_bundle",
+    "fixture_metadata_document",
     "migration_policy_document",
     "verify_contract_bundle",
 ]

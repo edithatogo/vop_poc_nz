@@ -62,7 +62,10 @@ def test_committed_bundle_check_mode_and_manifest_are_valid() -> None:
     assert manifest["source_repository"] == "edithatogo/vop_poc_nz"
     assert manifest["source_revision"] == "contract-bundle/1.0.0"
     assert manifest["signature_policy"] == "unsigned_sha256_manifest"
-    assert len(manifest["files"]) == 14
+    assert manifest["analytical_reference"]["path"] == (
+        "references/analytical-reference-manifest.json"
+    )
+    assert len(manifest["files"]) == 16
 
 
 def test_bundle_verification_fails_closed_on_tampering(tmp_path: Path) -> None:
@@ -87,6 +90,18 @@ def test_arrow_and_parquet_fixtures_share_exact_identity_and_values() -> None:
     metadata = arrow.schema.metadata or {}
     assert metadata[b"vop_voiage.provenance_json"]
     assert metadata[b"vop_voiage.provenance_sha256"]
+    fixture_metadata = json.loads(
+        (BUNDLE / "fixtures/typed-pipeline-records.metadata.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert expected["fixture_binding"] == "language_runtime_neutral"
+    assert fixture_metadata["binding"] == "language_runtime_neutral"
+    assert metadata[b"vop_voiage.fixture_id"] == b"typed-pipeline-records-v1"
+    assert (
+        metadata[b"vop_voiage.fixture_metadata_sha256"].decode()
+        == expected["fixture_metadata_sha256"]
+    )
 
 
 def test_identical_and_nullable_additive_schema_evolution_is_declared() -> None:
