@@ -93,7 +93,7 @@ jobs:
       - if: matrix.lane == 'profile'
         run: |
           mkdir -p .benchmarks
-          uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py
+          uv run scalene run --use-legacy-tracer --cpu-only -o .benchmarks/scalene.json scripts/profile_workload.py
           uv run python scripts/profile_governance_workload.py --iterations 1000 --output .benchmarks/governance-profile.json
       - name: Generate broad mutation evidence
         if: matrix.lane == 'mutation'

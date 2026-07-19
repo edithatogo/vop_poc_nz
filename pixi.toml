@@ -15,7 +15,7 @@ format-check = { cmd = "uv run ruff format --check src/vop_poc_nz tests scripts"
 typecheck = { cmd = "uv run basedpyright && uv run ty check src/vop_poc_nz", depends-on = ["sync"] }
 security = { cmd = "uv run bandit -r src/vop_poc_nz && uv run pip-audit", depends-on = ["sync"] }
 build = { cmd = "uv build", depends-on = ["sync"] }
-profile = { cmd = "uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py", depends-on = ["sync"] }
+profile = { cmd = "uv run scalene run --use-legacy-tracer --cpu-only -o .benchmarks/scalene.json scripts/profile_workload.py", depends-on = ["sync"] }
 governance = { cmd = "uv run python scripts/governance_harness.py . --strict", depends-on = ["sync"] }
 mutation-score = { cmd = "uv run mutmut run && uv run mutmut export-cicd-stats && uv run python scripts/check_mutation_targets.py --baseline .github/mutation-baselines/vop-broad.json --cache-root mutants --output .benchmarks/mutation-score-broad.json && uv run python scripts/run_critical_mutation_lane.py . --threshold 90 --output .benchmarks/mutation-critical.json", depends-on = ["sync"] }
 verify = { depends-on = ["lint", "format-check", "typecheck", "governance", "test", "build"] }
