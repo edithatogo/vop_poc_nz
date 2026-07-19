@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 # from scipy.stats import beta, gamma, norm, uniform  # Moved to local import
+from .perspective import DecisionRule, NetBenefitTensor, TiePolicy
 from .validation import validate_psa_results
 
 logger = logging.getLogger(__name__)
@@ -538,17 +539,47 @@ def calculate_value_of_perspective(
     nmb_hs = _nmb(psa_results_hs)
     nmb_soc = _nmb(psa_results_soc)
 
-    # 1. EXPECTED VALUE OF PERSPECTIVE (EVP)
-    # Opportunity loss from always using chosen perspective vs optimal per simulation
-    optimal_nmb_per_sim = np.maximum(nmb_hs, nmb_soc)
-    ev_optimal = float(np.mean(optimal_nmb_per_sim))
-
     if chosen_perspective not in {"health_system", "societal"}:
         raise ValueError("chosen_perspective must be 'health_system' or 'societal'")
-    chosen_series = nmb_hs if chosen_perspective == "health_system" else nmb_soc
-    ev_chosen = float(np.mean(chosen_series))
-
-    evp = max(0.0, ev_optimal - ev_chosen)
+    target_perspective = (
+        "societal" if chosen_perspective == "health_system" else "health_system"
+    )
+    hs_strategy_nmb = np.column_stack(
+        (
+            psa_results_hs["qaly_sc"] * wtp_threshold - psa_results_hs["cost_sc"],
+            psa_results_hs["qaly_nt"] * wtp_threshold - psa_results_hs["cost_nt"],
+        )
+    )
+    soc_strategy_nmb = np.column_stack(
+        (
+            psa_results_soc["qaly_sc"] * wtp_threshold
+            - psa_results_soc["cost_sc"],
+            psa_results_soc["qaly_nt"] * wtp_threshold
+            - psa_results_soc["cost_nt"],
+        )
+    )
+    tensor = NetBenefitTensor(
+        np.stack((hs_strategy_nmb, soc_strategy_nmb), axis=2),
+        strategies=("standard_care", "new_treatment"),
+        perspectives=("health_system", "societal"),
+        attrs={"wtp_threshold": wtp_threshold},
+    )
+    current_information = tensor.evop(
+        choose_under=chosen_perspective,
+        evaluate_under=target_perspective,
+        decision_rule=DecisionRule.EXPECTED_VALUE,
+        selection_tie_policy=TiePolicy.FIRST,
+    )
+    per_draw_diagnostic = tensor.evop(
+        choose_under=chosen_perspective,
+        evaluate_under=target_perspective,
+        decision_rule=DecisionRule.PER_DRAW,
+        selection_tie_policy=TiePolicy.SPLIT,
+    )
+    evp = current_information.per_person
+    target_expected = tensor.expected_net_benefit(target_perspective)
+    ev_optimal = float(np.max(target_expected))
+    ev_chosen = ev_optimal - evp
 
     # 2. PERSPECTIVE PREMIUM
     # Incremental value of societal vs health system perspective
@@ -578,7 +609,7 @@ def calculate_value_of_perspective(
     # Similar to EVPI but for knowing which perspective is correct
     # Assumes we don't know ex-ante which perspective is "correct"
     # Value = E[max(NMB_hs, NMB_soc)] - max(E[NMB_hs], E[NMB_soc])
-    information_value = ev_optimal - max(ev_health_system, ev_societal)
+    information_value = per_draw_diagnostic.per_person
 
     # 5. ADDITIONAL METRICS
     # Probability each perspective is optimal
@@ -599,6 +630,15 @@ def calculate_value_of_perspective(
         "perspective_premium": perspective_premium,
         "decision_discordance_cost": expected_discordance_cost,
         "information_value": information_value,
+        "per_draw_perspective_regret_diagnostic": per_draw_diagnostic.per_person,
+        "estimand": "directional_current_information_evop",
+        "decision_rule": current_information.decision_rule.value,
+        "choose_under": current_information.choose_under,
+        "evaluate_under": current_information.evaluate_under,
+        "chosen_strategy": current_information.chosen_strategy,
+        "target_strategy": current_information.target_strategy,
+        "tie_policy": current_information.selection_tie_policy.value,
+        "method_contract_version": current_information.method_contract_version,
         # Components for EVP
         "expected_value_optimal": ev_optimal,
         "expected_value_chosen": ev_chosen,

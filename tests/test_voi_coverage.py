@@ -126,6 +126,28 @@ class TestValueOfInformation(unittest.TestCase):
         self.assertIn("expected_value_of_perspective", vop)
         self.assertIn("perspective_premium", vop)
 
+    def test_value_of_perspective_uses_fixed_strategy_directional_regret(self):
+        # Both lenses select the new treatment, so EVoP is zero even though the
+        # absolute NMB levels differ substantially between perspectives.
+        hs = pd.DataFrame(
+            {"cost_sc": [0.0, 0.0], "cost_nt": [1.0, 1.0],
+             "qaly_sc": [0.0, 0.0], "qaly_nt": [2.0, 2.0]}
+        )
+        societal = pd.DataFrame(
+            {"cost_sc": [100.0, 100.0], "cost_nt": [0.0, 0.0],
+             "qaly_sc": [0.0, 0.0], "qaly_nt": [4.0, 4.0]}
+        )
+
+        result = calculate_value_of_perspective(
+            hs, societal, wtp_threshold=10.0, chosen_perspective="health_system"
+        )
+
+        self.assertEqual(result["expected_value_of_perspective"], 0.0)
+        self.assertEqual(result["decision_rule"], "expected_value")
+        self.assertEqual(result["estimand"], "directional_current_information_evop")
+        self.assertEqual(result["chosen_strategy"], "new_treatment")
+        self.assertEqual(result["target_strategy"], "new_treatment")
+
     def test_calculate_population_evpi(self):
         pop_evpi = calculate_population_evpi(
             evpi_per_person=100, target_population_size=100000

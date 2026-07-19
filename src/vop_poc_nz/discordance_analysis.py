@@ -5,7 +5,10 @@ This module provides functions to calculate and analyze decision discordance
 between different perspectives in cost-effectiveness analysis.
 """
 
+import numpy as np
+
 from .cea_model_core import run_cea
+from .perspective import DecisionRule, NetBenefitTensor, TiePolicy
 
 
 def calculate_decision_discordance(
@@ -32,12 +35,33 @@ def calculate_decision_discordance(
 
     discordant = hs_cost_effective != soc_cost_effective
 
-    # Deterministic opportunity loss: difference between the best perspective and the chosen (health system) perspective
-    best_nmb = max(
-        float(hs_result["incremental_nmb"]), float(soc_result["incremental_nmb"])
+    # A perspective is an evaluative lens, not an alternative. Represent the
+    # status quo and intervention as strategies, select one fixed strategy under
+    # each lens, then evaluate the health-system choice under the societal lens.
+    tensor = NetBenefitTensor(
+        np.array(
+            [
+                [
+                    [0.0, 0.0],
+                    [
+                        float(hs_result["incremental_nmb"]),
+                        float(soc_result["incremental_nmb"]),
+                    ],
+                ]
+            ]
+        ),
+        strategies=("standard_care", "intervention"),
+        perspectives=("health_system", "societal"),
+        case_id=intervention_name,
+        attrs={"wtp_threshold": wtp_threshold},
     )
-    chosen_nmb = float(hs_result["incremental_nmb"])
-    loss_from_discordance = max(0.0, best_nmb - chosen_nmb)
+    regret = tensor.evop(
+        choose_under="health_system",
+        evaluate_under="societal",
+        decision_rule=DecisionRule.EXPECTED_VALUE,
+        selection_tie_policy=TiePolicy.FIRST,
+    )
+    loss_from_discordance = regret.per_person
 
     return {
         "intervention": intervention_name,
@@ -46,7 +70,12 @@ def calculate_decision_discordance(
         "soc_cost_effective": soc_cost_effective,
         "loss_from_discordance": loss_from_discordance,
         "loss_qaly": loss_from_discordance / wtp_threshold if wtp_threshold else 0.0,
-        "preferred_perspective": "societal"
-        if soc_result["incremental_nmb"] > hs_result["incremental_nmb"]
-        else "health_system",
+        "preferred_perspective": "societal" if discordant else "health_system",
+        "chosen_strategy": regret.chosen_strategy,
+        "target_strategy": regret.target_strategy,
+        "choose_under": regret.choose_under,
+        "evaluate_under": regret.evaluate_under,
+        "decision_rule": regret.decision_rule.value,
+        "tie_policy": regret.selection_tie_policy.value,
+        "method_contract_version": regret.method_contract_version,
     }
