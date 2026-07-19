@@ -235,9 +235,8 @@ def plan_github_sync(
             remote_digest=_fallback_digest(remote.body),
         )
 
-    assert base_projection is not None
-    assert local_projection is not None
-    assert remote_projection is not None
+    if base_projection is None or local_projection is None or remote_projection is None:
+        raise RuntimeError("validated managed projections unexpectedly became unavailable")
     base_digest = _canonical_digest(base_projection)
     local_digest = _canonical_digest(local_projection)
     remote_digest = _canonical_digest(remote_projection)

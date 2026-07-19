@@ -81,7 +81,8 @@ class ICERResult(FrozenDomainModel):
             return -math.inf
         if self.status is ICERStatus.UNDEFINED:
             return math.nan
-        assert self.value is not None
+        if self.value is None:
+            raise ValueError("finite ICER results require a numeric value")
         return self.value
 
 

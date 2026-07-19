@@ -5,12 +5,15 @@ This module provides functions to generate comprehensive reports in Markdown for
 """
 
 import copy
+import logging
 
 import pandas as pd
 
 from .cea_model_core import run_cea
 from .dcea_equity_analysis import run_dcea
 from .discordance_analysis import calculate_decision_discordance
+
+logger = logging.getLogger(__name__)
 
 try:  # optional dependency for publication-quality tables
     from great_tables import GT
@@ -224,7 +227,6 @@ def _render_table(df: pd.DataFrame) -> str:
     ):  # pragma: no cover - optional dependency
         try:
             return GT(df).to_html()
-        except Exception:
-            # Fall back silently to markdown if rendering fails
-            pass
+        except Exception as exc:
+            logger.debug("great_tables rendering failed; using markdown", exc_info=exc)
     return df.to_markdown(index=False)
