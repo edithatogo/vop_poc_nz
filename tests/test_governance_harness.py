@@ -104,8 +104,14 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
     assert project["tool"]["mutmut"]["only_mutate"] == [
         "src/vop_poc_nz/logging_config.py",
         "src/vop_poc_nz/github_sync_planner.py",
+        "src/vop_poc_nz/mutation_policy.py",
     ]
-    assert (
-        "tests/test_github_sync_planner.py"
-        in project["tool"]["mutmut"]["pytest_add_cli_args_test_selection"]
-    )
+    mutation_tests = project["tool"]["mutmut"]["pytest_add_cli_args_test_selection"]
+    assert mutation_tests == [
+        "tests/test_logging_and_version.py",
+        "tests/test_github_sync_planner.py",
+        "tests/test_mutation_score.py",
+    ]
+    assert "mutmut export-cicd-stats" in workflow
+    assert "scripts/check_mutation_score.py --threshold 44" in workflow
+    assert "mutation-score" in pixi["tasks"]

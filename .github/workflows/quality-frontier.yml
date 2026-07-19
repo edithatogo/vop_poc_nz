@@ -96,7 +96,11 @@ jobs:
           uv run scalene run -o .benchmarks/scalene.json scripts/profile_workload.py
           uv run python scripts/profile_governance_workload.py --iterations 1000 --output .benchmarks/governance-profile.json
       - if: matrix.lane == 'mutation'
-        run: uv run mutmut run
+        run: |
+          uv run mutmut run
+          uv run mutmut export-cicd-stats
+          # Ratchet from the 2026-07-19 broad fail-closed baseline (44.3%).
+          uv run python scripts/check_mutation_score.py --threshold 44 --output .benchmarks/mutation-score.json
       - if: matrix.lane == 'security'
         run: uv run bandit -r src/vop_poc_nz && uv run pip-audit
       - if: matrix.lane == 'experimental'
