@@ -92,6 +92,12 @@ exclude = [
   "/.qoder",
   "/.snakemake",
   "/.benchmarks",
+  "/.assurance",
+  "/.conductor/local",
+  "/.tmp-mutation-artifact",
+  "/.pytest_cache",
+  "/.ruff_cache",
+  "/mutants",
 ]
 
 [tool.hatch.envs.default]
