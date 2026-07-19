@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -193,3 +194,21 @@ def test_schema_export_is_deterministic(tmp_path) -> None:
         assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
         assert schema["type"] == "object"
         assert schema["additionalProperties"] is False
+
+
+def test_canonical_registry_links_c13_to_github_without_private_data() -> None:
+    ledger = GovernanceLedger.model_validate_json(
+        Path("governance/registry.json").read_text(encoding="utf-8")
+    )
+    payloads = build_github_sync_payloads(ledger)
+
+    assert {record.id for record in ledger.records} == {
+        "CON-SHR-0013",
+        "EVR-SHR-0013",
+        "ISL-SHR-0013",
+    }
+    assert len(payloads) == 1
+    assert payloads[0].issue_number == 41
+    assert payloads[0].project_number == 28
+    assert payloads[0].stable_marker == "vop-voiage-governance-id:CON-SHR-0013"
+    assert "local_private" not in payloads[0].body
