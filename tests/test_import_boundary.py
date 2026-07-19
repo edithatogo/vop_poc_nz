@@ -30,7 +30,6 @@ SHIM_MODULES = (
     "profiling",
     "reporting",
     "sobol_analysis",
-    "test_dsa_enhancements",
     "threshold_analysis",
     "validation",
     "value_of_information",
@@ -38,6 +37,7 @@ SHIM_MODULES = (
     "visualizations_comparative",
     "visualizations_extended",
 )
+WRAPPER_MODULES = ("test_dsa_enhancements",)
 
 
 def _source_tree_imports(path: Path) -> list[tuple[int, str]]:
@@ -50,9 +50,12 @@ def _source_tree_imports(path: Path) -> list[tuple[int, str]]:
                 for alias in node.names
                 if alias.name == "src" or alias.name.startswith("src.")
             )
-        elif isinstance(node, ast.ImportFrom) and node.module is not None:
-            if node.module == "src" or node.module.startswith("src."):
-                findings.append((node.lineno, node.module))
+        elif (
+            isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and (node.module == "src" or node.module.startswith("src."))
+        ):
+            findings.append((node.lineno, node.module))
     return findings
 
 
@@ -77,6 +80,18 @@ for module_name in {SHIM_MODULES!r}:
         legacy = importlib.import_module(f'src.{{module_name}}')
     canonical = importlib.import_module(f'vop_poc_nz.{{module_name}}')
     assert legacy is canonical, module_name
+    assert any(item.category is DeprecationWarning for item in caught), module_name
+for module_name in {WRAPPER_MODULES!r}:
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        legacy = importlib.import_module(f'src.{{module_name}}')
+    canonical = importlib.import_module(f'vop_poc_nz.{{module_name}}')
+    assert legacy is not canonical, module_name
+    assert legacy.__file__.replace('\\\\', '/').endswith('src/test_dsa_enhancements.py'), legacy.__file__
+    canonical_public = {{
+        name for name in vars(canonical) if not name.startswith('__')
+    }}
+    assert canonical_public <= set(vars(legacy)), module_name
     assert any(item.category is DeprecationWarning for item in caught), module_name
 """
     completed = subprocess.run(
