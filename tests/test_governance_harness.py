@@ -90,6 +90,7 @@ def test_harness_commands_are_strict_focused_and_private_safe() -> None:
     assert "tests/test_mutation_score.py" in rendered
     assert "tests/test_perspective_io.py" in rendered
     assert "scripts/check_mutation_targets.py" in rendered
+    assert "scripts/experimental_backend_probe.py" in rendered
     assert "scripts/run_critical_mutation_lane.py" in rendered
     assert ".conductor/local" not in rendered
     assert "pytest tests -q" not in rendered
@@ -106,6 +107,9 @@ def test_ci_pixi_and_mutation_profile_lanes_use_the_single_harness() -> None:
     assert "scripts/profile_governance_workload.py" in workflow
     assert "github.event_name == 'schedule'" in workflow
     assert "github.event_name == 'workflow_dispatch'" in workflow
+    assert ".benchmarks/bandit.json" in workflow
+    assert ".benchmarks/pip-audit.json" in workflow
+    assert ".benchmarks/experimental-backend.json" in workflow
     assert pixi["tasks"]["governance"]["cmd"] == (
         "uv run python scripts/governance_harness.py . --strict"
     )

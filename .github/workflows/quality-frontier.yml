@@ -129,9 +129,15 @@ jobs:
             exit 1
           fi
       - if: matrix.lane == 'security'
-        run: uv run bandit -r src/vop_poc_nz && uv run pip-audit
+        run: |
+          mkdir -p .benchmarks
+          uv run bandit -r src/vop_poc_nz -f json -o .benchmarks/bandit.json
+          uv run pip-audit --format=json --output=.benchmarks/pip-audit.json
       - if: matrix.lane == 'experimental'
-        run: uv run python scripts/profile_workload.py
+        run: |
+          mkdir -p .benchmarks
+          uv run pytest tests/test_experimental_backend_probe.py -q --no-cov
+          uv run python scripts/experimental_backend_probe.py --output .benchmarks/experimental-backend.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
