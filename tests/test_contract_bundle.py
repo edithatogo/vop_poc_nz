@@ -193,6 +193,34 @@ def test_unknown_top_level_schema_semantics_fail_closed(document: str) -> None:
         assess_arrow_evolution(previous, current)
 
 
+@pytest.mark.parametrize(
+    "invalid_field",
+    [
+        {
+            "name": "run_id",
+            "arrow_type": "string",
+            "nullable": True,
+            "unit": None,
+            "consumer_hint": "silently-ignore-me",
+        },
+        {
+            "name": "run_id",
+            "arrow_type": "string",
+            "nullable": True,
+            "unit": {"dimension": "identifier"},
+        },
+    ],
+)
+def test_unknown_or_malformed_field_semantics_fail_closed(
+    invalid_field: dict[str, object],
+) -> None:
+    previous = _identity()
+    current = deepcopy(previous)
+    current["fields"][0] = invalid_field
+    with pytest.raises(IncompatibleContractChange, match="schema field"):
+        assess_arrow_evolution(previous, current)
+
+
 @pytest.mark.parametrize("collision", ["existing", "duplicate_append"])
 def test_appended_field_name_collisions_fail_closed(collision: str) -> None:
     previous = _identity()

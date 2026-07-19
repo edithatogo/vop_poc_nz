@@ -6,6 +6,7 @@ import json
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.request import Request
 
 import pytest
 
@@ -15,6 +16,7 @@ from vop_poc_nz.github_drift_auditor import (
     PROJECT_QUERY,
     BaselineProvenance,
     ProjectCheck,
+    _load_response,
     assert_query_only,
     audit_governance_drift,
     fetch_issue,
@@ -284,6 +286,13 @@ def test_mocked_network_boundary_allows_only_issue_get_and_project_query() -> No
     submitted = json.loads(requests[-1].data)
     assert submitted["query"].lstrip().startswith("query ")
     assert "mutation" not in submitted["query"].casefold()
+
+
+def test_network_loader_rejects_non_github_origins_before_opening() -> None:
+    with pytest.raises(ValueError, match=r"https://api\.github\.com"):
+        _load_response(Request("file:///tmp/governance.json"))
+    with pytest.raises(ValueError, match=r"https://api\.github\.com"):
+        _load_response(Request("https://example.com/governance.json"))
 
 
 def test_project_fetcher_paginates_items_and_fields_without_truncation() -> None:

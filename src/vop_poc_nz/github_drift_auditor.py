@@ -8,6 +8,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 from typing import Literal, cast
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 from .concerns import GitHubSyncPayload
@@ -301,13 +302,11 @@ def audit_governance_drift(
         remote, managed_labels, managed_fields
     )
     differences: list[dict[str, object]] = []
-    if all(
-        projection is not None
-        for projection in (base_projection, local_projection, remote_projection)
+    if (
+        base_projection is not None
+        and local_projection is not None
+        and remote_projection is not None
     ):
-        assert base_projection is not None
-        assert local_projection is not None
-        assert remote_projection is not None
         for field in sorted(
             base_projection.keys() | local_projection.keys() | remote_projection.keys()
         ):
@@ -373,7 +372,11 @@ def governance_audit_exit_code(artifact: Mapping[str, object]) -> int:
 
 
 def _load_response(request: Request, *, timeout: int = 20) -> Mapping[str, object]:
-    with urlopen(request, timeout=timeout) as response:
+    endpoint = urlsplit(request.full_url)
+    if endpoint.scheme != "https" or endpoint.hostname != "api.github.com":
+        raise ValueError("GitHub requests require the https://api.github.com origin")
+    # The exact HTTPS GitHub origin is validated above before opening.
+    with urlopen(request, timeout=timeout) as response:  # nosec B310
         payload = json.load(response)
     if not isinstance(payload, dict):
         raise ValueError("GitHub response must be a JSON object")
