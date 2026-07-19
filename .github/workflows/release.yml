@@ -1,8 +1,9 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -15,7 +16,7 @@ jobs:
     name: Build distributions
     runs-on: ubuntu-latest
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     permissions:
       attestations: write
       contents: read
@@ -25,13 +26,14 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
-          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+          ref: ${{ inputs.release_tag || github.ref }}
           persist-credentials: false
 
       - name: Validate exact signed remote release tag
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
         run: |
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
@@ -39,8 +41,11 @@ jobs:
           test "$remote_oid" = "$(git rev-parse "refs/tags/$RELEASE_TAG")"
           test "$(git cat-file -t "$RELEASE_TAG")" = tag
           test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
-          git verify-tag "$RELEASE_TAG"
-          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$remote_oid" --jq '.verification.verified' | grep -Fx true
+          test -n "$APPROVED_TAGGER_EMAIL"
+          mkdir -p .assurance
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$remote_oid" > .assurance/tag-verification.json
+          jq -e '.verification.verified == true' .assurance/tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' .assurance/tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
 
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -93,9 +98,35 @@ jobs:
           include-hidden-files: true
           if-no-files-found: warn
 
+  draft-release:
+    name: Prepare private draft release
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+    permissions:
+      contents: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create or refresh private draft
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = true
+          else
+            gh release create "$RELEASE_TAG" --draft --generate-notes --verify-tag
+          fi
+          gh release upload "$RELEASE_TAG" dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   publish-testpypi:
     name: Publish to TestPyPI
-    needs: build
+    needs: [build, draft-release]
     runs-on: ubuntu-latest
     environment: testpypi
     permissions:
@@ -134,7 +165,7 @@ jobs:
     needs: publish-pypi
     runs-on: ubuntu-latest
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     steps:
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -146,25 +177,26 @@ jobs:
 
       - name: Test installation
         run: |
-          version="${RELEASE_TAG#v}"
-          pip install "vop-poc-nz==$version"
-          python -c "import importlib.metadata; assert importlib.metadata.version('vop-poc-nz') == '$version'"
+          raw_version="${RELEASE_TAG#v}"
+          pip install "vop-poc-nz==$raw_version"
+          python - "$raw_version" <<'PY'
+          import importlib.metadata
+          import sys
+          from packaging.version import Version
 
-  github-release:
-    name: Attach artifacts to release
-    needs: build
+          assert Version(importlib.metadata.version("vop-poc-nz")) == Version(sys.argv[1])
+          PY
+
+  finalize-release:
+    name: Publish verified GitHub release
+    needs: [draft-release, smoke-test]
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     permissions:
       contents: write
-    if: github.event_name == 'release'
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: dist
-          path: dist/
-
-      - name: Attach artifacts to GitHub Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
-        with:
-          files: dist/*
+      - name: Publish the prepared draft
+        run: gh release edit "$RELEASE_TAG" --draft=false --latest
+        env:
+          GH_TOKEN: ${{ github.token }}
