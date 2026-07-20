@@ -132,6 +132,7 @@ jobs:
           --universe mutants/mutmut-universe.txt
           --baseline .github/mutation-baselines/vop-c15-cohort.json
           --reviewed-baseline-sha256 "${REVIEWED_BASELINE_SHA256}"
+          --threshold 64.691
           --output .benchmarks/mutation-c15-cohort.json
       - name: Enforce both mutation gates
         if: always() && matrix.lane == 'mutation'

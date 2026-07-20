@@ -3,13 +3,20 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      # Package releases only. Standalone contract tags use the
+      # vop-voiage-contracts-vX.Y.Z namespace and a separate workflow.
+      - "v[0-9]*.[0-9]*.[0-9]*"
   workflow_dispatch:
     inputs:
       release_tag:
         description: "Existing signed release tag to publish"
         required: true
         type: string
+      publish:
+        description: "Publish the staged draft to TestPyPI, PyPI, and GitHub"
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -127,6 +134,7 @@ jobs:
   publish-testpypi:
     name: Publish to TestPyPI
     needs: [build, draft-release]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     environment: testpypi
     permissions:
@@ -146,6 +154,7 @@ jobs:
   publish-pypi:
     name: Publish to PyPI
     needs: [build, publish-testpypi]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -163,6 +172,7 @@ jobs:
   smoke-test:
     name: Smoke test
     needs: publish-pypi
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
@@ -190,6 +200,7 @@ jobs:
   finalize-release:
     name: Publish verified GitHub release
     needs: [draft-release, smoke-test]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}

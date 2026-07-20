@@ -24,21 +24,47 @@ BASELINE = json.loads(
 ANCHOR = "a" * 64
 
 
-def _universe(*, replacement: bool = False, killed: int = 370) -> dict[str, object]:
-    ids = [f"vop_poc_nz.example__mutmut_{number}" for number in range(827)]
+def _baseline_statuses() -> dict[str, str]:
+    stats = cast("dict[str, int]", BASELINE["stats"])
+    ids = cast("list[str]", BASELINE["universe"]["ids"])
+    status_counts = (
+        ("killed", stats["killed"]),
+        ("survived", stats["survived"]),
+        ("no tests", stats["no_tests"]),
+        ("skipped", stats["skipped"]),
+        ("suspicious", stats["suspicious"]),
+        ("timeout", stats["timeout"]),
+        (
+            "check was interrupted by user",
+            stats["check_was_interrupted_by_user"],
+        ),
+        ("segfault", stats["segfault"]),
+    )
+    statuses = [
+        status for status, count in status_counts for _ in range(count)
+    ]
+    statuses.extend("caught by type check" for _ in range(stats["total"] - len(statuses)))
+    assert ids and len(ids) == len(statuses)
+    return dict(zip(ids, statuses, strict=True))
+
+
+def _universe(*, replacement: bool = False) -> dict[str, object]:
+    statuses = _baseline_statuses()
     if replacement:
-        ids[-1] = "vop_poc_nz.example__mutmut_replacement"
+        replaced_id = next(reversed(statuses))
+        statuses["vop_poc_nz.example__mutmut_replacement"] = statuses.pop(replaced_id)
     return mutation_universe(
-        "\n".join(
-            f"{mutant}: {'killed' if index < killed else 'survived'}"
-            for index, mutant in enumerate(ids)
-        )
+        "\n".join(f"{mutant}: {status}" for mutant, status in statuses.items())
     )
 
 
 def _reviewed(identity: dict[str, object]) -> dict[str, object]:
     baseline = deepcopy(BASELINE)
     ids = _universe()["ids"]
+    stats = cast("dict[str, int]", baseline["stats"])
+    policy = cast("dict[str, object]", baseline["policy"])
+    eligible = stats["total"] - stats["skipped"]
+    debt = eligible - stats["killed"]
     baseline["cohort"] = identity
     baseline["universe"] = {
         "ids": ids,
@@ -47,6 +73,11 @@ def _reviewed(identity: dict[str, object]) -> dict[str, object]:
         ).hexdigest(),
         "promotion_state": "captured",
     }
+    # Exercise an attainable exact boundary in the synthetic reviewed fixture.
+    # The promoted file intentionally retains its independently reviewed,
+    # display-rounded policy values and is not rewritten by unit tests.
+    policy["minimum_score_percent"] = 100.0 * stats["killed"] / eligible
+    policy["maximum_debt_density"] = debt / eligible
     return baseline
 
 
@@ -58,25 +89,29 @@ def _evaluate(
     baseline: dict[str, object] | None = None,
     reviewed: str = ANCHOR,
 ) -> dict[str, object]:
+    selected_baseline = baseline or _reviewed(identity)
+    policy = cast("dict[str, object]", selected_baseline["policy"])
     return evaluate_cohort(
         stats or BASELINE["stats"],
-        baseline or _reviewed(identity),
+        selected_baseline,
         identity,
         universe or _universe(),
-        44.0,
+        float(policy["minimum_score_percent"]),
         baseline_sha256=ANCHOR,
         reviewed_baseline_sha256=reviewed,
     )
 
 
 def _universe_with_final_status(status: str) -> dict[str, object]:
-    ids = [f"vop_poc_nz.example__mutmut_{number}" for number in range(827)]
+    statuses = _baseline_statuses()
+    replaced_id = next(
+        mutant_id
+        for mutant_id, current_status in reversed(statuses.items())
+        if current_status == "survived"
+    )
+    statuses[replaced_id] = status
     return mutation_universe(
-        "\n".join(
-            f"{mutant}: "
-            f"{'killed' if index < 370 else status if index == 826 else 'survived'}"
-            for index, mutant in enumerate(ids)
-        )
+        "\n".join(f"{mutant}: {current}" for mutant, current in statuses.items())
     )
 
 
@@ -84,7 +119,7 @@ def test_cohort_binds_tool_lock_config_source_universe_and_debt() -> None:
     identity = cohort_identity(ROOT, ROOT / "pyproject.toml")
     report = _evaluate(identity)
     assert report["passed"] is True
-    assert report["debt"]["absolute"] == 457
+    assert report["debt"]["absolute"] == BASELINE["policy"]["maximum_absolute_debt"]
     assert report["universe"]["matches"] is True
     validate_runtime_version(identity, "3.6.0")
 
@@ -124,7 +159,7 @@ def test_runtime_and_universe_parser_reject_invalid_inputs() -> None:
 def test_status_partition_rejects_not_checked_and_accounts_for_type_checks() -> None:
     identity = cohort_identity(ROOT, ROOT / "pyproject.toml")
     stats = deepcopy(BASELINE["stats"])
-    stats["survived"] = 456
+    stats["survived"] = cast("int", stats["survived"]) - 1
     with pytest.raises(ValueError, match="not checked"):
         _evaluate(
             identity,
@@ -138,21 +173,24 @@ def test_status_partition_rejects_not_checked_and_accounts_for_type_checks() -> 
         universe=_universe_with_final_status("caught by type check"),
     )
     assert report["passed"] is True
+    expected_counts = {
+        "caught by type check": 1,
+        "check was interrupted by user": cast(
+            "int", stats["check_was_interrupted_by_user"]
+        ),
+        "killed": cast("int", stats["killed"]),
+        "no tests": cast("int", stats["no_tests"]),
+        "not checked": 0,
+        "segfault": cast("int", stats["segfault"]),
+        "skipped": cast("int", stats["skipped"]),
+        "suspicious": cast("int", stats["suspicious"]),
+        "survived": cast("int", stats["survived"]),
+        "timeout": cast("int", stats["timeout"]),
+    }
     assert report["status_partition"] == {
         "complete": True,
-        "counts": {
-            "caught by type check": 1,
-            "check was interrupted by user": 0,
-            "killed": 370,
-            "no tests": 0,
-            "not checked": 0,
-            "segfault": 0,
-            "skipped": 0,
-            "suspicious": 0,
-            "survived": 456,
-            "timeout": 0,
-        },
-        "total": 827,
+        "counts": expected_counts,
+        "total": cast("int", stats["total"]),
     }
 
 
