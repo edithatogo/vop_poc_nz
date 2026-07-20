@@ -92,7 +92,7 @@ def _contains_sensitive_text(text: str) -> bool:
         return True
     try:
         structured = json.loads(text)
-    except json.JSONDecodeError, TypeError:
+    except (json.JSONDecodeError, TypeError):
         return False
     return _contains_sensitive_json(structured)
 
