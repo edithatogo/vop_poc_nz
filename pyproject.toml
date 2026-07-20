@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "vop_poc_nz"
 dynamic = ["version"]
-requires-python = ">=3.14"
+requires-python = ">=3.12,<3.15"
 description = "Distributional cost-effectiveness analysis framework for Aotearoa New Zealand"
 readme = "README.md"
 authors = [{name = "Research Team"}]
@@ -16,6 +16,8 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Free Threading :: 2 - Beta",
 ]
 dependencies = [
@@ -172,7 +174,7 @@ fail_under = 95
 show_missing = true
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.12"
 ignore_missing_imports = true
 exclude = [
     "^__init__\\.py$",
@@ -191,7 +193,7 @@ explicit_package_bases = true
 [tool.basedpyright]
 include = ["src/vop_poc_nz"]
 exclude = ["output", "data", "build", "dist"]
-pythonVersion = "3.14"
+pythonVersion = "3.12"
 typeCheckingMode = "standard"
 reportMissingTypeStubs = false
 
