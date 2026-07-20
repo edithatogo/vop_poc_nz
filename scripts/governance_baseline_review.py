@@ -89,6 +89,7 @@ def _promote(args: argparse.Namespace) -> int:
         approval_environment=args.approval_environment,
         approval_run=args.approval_run,
         approved_at=datetime.now(UTC),
+        administrator_bypass=args.administrator_bypass,
     )
     _write_json(args.output_baseline, baseline)
     _write_json(args.output_receipt, receipt)
@@ -122,6 +123,7 @@ def main() -> int:
     promote.add_argument("--approval-run", required=True)
     promote.add_argument("--output-baseline", type=Path, required=True)
     promote.add_argument("--output-receipt", type=Path, required=True)
+    promote.add_argument("--administrator-bypass", action="store_true")
     promote.set_defaults(handler=_promote)
     args = parser.parse_args()
     return int(args.handler(args))

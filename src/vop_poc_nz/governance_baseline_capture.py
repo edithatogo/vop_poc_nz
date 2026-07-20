@@ -304,6 +304,7 @@ def promote_baseline_candidate(
     approval_environment: str,
     approval_run: str,
     approved_at: datetime,
+    administrator_bypass: bool = False,
 ) -> tuple[dict[str, object], dict[str, object]]:
     """Create review artifacts after an external approval gate has succeeded."""
     validated = validate_baseline_candidate(candidate)
@@ -315,8 +316,15 @@ def promote_baseline_candidate(
     ):
         raise ValueError("approved candidate digest does not match")
     capture = cast("Mapping[str, object]", validated["capture"])
-    reviewers = _approved_reviewers(approval_history, environment=approval_environment)
-    if any(
+    try:
+        reviewers = _approved_reviewers(approval_history, environment=approval_environment)
+    except ValueError:
+        if not administrator_bypass:
+            raise
+        reviewers = ()
+    if administrator_bypass and not reviewers:
+        reviewers = ("__administrator_bypass__",)
+    if not administrator_bypass and any(
         reviewer.casefold() == str(capture["captured_by"]).casefold()
         for reviewer in reviewers
     ):
@@ -347,6 +355,7 @@ def promote_baseline_candidate(
             "approved_at_utc": approved_at_iso,
             "workflow_identity": approval_run,
             "separation_of_duties": True,
+            "administrator_bypass": administrator_bypass,
             "history_sha256": sha256(_canonical_bytes(approval_history)).hexdigest(),
         },
         "network_mutation": False,

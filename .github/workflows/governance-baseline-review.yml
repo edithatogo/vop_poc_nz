@@ -15,6 +15,10 @@ on:
         description: Exact source commit recorded by the candidate
         required: true
         type: string
+      administrator_bypass:
+        description: Explicit repository-admin bypass when no independent reviewer is configured
+        required: true
+        type: boolean
 permissions:
   contents: read
   actions: read
@@ -62,6 +66,9 @@ jobs:
           mkdir -p governance-review/evidence
           gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${{ inputs.candidate_run_id }}" > governance-review/evidence/capture-run.json
           gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/approvals" > governance-review/evidence/approval-history.json
+          if [[ "${{ inputs.administrator_bypass }}" == "true" ]]; then
+            test "$(gh api "repos/${GITHUB_REPOSITORY}/collaborators/${GITHUB_ACTOR}/permission" --jq .permission)" = "admin"
+          fi
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.14"
@@ -80,6 +87,7 @@ jobs:
           --approval-history governance-review/evidence/approval-history.json
           --approval-environment governance-baseline-approval
           --approval-run "github:${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ${{ inputs.administrator_bypass && '--administrator-bypass' || '' }}
           --output-baseline governance-review/approved/CON-SHR-0013.json
           --output-receipt governance-review/approved/approval-receipt.json
       - name: Retain reviewed artifacts for manual commit decision
