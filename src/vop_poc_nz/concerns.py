@@ -377,6 +377,14 @@ def _project_fields(record: GovernanceRecord) -> tuple[tuple[str, str], ...]:
     return tuple(fields)
 
 
+def _public_record_type(record: GovernanceRecord) -> str:
+    return (
+        "Current track"
+        if record.record_type == "concern" and record.track_ids
+        else record.record_type.replace("_", " ").title()
+    )
+
+
 def build_github_sync_payloads(
     ledger: GovernanceLedger,
 ) -> tuple[GitHubSyncPayload, ...]:
@@ -401,7 +409,7 @@ def build_github_sync_payloads(
             body_lines = [
                 f"<!-- {marker} -->",
                 "<!-- governance:begin -->",
-                f"## {target.record_type.replace('_', ' ').title()}",
+                f"## {_public_record_type(target)}",
                 "",
                 target.summary,
                 "",
