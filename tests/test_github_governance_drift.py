@@ -118,6 +118,26 @@ def test_issue_api_is_transformed_to_the_strict_snapshot_contract() -> None:
         issue_snapshot_from_api(invalid, base=_base())
 
 
+def test_issue_api_newline_style_is_transport_noise() -> None:
+    snapshot = issue_snapshot_from_api(
+        _issue_api(_body().replace("\n", "\r\n")), base=_base()
+    )
+    assert snapshot.body == _base().body
+
+
+def test_crlf_remote_body_does_not_create_governance_drift() -> None:
+    artifact = audit_governance_drift(
+        base=_base(),
+        local=_local(),
+        issue_payload=_issue_api(_body().replace("\n", "\r\n")),
+        project_check=ProjectCheck.checked(_base().project_fields),
+        baseline_provenance=_provenance(),
+        observed_at=datetime(2026, 7, 20, tzinfo=UTC),
+    )
+    assert artifact["plan"]["outcome"] == "clean"
+    assert artifact["reconciliation_required"] is False
+
+
 def test_missing_project_credential_is_explicit_and_never_claims_full_clean() -> None:
     artifact = audit_governance_drift(
         base=_base(),
