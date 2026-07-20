@@ -1,19 +1,19 @@
 {
   "approval": {
     "administrator_bypass": true,
-    "approved_at_utc": "2026-07-20T23:49:02.545670+00:00",
+    "approved_at_utc": "2026-07-20T23:58:39.115928+00:00",
     "environment": "governance-baseline-approval",
     "history_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     "reviewers": [
       "__administrator_bypass__"
     ],
     "separation_of_duties": true,
-    "workflow_identity": "github:edithatogo/vop_poc_nz/actions/runs/29788385849"
+    "workflow_identity": "github:edithatogo/vop_poc_nz/actions/runs/29788871370"
   },
-  "baseline_sha256": "8b09d7405c0b0d31b18e94d85cb2256765de95eec0225ef09f9b633acc2a04f7",
-  "candidate_sha256": "db96d572987af8980a3d1a1fa2dda88c7cb7a307dce5920501e773ce0023de99",
+  "baseline_sha256": "a6924a968bbb0bd82a614c89ae98ae7415f6fe285e2fa9f872d3dfff7ea9aa3a",
+  "candidate_sha256": "3ac693187bbda0e485219696c8248cca69f1f219d87ef6bb944ecee390ec2402",
   "kind": "governance_baseline_approval_receipt",
   "network_mutation": false,
   "schema_version": "1.0.0",
-  "source_revision": "8c24347599d58e10fae1270a23b5d34a27c5ee07"
+  "source_revision": "b7879bcff3da911b256c716474d0187e34a716f4"
 }
