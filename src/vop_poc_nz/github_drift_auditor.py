@@ -26,6 +26,12 @@ READ_ONLY_OPERATIONS = frozenset(
 )
 _REPOSITORY_RE = re.compile(r"^(?P<owner>[A-Za-z0-9_.-]+)/(?P<name>[A-Za-z0-9_.-]+)$")
 
+
+def _normalise_body_newlines(body: str) -> str:
+    """Canonicalise transport-specific line endings before planning drift."""
+    return body.replace("\r\n", "\n").replace("\r", "\n")
+
+
 PROJECT_QUERY = """
 query GovernanceProjectItems(
   $owner: String!,
@@ -254,7 +260,9 @@ def issue_snapshot_from_api(
         "issue_number": number,
         "state": state,
         "title": title,
-        "body": body,
+        # GitHub's issue API may return CRLF even when the committed
+        # projection is LF. Newline style is transport noise, not drift.
+        "body": _normalise_body_newlines(body),
         "labels": label_names,
         "project_number": base.project_number,
         "project_fields": [list(item) for item in base.project_fields],
