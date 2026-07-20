@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop-conductor/git_safety.schema.json",
+  "title": "Git integration safety report",
+  "type": "object",
+  "required": [
+    "repo",
+    "is_git_repo",
+    "branch",
+    "detached",
+    "tracked_dirty",
+    "staged_dirty",
+    "remote_default_branch",
+    "appears_default_branch",
+    "blockers",
+    "safe"
+  ],
+  "properties": {
+    "repo": {"type": "string"},
+    "is_git_repo": {"type": "boolean"},
+    "branch": {"type": ["string", "null"]},
+    "detached": {"type": "boolean"},
+    "tracked_dirty": {"type": "boolean"},
+    "staged_dirty": {"type": "boolean"},
+    "remote_default_branch": {"type": ["string", "null"]},
+    "appears_default_branch": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "safe": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,248 @@
+{
+  "schema_version": "2.0",
+  "pack_version": "6.0.0",
+  "status_values": [
+    "planned",
+    "ready",
+    "in_progress",
+    "blocked",
+    "completed",
+    "superseded"
+  ],
+  "tracks": [
+    {
+      "id": "C00",
+      "slug": "repo_intake_and_agent_bootstrap",
+      "title": "Repository intake, mapping, and agent bootstrap",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [],
+      "file": "tracks/C00_repo_intake_and_agent_bootstrap.md",
+      "default_status": "in_progress"
+    },
+    {
+      "id": "C01",
+      "slug": "evop_method_contract_and_conformance",
+      "title": "Directional EVoP method contract and cross-package conformance",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C00"
+      ],
+      "file": "tracks/C01_evop_method_contract_and_conformance.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C02",
+      "slug": "perspective_acceptability_frontier",
+      "title": "Perspective Acceptability Frontier and interpretability",
+      "repos": [
+        "voiage",
+        "vop_poc_nz"
+      ],
+      "depends_on": [
+        "C01"
+      ],
+      "file": "tracks/C02_perspective_acceptability_frontier.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C03",
+      "slug": "evidence_model_validation_and_case_contracts",
+      "title": "Evidence provenance, model validation, and case contracts",
+      "repos": [
+        "vop_poc_nz"
+      ],
+      "depends_on": [
+        "C00"
+      ],
+      "file": "tracks/C03_evidence_model_validation_and_case_contracts.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C04",
+      "slug": "case_suite_and_regime_discovery",
+      "title": "Case suite, housing exemplar, and perspective regime discovery",
+      "repos": [
+        "vop_poc_nz"
+      ],
+      "depends_on": [
+        "C01",
+        "C03"
+      ],
+      "file": "tracks/C04_case_suite_and_regime_discovery.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C05",
+      "slug": "pipeline_reproducibility_and_artifacts",
+      "title": "Pipeline reproducibility, manifests, and artifact governance",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C00",
+        "C01"
+      ],
+      "file": "tracks/C05_pipeline_reproducibility_and_artifacts.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C06",
+      "slug": "preprint_and_publication",
+      "title": "Preprint v2 and publication strategy",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05"
+      ],
+      "file": "tracks/C06_preprint_and_publication.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C07",
+      "slug": "vop_poc_nz_repo_modernisation",
+      "title": "vop_poc_nz repository modernisation and cleanup",
+      "repos": [
+        "vop_poc_nz"
+      ],
+      "depends_on": [
+        "C00"
+      ],
+      "file": "tracks/C07_vop_poc_nz_repo_modernisation.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C08",
+      "slug": "voiage_productionisation",
+      "title": "voiage productionisation of perspective methods",
+      "repos": [
+        "voiage"
+      ],
+      "depends_on": [
+        "C01",
+        "C02"
+      ],
+      "file": "tracks/C08_voiage_productionisation.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C09",
+      "slug": "cross_repo_boundaries_and_adapters",
+      "title": "Cross-repository boundaries and adapters",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C00",
+        "C05",
+        "C08"
+      ],
+      "file": "tracks/C09_cross_repo_boundaries_and_adapters.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C10",
+      "slug": "docs_release_and_supply_chain",
+      "title": "Documentation, release truth, and software supply chain",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C05",
+        "C07",
+        "C08"
+      ],
+      "file": "tracks/C10_docs_release_and_supply_chain.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C11",
+      "slug": "performance_and_backend_decisions",
+      "title": "Performance and backend decisions",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C01",
+        "C05"
+      ],
+      "file": "tracks/C11_performance_and_backend_decisions.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C12",
+      "slug": "github_project_and_agent_operations",
+      "title": "GitHub project, issue automation, and agent operations",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C00"
+      ],
+      "file": "tracks/C12_github_project_and_agent_operations.md",
+      "default_status": "planned"
+    },
+    {
+      "id": "C13",
+      "slug": "domain_abstraction_excellence",
+      "title": "Domain abstraction excellence",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C07",
+        "C08",
+        "C09",
+        "C12"
+      ],
+      "file": "tracks/abstraction-excellence_20260719/index.md",
+      "default_status": "completed"
+    },
+    {
+      "id": "C14",
+      "slug": "assurance_frontier",
+      "title": "Assurance frontier",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C13"
+      ],
+      "file": "tracks/assurance-frontier_20260720/index.md",
+      "default_status": "completed"
+    },
+    {
+      "id": "C15",
+      "slug": "operational_assurance_excellence",
+      "title": "Operational assurance excellence",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C14"
+      ],
+      "file": "tracks/operational-assurance-excellence_20260720/index.md",
+      "default_status": "completed"
+    }
+  ],
+  "method_contract_version": "1.1.0"
+}

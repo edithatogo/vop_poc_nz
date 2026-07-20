@@ -1,0 +1,112 @@
+{
+  "items": [
+    {
+      "id": "JRSNZ-EDITOR-01",
+      "source": "JRSNZ editor",
+      "theme": "scope",
+      "reviewer_comment": "Manuscript relies on too much supplementary material and tries to present too much information.",
+      "implementation_action": "Run concept budget and manuscript reconciliation gates; keep broad case suite as repo/tutorial material rather than main narrative.",
+      "manuscript_action": "Limit headline concepts to directional EVoP, Perspective Acceptability Frontier, and perspective regime discovery.",
+      "conductor_track": "track_27_concept_scope_budget"
+    },
+    {
+      "id": "JRSNZ-R1-01",
+      "source": "Reviewer 1",
+      "theme": "harmonisation",
+      "reviewer_comment": "Discuss risks of asymmetric societal-perspective adoption across public sectors without scope creep.",
+      "implementation_action": "Keep Value of Harmonisation as a scoped extension and prevent it becoming a fourth headline concept.",
+      "manuscript_action": "Add one bounded paragraph in discussion and optional supplement note.",
+      "conductor_track": "track_12_value_of_harmonisation_extension"
+    },
+    {
+      "id": "JRSNZ-R1-02",
+      "source": "Reviewer 1",
+      "theme": "methods",
+      "reviewer_comment": "Explain human-capital and friction-cost methods in the New Zealand context.",
+      "implementation_action": "Add societal-cost taxonomy and parameter provenance fields for productivity method/source.",
+      "manuscript_action": "Replace generic HC/FC restatement with NZ-specific assumption table and scenario language.",
+      "conductor_track": "track_10_societal_cost_taxonomy"
+    },
+    {
+      "id": "JRSNZ-R1-03",
+      "source": "Reviewer 1",
+      "theme": "stakeholder_preferences",
+      "reviewer_comment": "Stakeholder preferences appear without methodological explanation.",
+      "implementation_action": "Require stakeholder weights to be represented as scenario weights unless elicited data are available.",
+      "manuscript_action": "Clarify that stakeholder mixtures are illustrative/scenario-based unless separately elicited.",
+      "conductor_track": "track_06_mcda_export_boundary"
+    },
+    {
+      "id": "JRSNZ-R1-04",
+      "source": "Reviewer 1",
+      "theme": "voi_results",
+      "reviewer_comment": "Discussion could benefit from considering VOI results.",
+      "implementation_action": "Add no-orphan result manifests linking VOI/VoP outputs to figures and tables.",
+      "manuscript_action": "Add concise VOI interpretation only where it supports the perspective-regret narrative.",
+      "conductor_track": "track_05_no_orphan_result_pipeline"
+    },
+    {
+      "id": "JRSNZ-R2-01",
+      "source": "Reviewer 2",
+      "theme": "scope_depth",
+      "reviewer_comment": "Multiple interventions reduce analytical depth and methodological credibility.",
+      "implementation_action": "Grade each case contract as policy-grade, empirical tutorial, or fixture; promote one deep housing-insulation exemplar.",
+      "manuscript_action": "Separate deep case from comparative landscape/tutorial suite.",
+      "conductor_track": "track_09_case_contracts_evidence_model_cards"
+    },
+    {
+      "id": "JRSNZ-R2-02",
+      "source": "Reviewer 2",
+      "theme": "literature_context",
+      "reviewer_comment": "Limited structured comparison with existing economic evaluations and societal-perspective literature.",
+      "implementation_action": "Add source ledgers and software/literature comparison ledger; require citation/source fields for every parameter.",
+      "manuscript_action": "Add concise structured comparison section and cite parameter sources in main text tables.",
+      "conductor_track": "track_29_evidence_ledger_audit"
+    },
+    {
+      "id": "JRSNZ-R2-03",
+      "source": "Reviewer 2",
+      "theme": "assumptions",
+      "reviewer_comment": "Parameter choices, WTP threshold, and discount rates are insufficiently documented.",
+      "implementation_action": "Run evidence_audit.py and require evidence ledgers/model cards before empirical claims.",
+      "manuscript_action": "Add assumption ledger table to main manuscript and threshold/discount scenario language.",
+      "conductor_track": "track_29_evidence_ledger_audit"
+    },
+    {
+      "id": "JRSNZ-R2-04",
+      "source": "Reviewer 2",
+      "theme": "model_structure",
+      "reviewer_comment": "Three-state Markov models lack clinical/epidemiological justification.",
+      "implementation_action": "Require a model card for every case with model family, justification, omissions, and validation status.",
+      "manuscript_action": "Avoid presenting all cases as policy-grade; provide model structure rationale for the deep exemplar.",
+      "conductor_track": "track_09_case_contracts_evidence_model_cards"
+    },
+    {
+      "id": "JRSNZ-R2-05",
+      "source": "Reviewer 2",
+      "theme": "societal_costs",
+      "reviewer_comment": "Societal perspective is largely productivity and insufficiently grounded in included/excluded effects.",
+      "implementation_action": "Add structured societal-cost taxonomy and evidence-ledger fields by cost component.",
+      "manuscript_action": "State included and excluded societal components per case; do not call partial components complete societal perspective.",
+      "conductor_track": "track_10_societal_cost_taxonomy"
+    },
+    {
+      "id": "JRSNZ-R2-06",
+      "source": "Reviewer 2",
+      "theme": "sensitivity",
+      "reviewer_comment": "Sensitivity analysis does not clarify whether parameter correlations were considered.",
+      "implementation_action": "Add factorial/GSA/regime discovery manifest with correlation/scenario metadata.",
+      "manuscript_action": "Report correlation assumptions and classify GSA/clustering as perspective regime discovery.",
+      "conductor_track": "track_08_regime_discovery_from_local_outputs"
+    },
+    {
+      "id": "JRSNZ-R2-07",
+      "source": "Reviewer 2",
+      "theme": "novelty",
+      "reviewer_comment": "Including productivity as a cost-reducing impact improving ICERs is expected rather than analytically novel.",
+      "implementation_action": "Correct EVoP semantics and produce Perspective Acceptability Frontier outputs via voiage.",
+      "manuscript_action": "Frame novelty as quantifiable perspective-regret and decision frontier, not as societal bonus.",
+      "conductor_track": "track_02_apply_voiage_overlay"
+    }
+  ]
+}

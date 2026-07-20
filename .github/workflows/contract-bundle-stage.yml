@@ -1,0 +1,219 @@
+name: Standalone contract bundle private-draft staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing verified tag vop-voiage-contracts-vX.Y.Z
+        required: true
+        type: string
+      bundle_sha256:
+        description: Exact canonical bundle digest under review
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contract-bundle-private-draft-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Build content-addressed standalone bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      BUNDLE_SHA256: ${{ inputs.bundle_sha256 }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.release_tag }}
+          persist-credentials: false
+      - name: Validate exact signed remote bundle tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^vop-voiage-contracts-v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          [[ "$BUNDLE_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          remote_oid="$(git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" | cut -f1)"
+          test "$remote_oid" = "$(git rev-parse "refs/tags/$RELEASE_TAG")"
+          test "$(git cat-file -t "$RELEASE_TAG")" = tag
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
+          test -n "$APPROVED_TAGGER_EMAIL"
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$remote_oid" > tag-verification.json
+          jq -e '.verification.verified == true' tag-verification.json >/dev/null
+          jq -e --arg tag "$RELEASE_TAG" '.tag == $tag and .object.type == "commit"' tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
+          printf '%s\n' "$remote_oid" > tag-object-oid.txt
+          jq -r '.object.sha' tag-verification.json > tag-target-commit.txt
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: false
+      - name: Install locked staging environment
+        run: uv sync --frozen --extra dev
+      - name: Verify and stage exact contract bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#vop-voiage-contracts-v}"
+          uv run --frozen python scripts/generate_contract_bundle.py --check --output "contracts/vop-voiage/$version"
+          uv run --frozen python scripts/stage_contract_bundle.py \
+            --bundle "contracts/vop-voiage/$version" \
+            --output bundle-stage \
+            --release-tag "$RELEASE_TAG" \
+            --source-revision "$(git rev-parse HEAD)" \
+            --bundle-sha256 "$BUNDLE_SHA256" \
+            --tag-object-oid "$(cat tag-object-oid.txt)" \
+            --tag-target-commit "$(cat tag-target-commit.txt)" \
+            --tag-verification tag-verification.json
+          jq -e '.authorization.publication_authorized == false and .authorization.signing_authorized == false' bundle-stage/stage-manifest.json >/dev/null
+      - name: Attest exact archive provenance
+        uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35
+        with:
+          subject-path: bundle-stage/*.tar.gz
+          predicate-type: https://slsa.dev/provenance/v1
+          predicate-path: bundle-stage/provenance-predicate.json
+      - name: Attest exact archive SBOM
+        uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35
+        with:
+          subject-path: bundle-stage/*.tar.gz
+          sbom-path: bundle-stage/sbom.cdx.json
+      - name: Retain exact private staging evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: standalone-contract-bundle-stage
+          path: bundle-stage/
+          if-no-files-found: error
+          retention-days: 90
+
+  private-draft:
+    name: Create or refresh private draft only
+    needs: stage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: standalone-contract-bundle-stage
+          path: bundle-stage/
+      - name: Recheck publication remains unauthorized
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e --arg tag "$RELEASE_TAG" \
+            '.publication_state == "private_draft_staging_only"
+             and .authorization.publication_authorized == false
+             and .source.tag == $tag' \
+            bundle-stage/stage-manifest.json >/dev/null
+          while read -r asset digest; do
+            test "$(sha256sum "bundle-stage/$asset" | cut -d' ' -f1)" = "$digest"
+          done < <(jq -r '.release_assets[] | [.path, .sha256] | @tsv' bundle-stage/stage-manifest.json)
+      - name: Revalidate exact remote tag at the write boundary
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_oid="$(jq -r '.source.tag_object_oid' bundle-stage/stage-manifest.json)"
+          expected_commit="$(jq -r '.source.tag_target_commit' bundle-stage/stage-manifest.json)"
+          gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/$RELEASE_TAG" > live-tag-ref.json
+          test "$(jq -r '.object.type' live-tag-ref.json)" = tag
+          test "$(jq -r '.object.sha' live-tag-ref.json)" = "$expected_oid"
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$expected_oid" > live-tag-verification.json
+          jq -e --arg tag "$RELEASE_TAG" --arg commit "$expected_commit" \
+            '.tag == $tag and .object.type == "commit" and .object.sha == $commit and .verification.verified == true' \
+            live-tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' live-tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
+      - name: Create or refresh private draft and upload exact evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_by_tag="repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}"
+          if gh api "$release_by_tag" > release-before.json 2>/dev/null; then
+            jq -e --arg tag "$RELEASE_TAG" \
+              '.draft == true and .tag_name == $tag' release-before.json >/dev/null
+          else
+            gh release create "$RELEASE_TAG" --draft --title "$RELEASE_TAG" --verify-tag
+            gh api "$release_by_tag" > release-before.json
+          fi
+          release_id="$(jq -r '.id' release-before.json)"
+          [[ "$release_id" =~ ^[1-9][0-9]*$ ]]
+          jq -e --argjson id "$release_id" --arg tag "$RELEASE_TAG" \
+            '.id == $id and .draft == true and .tag_name == $tag' \
+            release-before.json >/dev/null
+          {
+            jq -r '.release_assets[] | [.path, .sha256] | @tsv' bundle-stage/stage-manifest.json
+            printf 'stage-manifest.json\t%s\n' "$(sha256sum bundle-stage/stage-manifest.json | cut -d' ' -f1)"
+          } | sort -k1,1 > expected-assets.tsv
+          cut -f1 expected-assets.tsv > expected-assets.txt
+          jq -r '.assets[].name' release-before.json | sort -u > existing-assets.txt
+          if test -s existing-assets.txt; then
+            test -z "$(comm -23 existing-assets.txt expected-assets.txt)"
+          fi
+          while read -r asset; do
+            [[ "$asset" =~ ^[A-Za-z0-9._-]+$ ]]
+            asset_id="$(jq -r --arg name "$asset" '.assets[] | select(.name == $name) | .id' release-before.json)"
+            if test -n "$asset_id"; then
+              [[ "$asset_id" =~ ^[1-9][0-9]*$ ]]
+              gh api --method DELETE "repos/${GITHUB_REPOSITORY}/releases/assets/${asset_id}"
+            fi
+            curl --fail-with-body --silent --show-error \
+              --request POST \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Content-Type: application/octet-stream" \
+              --data-binary "@bundle-stage/$asset" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${release_id}/assets?name=${asset}" \
+              > uploaded-asset.json
+            jq -e --arg name "$asset" \
+              '.name == $name and .state == "uploaded"' uploaded-asset.json >/dev/null
+          done < expected-assets.txt
+          printf '%s\n' "$release_id" > release-id.txt
+      - name: Revalidate immutable identities and remote asset bytes after upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_id="$(cat release-id.txt)"
+          expected_oid="$(jq -r '.source.tag_object_oid' bundle-stage/stage-manifest.json)"
+          expected_commit="$(jq -r '.source.tag_target_commit' bundle-stage/stage-manifest.json)"
+          gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/$RELEASE_TAG" > final-tag-ref.json
+          test "$(jq -r '.object.type' final-tag-ref.json)" = tag
+          test "$(jq -r '.object.sha' final-tag-ref.json)" = "$expected_oid"
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$expected_oid" > final-tag-verification.json
+          jq -e --arg tag "$RELEASE_TAG" --arg commit "$expected_commit" \
+            '.tag == $tag and .object.type == "commit" and .object.sha == $commit and .verification.verified == true' \
+            final-tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' final-tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
+          gh api "repos/${GITHUB_REPOSITORY}/releases/$release_id" > release-after.json
+          jq -e --argjson id "$release_id" --arg tag "$RELEASE_TAG" \
+            '.id == $id and .draft == true and .tag_name == $tag
+             and all(.assets[]; .state == "uploaded"
+               and (.digest | type == "string" and test("^sha256:[0-9a-f]{64}$")))' \
+            release-after.json >/dev/null
+          jq -r '.assets[] | [.name, (.digest | sub("^sha256:"; ""))] | @tsv' \
+            release-after.json | sort -k1,1 > uploaded-assets.tsv
+          diff -u expected-assets.tsv uploaded-assets.tsv

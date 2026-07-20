@@ -138,6 +138,7 @@ debug_output_*.txt
 
 # Virtual Environments
 .venv/
+src/vop_poc_nz/_version.py
 .venv_ci_sim/
 .venv_repro/
 .qoder/

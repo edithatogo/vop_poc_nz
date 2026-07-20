@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0",
+  "source_pack": "v5",
+  "tracks": [
+    {
+      "legacy_file": "conductor/tracks/track_00_local_agent_bootstrap_and_repo_mapping.md",
+      "legacy_title": "Track 00: local agent bootstrap and repo mapping"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_01_apply_vop_poc_nz_overlay.md",
+      "legacy_title": "Track 01 \u2014 Apply `vop_poc_nz` overlay"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_02_apply_voiage_overlay.md",
+      "legacy_title": "Track 02 \u2014 Apply `voiage` overlay"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_03_manuscript_integration.md",
+      "legacy_title": "Track 03 \u2014 Manuscript integration after code conformance"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_04_quality_gates_overlay.md",
+      "legacy_title": "Track 04 \u2014 Apply quality-gate overlay to `vop_poc_nz`"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_05_no_orphan_result_pipeline.md",
+      "legacy_title": "Track 05 \u2014 Wire no-orphan-result manifests into the current pipeline"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_06_mcda_export_boundary.md",
+      "legacy_title": "Track 06 \u2014 MCDA feature export, not MCDA scoring"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_07_claim_boundary_linter_integration.md",
+      "legacy_title": "Track 07 \u2014 Integrate claim-boundary linting into manuscript and CI"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_08_regime_discovery_from_local_outputs.md",
+      "legacy_title": "Track 08 \u2014 Integrate local factorial/GSA/clustering outputs as perspective regime discovery"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_09_case_contracts_evidence_model_cards.md",
+      "legacy_title": "Track 09 \u2014 Case contracts, evidence ledgers, and model cards"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_10_societal_cost_taxonomy.md",
+      "legacy_title": "Track 10 \u2014 Structured societal-cost taxonomy"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_11_cheers_voi_submission_package.md",
+      "legacy_title": "Track 11 \u2014 CHEERS/VOI/submission package"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_12_value_of_harmonisation_extension.md",
+      "legacy_title": "Track 12 \u2014 Value of Harmonisation scoped extension"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_13_performance_backend_modernisation.md",
+      "legacy_title": "Track 13 \u2014 Performance backend modernisation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_14_docs_release_homepage.md",
+      "legacy_title": "Track 14 \u2014 Documentation, homepage, release, and package metadata"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_15_cross_repo_adapters.md",
+      "legacy_title": "Track 15 \u2014 Cross-repo adapters without merging projects"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_16_github_project_and_issues.md",
+      "legacy_title": "Track 16 \u2014 GitHub project, labels, and issue creation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_17_local_repo_mapping_triage.md",
+      "legacy_title": "Track 17: local repo mapping and publication triage"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_18_selective_integration_and_repo_reorg.md",
+      "legacy_title": "Track 18: selective integration and repo reorganisation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_19_local_only_worktree_policy.md",
+      "legacy_title": "Track 19: local-only worktree policy and publication gate"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_20_cross_repo_workspace_mapping.md",
+      "legacy_title": "Track 20: cross-repo workspace mapping"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_21_prompt_series_local_agent.md",
+      "legacy_title": "Track 21: prompt-series local agent workflow"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_22_artifact_promotion_lifecycle.md",
+      "legacy_title": "Track 22 \u2014 Artifact promotion lifecycle"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_23_release_snapshot_and_publication_freeze.md",
+      "legacy_title": "Track 23 \u2014 Release snapshot and publication freeze"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_24_local_to_public_boundary_review.md",
+      "legacy_title": "Track 24 \u2014 Local-to-public boundary review"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_25_local_run_ledger.md",
+      "legacy_title": "Track 25 \u2014 local conductor run ledger"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_26_preprint_output_reconciliation.md",
+      "legacy_title": "Track 26 \u2014 Preprint output reconciliation gate"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_27_concept_scope_budget.md",
+      "legacy_title": "Track 27 \u2014 Concept scope budget"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_28_agent_context_pack_and_prompt_series.md",
+      "legacy_title": "Track 28 \u2014 Agent context pack and staged prompt series"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_28_evidence_audit_and_source_refresh.md",
+      "legacy_title": "Track 28 \u2014 Evidence audit and source refresh"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_28_manuscript_reconciliation_gate.md",
+      "legacy_title": "Track 28 \u2014 Manuscript/output reconciliation gate"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_29_evidence_ledger_audit.md",
+      "legacy_title": "Track 29 \u2014 Evidence ledger audit and parameter provenance"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_29_evidence_ledger_audit_and_model_cards.md",
+      "legacy_title": "Track 29 \u2014 Evidence ledger audit and model-card generation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_29_paf_mixture_frontier_implementation.md",
+      "legacy_title": "Track 29 \u2014 Perspective Acceptability Frontier mixture implementation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_30_manuscript_output_and_claim_audit.md",
+      "legacy_title": "Track 30 \u2014 Manuscript output and claim audit"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_30_reviewer_response_matrix.md",
+      "legacy_title": "Track 30 \u2014 Reviewer response implementation matrix"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_31_concept_budget_ci_gate.md",
+      "legacy_title": "Track 31 \u2014 Concept budget CI gate"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_31_cross_repo_import_boundary.md",
+      "legacy_title": "Track 31 \u2014 Cross-repo import boundary"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_31_manuscript_audit_scope_lint.md",
+      "legacy_title": "Track 31 \u2014 Manuscript audit and scope lint"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_32_concept_budget_preflight.md",
+      "legacy_title": "Track 32 \u2014 Concept budget preflight"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_32_dependency_backend_decision_gate.md",
+      "legacy_title": "Track 32 \u2014 Dependency and backend decision gate"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_32_issue_hygiene_before_github_project.md",
+      "legacy_title": "Track 32 \u2014 Issue hygiene before GitHub project creation"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_33_run_all_local_gates.md",
+      "legacy_title": "Track 33 \u2014 One-command local gate runner"
+    },
+    {
+      "legacy_file": "conductor/tracks/track_34_cross_repo_method_transfer_audit.md",
+      "legacy_title": "Track 34 \u2014 Cross-repo method transfer audit"
+    }
+  ]
+}

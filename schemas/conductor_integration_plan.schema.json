@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/integration_plan.schema.json",
+  "title": "Conductor local integration plan",
+  "type": "object",
+  "required": ["schema_version", "repo", "detected_project", "overlay_roots", "overlay_actions", "reorg_actions", "summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repo": {"type": "object"},
+    "detected_project": {"type": "object"},
+    "overlay_roots": {"type": "array", "items": {"type": "string"}},
+    "overlay_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "source", "destination", "status", "publish_policy", "reason"],
+        "properties": {
+          "action": {"const": "copy_overlay_file"},
+          "source": {"type": "string"},
+          "destination": {"type": "string"},
+          "status": {"enum": ["safe_add", "already_same", "conflict_review"]},
+          "publish_policy": {"enum": ["commit", "review_before_commit", "do_not_commit"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "reorg_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "path", "status", "reason"],
+        "properties": {
+          "action": {"type": "string"},
+          "path": {"type": "string"},
+          "status": {"enum": ["requires_human_review", "optional"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "summary": {"type": "object"}
+  }
+}

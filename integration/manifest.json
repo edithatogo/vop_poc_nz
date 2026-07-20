@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "pack_version": "6.0.0",
+  "default_mode": "add_if_absent",
+  "rules": [
+    {
+      "repository": "voiage",
+      "pattern": "src/voiage/perspective/**",
+      "mode": "merge_required",
+      "reason": "voiage already has an experimental perspective/frontier surface; integrate with its native API and registry rather than adding a parallel implementation"
+    },
+    {
+      "repository": "voiage",
+      "pattern": "tests/perspective/**",
+      "mode": "merge_required",
+      "reason": "merge conformance fixtures into the existing test and validation architecture"
+    },
+    {
+      "repository": "*",
+      "pattern": "conductor/**",
+      "mode": "merge_required",
+      "reason": "preserve any existing conductor history and merge the canonical v6 registry deliberately"
+    },
+    {
+      "repository": "*",
+      "pattern": "AGENTS.md",
+      "mode": "managed_block",
+      "reason": "do not overwrite repository-specific agent instructions"
+    },
+    {
+      "repository": "*",
+      "pattern": ".github/**",
+      "mode": "merge_required",
+      "reason": "workflow changes require repository-specific review"
+    },
+    {
+      "repository": "*",
+      "pattern": "issues/**",
+      "mode": "merge_required",
+      "reason": "preserve local issue history and regenerate from the canonical backlog rather than replacing issue files"
+    },
+    {
+      "repository": "*",
+      "pattern": "docs/method/**",
+      "mode": "merge_required",
+      "reason": "merge versioned method contracts into the live documentation information architecture"
+    },
+    {
+      "repository": "*",
+      "pattern": "scripts/local_agent_bootstrap.py",
+      "mode": "merge_required",
+      "reason": "local bootstrap scripts may already contain repository-specific workflows"
+    },
+    {
+      "repository": "*",
+      "pattern": "scripts/run_all_local_gates.py",
+      "mode": "merge_required",
+      "reason": "gate orchestration must be reconciled with existing CI and repository tasks"
+    }
+  ]
+}

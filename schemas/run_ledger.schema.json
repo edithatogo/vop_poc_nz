@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Conductor local run ledger event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp_utc",
+    "repo",
+    "prompt_id",
+    "agent",
+    "status",
+    "action"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "repo": {
+      "type": "object"
+    },
+    "repo_map_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "integration_plan_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prompt_id": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "touched_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

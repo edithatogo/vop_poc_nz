@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
 
-from src.cea_model_core import run_cea
-from src.cluster_analysis import ClusterAnalysis
-from src.discordance_analysis import calculate_decision_discordance
-from src.dsa_analysis import perform_one_way_dsa
-from src.reporting import generate_comprehensive_report
-from src.threshold_analysis import run_threshold_analysis
-from src.value_of_information import calculate_evpi
+from vop_poc_nz.cea_model_core import run_cea
+from vop_poc_nz.cluster_analysis import ClusterAnalysis
+from vop_poc_nz.discordance_analysis import calculate_decision_discordance
+from vop_poc_nz.dsa_analysis import perform_one_way_dsa
+from vop_poc_nz.reporting import generate_comprehensive_report
+from vop_poc_nz.threshold_analysis import run_threshold_analysis
+from vop_poc_nz.value_of_information import calculate_evpi
 
 MINIMAL_PARAMS = {
     "states": ["Healthy", "Sick"],

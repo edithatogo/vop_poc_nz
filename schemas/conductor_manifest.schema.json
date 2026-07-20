@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Canonical conductor manifest",
+  "type": "object",
+  "required": ["schema_version", "pack_version", "tracks"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "pack_version": {"type": "string"},
+    "method_contract_version": {"type": "string"},
+    "status_values": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "tracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "slug", "title", "repos", "depends_on", "file", "default_status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^C[0-9]{2}$"},
+          "slug": {"type": "string"},
+          "title": {"type": "string"},
+          "repos": {"type": "array", "items": {"enum": ["vop_poc_nz", "voiage"]}},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^C[0-9]{2}$"}},
+          "file": {"type": "string"},
+          "default_status": {"enum": ["planned", "ready", "in_progress", "blocked", "completed", "superseded"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

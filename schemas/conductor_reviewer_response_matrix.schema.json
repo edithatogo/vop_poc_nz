@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewer response implementation matrix",
+  "type": "object",
+  "required": ["schema_version", "summary", "items", "recommendations"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "summary": {"type": "object"},
+    "items": {"type": "array", "items": {"type": "object"}},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}

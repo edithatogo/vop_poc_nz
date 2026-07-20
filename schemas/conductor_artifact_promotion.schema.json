@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/conductor_artifact_promotion.schema.json",
+  "title": "Conductor artifact promotion plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "repo",
+    "summary",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "repo": {
+      "type": "object"
+    },
+    "detected_project": {
+      "type": "object"
+    },
+    "summary": {
+      "type": "object"
+    },
+    "recommended_next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "tracked",
+          "category",
+          "publish_policy",
+          "lifecycle_state",
+          "recommended_action",
+          "destination_hint",
+          "reasons"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "tracked": {
+            "type": "boolean"
+          },
+          "category": {
+            "type": "string"
+          },
+          "publish_policy": {
+            "type": "string"
+          },
+          "lifecycle_state": {
+            "enum": [
+              "local_scratch",
+              "local_reviewed",
+              "manifest_backed",
+              "external_artifact",
+              "public_fixture",
+              "public_source"
+            ]
+          },
+          "recommended_action": {
+            "type": "string"
+          },
+          "destination_hint": {
+            "type": "string"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

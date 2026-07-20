@@ -1,6 +1,9 @@
 import os
 import sys
 
+# Keep plotting tests deterministic and non-interactive on developer machines and CI.
+os.environ.setdefault("MPLBACKEND", "Agg")
+
 
 def pytest_configure():
     # Ensure project root is on sys.path for src imports in smoke tests

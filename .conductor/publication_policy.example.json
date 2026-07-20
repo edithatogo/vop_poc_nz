@@ -1,0 +1,35 @@
+{
+  "allow_tracked_globs": [
+    "examples/**/*.csv",
+    "examples/**/*.yml",
+    "examples/**/*.json",
+    "docs/**/*.png",
+    "docs/**/*.svg"
+  ],
+  "deny_tracked_globs": [
+    ".env*",
+    ".conductor/local/**",
+    ".local/**",
+    "local/**",
+    "private/**",
+    "secrets/**",
+    "data/raw/**",
+    "data/private/**",
+    "artifacts/local/**",
+    "outputs/local/**",
+    "results/local/**",
+    "manuscripts/submissions/**",
+    "reviewer_letters/**",
+    "*.pkl",
+    "*.pickle",
+    "*.sqlite",
+    "*.sqlite3",
+    "*.parquet",
+    "*.feather",
+    "*.arrow"
+  ],
+  "notes": [
+    "Keep empirical source PDFs, reviewer letters, credentials, and raw data local unless a publication decision explicitly marks them public.",
+    "Commit only reproducible examples, schemas, source, tests, docs, and manifests with provenance."
+  ]
+}

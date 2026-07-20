@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Manuscript output audit report",
+  "type": "object",
+  "required": ["documents_scanned", "manifests_scanned", "outputs", "claims", "needs_manifest_count"],
+  "properties": {
+    "documents_scanned": {"type": "array", "items": {"type": "string"}},
+    "manifests_scanned": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "array"},
+    "claims": {"type": "array"},
+    "needs_manifest_count": {"type": "integer", "minimum": 0},
+    "warning_claim_count": {"type": "integer", "minimum": 0}
+  }
+}

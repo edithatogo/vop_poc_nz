@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/vop_poc_nz/net_benefit_tensor_long.schema.json",
+  "title": "Long-form net benefit tensor row",
+  "type": "object",
+  "required": ["draw", "strategy", "perspective", "net_benefit"],
+  "properties": {
+    "case_id": {"type": ["string", "null"]},
+    "draw": {"type": ["string", "integer"]},
+    "strategy": {"type": "string"},
+    "perspective": {"type": "string"},
+    "net_benefit": {"type": "number"},
+    "wtp_threshold": {"type": ["number", "null"]},
+    "currency": {"type": ["string", "null"]},
+    "price_year": {"type": ["integer", "string", "null"]}
+  },
+  "additionalProperties": true
+}

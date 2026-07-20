@@ -1,0 +1,449 @@
+{
+  "schema_version": "2.0",
+  "pack_version": "6.0.0",
+  "issues": [
+    {
+      "id": "VOP-001",
+      "repository": "vop_poc_nz",
+      "track": "C00",
+      "title": "Run map-first pack doctor and initialise conductor state",
+      "priority": "P0",
+      "labels": [
+        "agent",
+        "governance"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nRun map-first pack doctor and initialise conductor state.\n\n## Conductor owner\n\n`C00`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-002",
+      "repository": "vop_poc_nz",
+      "track": "C01",
+      "title": "Replace legacy VoP calculation with directional current-information EVoP",
+      "priority": "P0",
+      "labels": [
+        "method",
+        "breaking-change"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nReplace legacy VoP calculation with directional current-information EVoP.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-003",
+      "repository": "vop_poc_nz",
+      "track": "C01",
+      "title": "Adopt shared EVoP conformance fixtures and invariant tests",
+      "priority": "P0",
+      "labels": [
+        "testing",
+        "method"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nAdopt shared EVoP conformance fixtures and invariant tests.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-004",
+      "repository": "vop_poc_nz",
+      "track": "C03",
+      "title": "Complete case registry, evidence ledgers, derivation provenance, and model cards",
+      "priority": "P0",
+      "labels": [
+        "evidence",
+        "cases"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nComplete case registry, evidence ledgers, derivation provenance, and model cards.\n\n## Conductor owner\n\n`C03`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-005",
+      "repository": "vop_poc_nz",
+      "track": "C03",
+      "title": "Add internal model validation and case-specific external validation plans",
+      "priority": "P0",
+      "labels": [
+        "validation",
+        "models"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nAdd internal model validation and case-specific external validation plans.\n\n## Conductor owner\n\n`C03`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-006",
+      "repository": "vop_poc_nz",
+      "track": "C04",
+      "title": "Develop housing insulation as the deep empirical exemplar",
+      "priority": "P1",
+      "labels": [
+        "case-study",
+        "housing"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nDevelop housing insulation as the deep empirical exemplar.\n\n## Conductor owner\n\n`C04`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-007",
+      "repository": "vop_poc_nz",
+      "track": "C04",
+      "title": "Integrate factorial/GSA clustering as perspective regime discovery",
+      "priority": "P1",
+      "labels": [
+        "sensitivity",
+        "clustering"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nIntegrate factorial/GSA clustering as perspective regime discovery.\n\n## Conductor owner\n\n`C04`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-008",
+      "repository": "vop_poc_nz",
+      "track": "C05",
+      "title": "Wire no-orphan-result manifests through every table and figure",
+      "priority": "P0",
+      "labels": [
+        "reproducibility",
+        "pipeline"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nWire no-orphan-result manifests through every table and figure.\n\n## Conductor owner\n\n`C05`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-009",
+      "repository": "vop_poc_nz",
+      "track": "C05",
+      "title": "Replace public pickle interchange with Arrow/Parquet/JSON schemas",
+      "priority": "P1",
+      "labels": [
+        "data",
+        "breaking-change"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nReplace public pickle interchange with Arrow/Parquet/JSON schemas.\n\n## Conductor owner\n\n`C05`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-010",
+      "repository": "vop_poc_nz",
+      "track": "C06",
+      "title": "Rewrite arXiv preprint around EVoP, PAF, and regime discovery",
+      "priority": "P0",
+      "labels": [
+        "manuscript",
+        "arxiv"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nRewrite arXiv preprint around EVoP, PAF, and regime discovery.\n\n## Conductor owner\n\n`C06`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-011",
+      "repository": "vop_poc_nz",
+      "track": "C06",
+      "title": "Complete CHEERS/VOI and reviewer-response submission package",
+      "priority": "P1",
+      "labels": [
+        "reporting",
+        "publication"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nComplete CHEERS/VOI and reviewer-response submission package.\n\n## Conductor owner\n\n`C06`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-012",
+      "repository": "vop_poc_nz",
+      "track": "C07",
+      "title": "Reorganise repository root after local artifact triage",
+      "priority": "P0",
+      "labels": [
+        "repo-hygiene",
+        "maintenance"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nReorganise repository root after local artifact triage.\n\n## Conductor owner\n\n`C07`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-013",
+      "repository": "vop_poc_nz",
+      "track": "C07",
+      "title": "Make package metadata, imports, Python support, and release version coherent",
+      "priority": "P0",
+      "labels": [
+        "packaging",
+        "metadata"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nMake package metadata, imports, Python support, and release version coherent.\n\n## Conductor owner\n\n`C07`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-014",
+      "repository": "vop_poc_nz",
+      "track": "C10",
+      "title": "Publish verified PyPI/conda/docs/archive release with provenance",
+      "priority": "P1",
+      "labels": [
+        "release",
+        "supply-chain"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nPublish verified PyPI/conda/docs/archive release with provenance.\n\n## Conductor owner\n\n`C10`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-015",
+      "repository": "vop_poc_nz",
+      "track": "C09",
+      "title": "Define optional adapters to voiage and selected related projects",
+      "priority": "P2",
+      "labels": [
+        "integration",
+        "contracts"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nDefine optional adapters to voiage and selected related projects.\n\n## Conductor owner\n\n`C09`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-016",
+      "repository": "vop_poc_nz",
+      "track": "C11",
+      "title": "Profile pipeline and decide accelerator backends from evidence",
+      "priority": "P2",
+      "labels": [
+        "performance",
+        "backend"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nProfile pipeline and decide accelerator backends from evidence.\n\n## Conductor owner\n\n`C11`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-001",
+      "repository": "voiage",
+      "track": "C00",
+      "title": "Run pack doctor against existing perspective and conductor surfaces",
+      "priority": "P0",
+      "labels": [
+        "agent",
+        "governance"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nRun pack doctor against existing perspective and conductor surfaces.\n\n## Conductor owner\n\n`C00`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-002",
+      "repository": "voiage",
+      "track": "C01",
+      "title": "Reconcile existing Value of Perspective API with the versioned method contract",
+      "priority": "P0",
+      "labels": [
+        "method",
+        "api"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nReconcile existing Value of Perspective API with the versioned method contract.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-003",
+      "repository": "voiage",
+      "track": "C01",
+      "title": "Adopt shared deterministic conformance fixtures across implementations",
+      "priority": "P0",
+      "labels": [
+        "testing",
+        "contracts"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nAdopt shared deterministic conformance fixtures across implementations.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-004",
+      "repository": "voiage",
+      "track": "C02",
+      "title": "Implement tie-aware perspective acceptability probabilities",
+      "priority": "P0",
+      "labels": [
+        "method",
+        "frontier"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nImplement tie-aware perspective acceptability probabilities.\n\n## Conductor owner\n\n`C02`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-005",
+      "repository": "voiage",
+      "track": "C02",
+      "title": "Implement exact perspective-mixture frontier segments and switch points",
+      "priority": "P0",
+      "labels": [
+        "method",
+        "frontier"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nImplement exact perspective-mixture frontier segments and switch points.\n\n## Conductor owner\n\n`C02`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-006",
+      "repository": "voiage",
+      "track": "C02",
+      "title": "Add threshold-by-perspective surface and component attribution design",
+      "priority": "P1",
+      "labels": [
+        "method",
+        "interpretability"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nAdd threshold-by-perspective surface and component attribution design.\n\n## Conductor owner\n\n`C02`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-007",
+      "repository": "voiage",
+      "track": "C08",
+      "title": "Integrate EVoP/PAF into native voiage API, CLI, registry, and plots",
+      "priority": "P0",
+      "labels": [
+        "productionisation",
+        "cli"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nIntegrate EVoP/PAF into native voiage API, CLI, registry, and plots.\n\n## Conductor owner\n\n`C08`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-008",
+      "repository": "voiage",
+      "track": "C08",
+      "title": "Export MCDA-ready features without implementing an MCDA scoring engine",
+      "priority": "P1",
+      "labels": [
+        "mcda",
+        "api"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nExport MCDA-ready features without implementing an MCDA scoring engine.\n\n## Conductor owner\n\n`C08`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-009",
+      "repository": "voiage",
+      "track": "C09",
+      "title": "Enforce import and serialization boundaries with vop_poc_nz",
+      "priority": "P1",
+      "labels": [
+        "integration",
+        "contracts"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nEnforce import and serialization boundaries with vop_poc_nz.\n\n## Conductor owner\n\n`C09`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-010",
+      "repository": "voiage",
+      "track": "C06",
+      "title": "Prepare Value in Health method-paper output contract and reconciliation gate",
+      "priority": "P1",
+      "labels": [
+        "manuscript",
+        "publication"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nPrepare Value in Health method-paper output contract and reconciliation gate.\n\n## Conductor owner\n\n`C06`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-011",
+      "repository": "voiage",
+      "track": "C10",
+      "title": "Reconcile licence/version/Python metadata and harden releases",
+      "priority": "P0",
+      "labels": [
+        "metadata",
+        "release"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nReconcile licence/version/Python metadata and harden releases.\n\n## Conductor owner\n\n`C10`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-012",
+      "repository": "voiage",
+      "track": "C11",
+      "title": "Benchmark numerical backends and retain equivalence fixtures",
+      "priority": "P2",
+      "labels": [
+        "performance",
+        "backend"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nBenchmark numerical backends and retain equivalence fixtures.\n\n## Conductor owner\n\n`C11`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOI-013",
+      "repository": "voiage",
+      "track": "C12",
+      "title": "Generate deduplicated GitHub issues/project from canonical backlog",
+      "priority": "P1",
+      "labels": [
+        "github",
+        "project-management"
+      ],
+      "depends_on": [],
+      "body": "## Objective\n\nGenerate deduplicated GitHub issues/project from canonical backlog.\n\n## Conductor owner\n\n`C12`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The change follows the owning track acceptance criteria.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n"
+    },
+    {
+      "id": "VOP-017",
+      "repository": "vop_poc_nz",
+      "track": "C01",
+      "title": "Add Monte Carlo uncertainty and convergence reporting for EVoP",
+      "body": "## Objective\n\nIntegrate bootstrap standard errors/intervals and draw-count convergence profiles into the case pipeline and result manifests. Label these as numerical estimator uncertainty, not normative uncertainty.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The implementation is merged into the existing architecture rather than added in parallel.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n",
+      "labels": [
+        "method",
+        "testing",
+        "reproducibility"
+      ],
+      "depends_on": [
+        "VOP-002",
+        "VOP-003"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "VOI-014",
+      "repository": "voiage",
+      "track": "C01",
+      "title": "Productionise EVoP Monte Carlo diagnostics in the native API",
+      "body": "## Objective\n\nMerge the reference bootstrap and convergence contract into the existing perspective API, add CLI/reporting support, and preserve cross-package fixture parity.\n\n## Conductor owner\n\n`C01`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The implementation is merged into the existing architecture rather than added in parallel.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n",
+      "labels": [
+        "method",
+        "api",
+        "testing"
+      ],
+      "depends_on": [
+        "VOI-002",
+        "VOI-003"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "VOP-018",
+      "repository": "vop_poc_nz",
+      "track": "C12",
+      "title": "Migrate legacy conductor tracks and duplicate issues to the canonical registry",
+      "body": "## Objective\n\nUse the v6 upgrade plan to preserve local history while making conductor/manifest.json and issues/backlog.json the only active sources of truth.\n\n## Conductor owner\n\n`C12`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The implementation is merged into the existing architecture rather than added in parallel.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n",
+      "labels": [
+        "conductor",
+        "governance",
+        "maintenance"
+      ],
+      "depends_on": [
+        "VOP-001"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "VOI-015",
+      "repository": "voiage",
+      "track": "C12",
+      "title": "Merge v6 conductor state into the existing voiage conductor architecture",
+      "body": "## Objective\n\nMap existing conductor and AGENTS surfaces, merge semantic track IDs and evidence-backed state without overwriting native workflows, and remove duplicate active registries.\n\n## Conductor owner\n\n`C12`\n\n## Acceptance\n\n- [ ] The live repository was mapped before editing.\n- [ ] The implementation is merged into the existing architecture rather than added in parallel.\n- [ ] Tests, generated evidence, and migration notes are attached.\n- [ ] Local/private artifacts remain outside the public commit unless explicitly promoted.\n",
+      "labels": [
+        "conductor",
+        "governance",
+        "maintenance"
+      ],
+      "depends_on": [
+        "VOI-001"
+      ],
+      "priority": "P1"
+    }
+  ]
+}

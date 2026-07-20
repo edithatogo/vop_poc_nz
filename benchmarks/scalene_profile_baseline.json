@@ -1,0 +1,10 @@
+{
+  "description": "Pinned Scalene aggregate regression baseline. The reference is a local Windows observation; portable CI gates use a deliberately conservative factor and absolute ceiling.",
+  "maximum_elapsed_seconds": 10.0,
+  "maximum_regression_factor": 15.0,
+  "reference_elapsed_seconds": 0.7148764133453369,
+  "reference_environment": "Windows x86_64 local observation, Python 3.14, Scalene 2.3.0, 2026-07-20",
+  "required_scalene_version": "2.3.0",
+  "schema_version": "1.0.0",
+  "workload": "profile_workload.py"
+}

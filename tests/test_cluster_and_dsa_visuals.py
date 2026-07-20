@@ -1,9 +1,11 @@
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from src.cluster_analysis import ClusterAnalysis
-from src.dsa_analysis import (
+from vop_poc_nz.cluster_analysis import ClusterAnalysis
+from vop_poc_nz.dsa_analysis import (
     compose_dsa_dashboard,
     perform_comprehensive_two_way_dsa,
     perform_one_way_dsa,
@@ -12,7 +14,7 @@ from src.dsa_analysis import (
     plot_three_way_dsa_3d,
     plot_two_way_dsa_heatmaps,
 )
-from src.visualizations import (
+from vop_poc_nz.visualizations import (
     compose_bia_dashboard,
     compose_equity_dashboard,
     plot_cluster_analysis,
@@ -27,9 +29,6 @@ from src.visualizations import (
     plot_structural_tornado,
     plot_survival_gof,
 )
-
-
-import os
 
 # Skip entire module on CI to prevent timeouts due to heavy plotting
 pytestmark = pytest.mark.skipif(
@@ -128,6 +127,7 @@ def test_comparative_dsa_plots(tmp_path):
 
 
 import os
+
 
 @pytest.mark.skipif(os.environ.get("CI") == "true", reason="Too slow for CI environment")
 def test_dsa_workflow_and_dashboard(tmp_path, base_params):

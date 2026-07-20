@@ -15,7 +15,7 @@ Usage:
 import argparse
 import logging
 import os
-import pickle
+import pickle  # nosec B403
 import sys
 from importlib import resources
 
@@ -62,7 +62,7 @@ def cmd_report(args):
 
     logging.info(f"Loading results from {args.results_file}")
     with open(args.results_file, "rb") as f:
-        results = pickle.load(f)  # nosec B301 - loading user's own results file
+        results = pickle.load(f)  # nosec B301
 
     run_reporting_pipeline(results, output_dir=args.output_dir)
     logging.info("Reporting completed successfully.")

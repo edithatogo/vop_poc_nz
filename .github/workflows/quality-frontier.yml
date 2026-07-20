@@ -1,0 +1,168 @@
+name: Quality Frontier
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      expensive:
+        description: Run mutation, profiling, audit, and experimental lanes
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  static-contract:
+    name: Ruff, BasedPyright, ty, and logging contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - run: uv sync --frozen --extra dev
+      - name: Validate C13 governance harness
+        run: uv run python scripts/governance_harness.py . --strict
+      - run: uv run ruff check src/vop_poc_nz/logging_config.py scripts/profile_workload.py tests/test_logging_and_version.py
+      - run: uv run ruff format --check src/vop_poc_nz/logging_config.py scripts/profile_workload.py tests/test_logging_and_version.py
+      - run: uv run basedpyright src/vop_poc_nz/logging_config.py scripts/profile_workload.py
+      - run: uv run ty check src/vop_poc_nz/logging_config.py scripts/profile_workload.py
+      - run: uv run pytest tests/test_logging_and_version.py -q
+
+  package-contract:
+    name: Dynamic version, wheel, and install smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+      - run: uv sync --frozen --extra dev
+      - run: uv run python scripts/reproducible_build.py . --output .assurance/reproducible-build.json --dist-dir dist
+      - run: uv run twine check dist/*
+      - run: uv run --isolated --no-project --with dist/*.whl python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-distributions
+          path: dist/
+
+  expensive-evidence:
+    name: ${{ matrix.lane }} evidence
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.expensive)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [profile, mutation, security, experimental]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - run: uv sync --frozen --extra dev --extra experimental
+      - if: matrix.lane == 'profile'
+        run: |
+          mkdir -p .benchmarks
+          uv run --frozen scalene run --use-legacy-tracer --cpu-only -o .benchmarks/scalene.json scripts/profile_workload.py
+          uv run --frozen python scripts/check_scalene_profile.py .benchmarks/scalene.json --output .benchmarks/scalene-regression.json
+          uv run --frozen python scripts/profile_governance_workload.py --iterations 1000 --output .benchmarks/governance-profile.json
+      - name: Generate broad mutation evidence
+        if: matrix.lane == 'mutation'
+        run: |
+          uv run --frozen pytest -q --no-cov tests/test_contract_bundle.py tests/test_github_governance_drift.py tests/test_reproducible_build.py tests/test_serialization_benchmark.py
+          uv run --frozen mutmut run
+          uv run --frozen mutmut export-cicd-stats
+          uv run --frozen mutmut results --all true > mutants/mutmut-universe.txt
+      - name: Check broad per-target mutation ratchets
+        id: broad-mutation
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        run: >-
+          uv run --frozen python scripts/check_mutation_targets.py
+          --baseline .github/mutation-baselines/vop-broad.json
+          --cache-root mutants
+          --output .benchmarks/mutation-score-broad.json
+      - name: Run critical C13 mutation gate
+        id: critical-mutation
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        run: >-
+          uv run --frozen python scripts/run_critical_mutation_lane.py .
+          --threshold 90
+          --output .benchmarks/mutation-critical.json
+      - name: Enforce immutable C15 mutation cohort
+        id: c15-cohort
+        if: always() && matrix.lane == 'mutation'
+        continue-on-error: true
+        env:
+          REVIEWED_BASELINE_SHA256: ${{ vars.VOP_MUTATION_BASELINE_SHA256 }}
+        run: >-
+          uv run --frozen python scripts/check_c15_mutation_cohort.py
+          --stats mutants/mutmut-cicd-stats.json
+          --universe mutants/mutmut-universe.txt
+          --baseline .github/mutation-baselines/vop-c15-cohort.json
+          --reviewed-baseline-sha256 "${REVIEWED_BASELINE_SHA256}"
+          --threshold 64.691
+          --output .benchmarks/mutation-c15-cohort.json
+      - name: Enforce both mutation gates
+        if: always() && matrix.lane == 'mutation'
+        env:
+          BROAD_OUTCOME: ${{ steps.broad-mutation.outcome }}
+          CRITICAL_OUTCOME: ${{ steps.critical-mutation.outcome }}
+          COHORT_OUTCOME: ${{ steps.c15-cohort.outcome }}
+        run: |
+          echo "broad mutation gate: ${BROAD_OUTCOME}"
+          echo "critical mutation gate: ${CRITICAL_OUTCOME}"
+          echo "C15 cohort gate: ${COHORT_OUTCOME}"
+          if [ "${BROAD_OUTCOME}" != success ] || [ "${CRITICAL_OUTCOME}" != success ] || [ "${COHORT_OUTCOME}" != success ]; then
+            exit 1
+          fi
+      - if: matrix.lane == 'security'
+        run: |
+          mkdir -p .benchmarks
+          uv run bandit -r src/vop_poc_nz -f json -o .benchmarks/bandit.json
+          uv run pip-audit --format=json --output=.benchmarks/pip-audit.json
+      - if: matrix.lane == 'experimental'
+        run: |
+          mkdir -p .benchmarks
+          uv run pytest tests/test_experimental_backend_probe.py -q --no-cov
+          uv run python scripts/experimental_backend_probe.py --output .benchmarks/experimental-backend.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: quality-${{ matrix.lane }}
+          path: |
+            .benchmarks/
+            mutants/
+          include-hidden-files: true
+          if-no-files-found: ignore

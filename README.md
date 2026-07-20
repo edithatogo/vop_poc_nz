@@ -98,9 +98,7 @@ ruff format src/ tests/
 ### Python API
 
 ```python
-from src.cea_model_core import run_cea
-from src.dcea_equity_analysis import run_dcea
-from src.sobol_analysis import SobolAnalyzer
+from vop_poc_nz import SobolAnalyzer, run_cea, run_dcea
 
 # Load parameters
 import yaml
@@ -239,20 +237,22 @@ Apache 2.0 License - see LICENSE file for details
 If you use this code in your research, please cite:
 
 ```bibtex
-@software{dcea_framework_2024,
-  title={Distributional Cost-Effectiveness Analysis Framework},
-  author={[Your Name]},
-  year={2024},
-  url={[repository-url]}
+@software{mordaunt_vop_poc_nz_2026,
+  title={Value of Perspective: Quantifying Decision Discordance in Health Economic Evaluation},
+  author={Mordaunt, Dylan A.},
+  year={2026},
+  version={0.2.2},
+  doi={10.5281/zenodo.17759624},
+  url={https://github.com/edithatogo/vop_poc_nz}
 }
 ```
 
 ## Contact
 
-For questions or issues, please open a GitHub issue or contact [your email].
+For questions or issues, please open a GitHub issue.
 
 ## Acknowledgments
 
 - Inspired by ISPOR guidelines for health economic evaluation
-- Built with support from [funding sources]
+- Developed as an open research-software project for Aotearoa New Zealand health-economic analysis
 - Thanks to reviewers whose feedback improved this implementation

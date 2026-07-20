@@ -1,111 +1,213 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      # Package releases only. Standalone contract tags use the
+      # vop-voiage-contracts-vX.Y.Z namespace and a separate workflow.
+      - "v[0-9]*.[0-9]*.[0-9]*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing signed release tag to publish"
+        required: true
+        type: string
+      publish:
+        description: "Publish the staged draft to TestPyPI, PyPI, and GitHub"
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
     name: Build distributions
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release_tag || github.ref }}
+          persist-credentials: false
+
+      - name: Validate exact signed remote release tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_TAGGER_EMAIL: ${{ vars.RELEASE_TAGGER_EMAIL }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          remote_oid="$(git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" | cut -f1)"
+          test "$remote_oid" = "$(git rev-parse "refs/tags/$RELEASE_TAG")"
+          test "$(git cat-file -t "$RELEASE_TAG")" = tag
+          test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$(git rev-parse HEAD)"
+          test -n "$APPROVED_TAGGER_EMAIL"
+          mkdir -p .assurance
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$remote_oid" > .assurance/tag-verification.json
+          jq -e '.verification.verified == true' .assurance/tag-verification.json >/dev/null
+          test "$(jq -r '.tagger.email' .assurance/tag-verification.json)" = "$APPROVED_TAGGER_EMAIL"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
-      - name: Install build tooling
-        run: |
-          python -m pip install --upgrade pip
-          pip install hatch twine
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: false
+
+      - name: Install locked build tooling
+        run: uv sync --frozen --extra dev
 
       - name: Build distributions
-        run: hatch build
+        run: uv run python scripts/reproducible_build.py . --output .assurance/reproducible-build.json --dist-dir dist
 
       - name: Verify distributions
-        run: python -m twine check dist/*
+        run: uv run twine check dist/*
+
+      - name: Generate release SBOM
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file .assurance/release-requirements.txt
+          uv venv .assurance/sbom-env --python 3.14
+          uv pip install --python .assurance/sbom-env/bin/python --require-hashes -r .assurance/release-requirements.txt
+          uv pip install --python .assurance/sbom-env/bin/python --no-deps dist/*.whl
+          uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment .assurance/sbom-env --pyproject pyproject.toml --mc-type library --output-reproducible --of JSON -o .assurance/sbom.cdx.json
+
+      - name: Attest distributions and SBOM
+        uses: actions/attest@36051bcae73b7c2a8a6945a48cbf80953c6baa35
+        with:
+          subject-path: "dist/*"
+          sbom-path: ".assurance/sbom.cdx.json"
 
       - name: Upload distributions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: warn
+
+      - name: Upload supply-chain evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: release-supply-chain
+          path: .assurance/
+          include-hidden-files: true
+          if-no-files-found: warn
+
+  draft-release:
+    name: Prepare private draft release
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+    permissions:
+      contents: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: dist
           path: dist/
 
+      - name: Create or refresh private draft
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = true
+          else
+            gh release create "$RELEASE_TAG" --draft --generate-notes --verify-tag
+          fi
+          gh release upload "$RELEASE_TAG" dist/* --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   publish-testpypi:
     name: Publish to TestPyPI
-    needs: build
+    needs: [build, draft-release]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     environment: testpypi
     permissions:
       id-token: write
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: dist
           path: dist/
 
       - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
         with:
           repository-url: https://test.pypi.org/legacy/
 
   publish-pypi:
     name: Publish to PyPI
     needs: [build, publish-testpypi]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: dist
           path: dist/
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
 
   smoke-test:
     name: Smoke test
     needs: publish-pypi
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Wait for PyPI propagation
         run: sleep 60
 
       - name: Test installation
         run: |
-          pip install vop-poc-nz
-          python -c "import vop_poc_nz; print(f'Installed version: {vop_poc_nz.__version__}')"
+          raw_version="${RELEASE_TAG#v}"
+          pip install "vop-poc-nz==$raw_version"
+          python - "$raw_version" <<'PY'
+          import importlib.metadata
+          import sys
+          from packaging.version import Version
 
-  github-release:
-    name: Attach artifacts to release
-    needs: build
+          assert Version(importlib.metadata.version("vop-poc-nz")) == Version(sys.argv[1])
+          PY
+
+  finalize-release:
+    name: Publish verified GitHub release
+    needs: [draft-release, smoke-test]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
     permissions:
       contents: write
-    if: github.event_name == 'release'
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Attach artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*
+      - name: Publish the prepared draft
+        run: gh release edit "$RELEASE_TAG" --draft=false --latest
+        env:
+          GH_TOKEN: ${{ github.token }}

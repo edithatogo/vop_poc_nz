@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Manuscript output reconciliation report",
+  "type": "object",
+  "required": ["schema_version", "repo", "summary", "references", "result_anchors", "unresolved_references", "recommendations"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "repo": {"type": "object"},
+    "summary": {"type": "object"},
+    "text_files": {"type": "array", "items": {"type": "object"}},
+    "references": {"type": "array", "items": {"type": "object"}},
+    "result_anchors": {"type": "array", "items": {"type": "object"}},
+    "result_manifests": {"type": "array", "items": {"type": "object"}},
+    "unresolved_references": {"type": "array", "items": {"type": "object"}},
+    "claim_hits": {"type": "array", "items": {"type": "object"}},
+    "numeric_claims": {"type": "array", "items": {"type": "object"}},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}

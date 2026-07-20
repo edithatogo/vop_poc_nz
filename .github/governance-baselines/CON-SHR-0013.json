@@ -1,0 +1,45 @@
+{
+  "baseline_capture": {
+    "schema_version": "1.0.0",
+    "trust_state": "unverified_initial_snapshot",
+    "capture_method": "legacy_import",
+    "captured_at_utc": null,
+    "source_revision": null,
+    "captured_by": "repository_migration"
+  },
+  "github_repository": "edithatogo/vop_poc_nz",
+  "issue_number": 41,
+  "state": "open",
+  "title": "[CON-SHR-0013] Domain abstractions are not uniformly excellent",
+  "body": "<!-- vop-voiage-governance-id:CON-SHR-0013 -->\n<!-- governance:begin -->\n## Concern\n\nLegacy VOP parameters, calculation boundaries, result shapes, package imports and issue governance do not yet consistently enforce the typed contracts already present at the Arrow interoperability boundary.\n\n- **Record:** `CON-SHR-0013`\n- **Status:** `investigating`\n- **Tracks:** `C13`\n\n### Evidence\n\n- `EVR-SHR-0013` — Typed governance contract implementation (verified)\n<!-- governance:end -->\n",
+  "labels": [
+    "conductor",
+    "moscow-must",
+    "roadmap"
+  ],
+  "project_number": 28,
+  "project_fields": [
+    [
+      "Record ID",
+      "CON-SHR-0013"
+    ],
+    [
+      "Record Type",
+      "Concern"
+    ],
+    [
+      "Track ID",
+      "C13"
+    ]
+  ],
+  "managed_labels": [
+    "conductor",
+    "moscow-must",
+    "roadmap"
+  ],
+  "managed_project_field_names": [
+    "Record ID",
+    "Record Type",
+    "Track ID"
+  ]
+}

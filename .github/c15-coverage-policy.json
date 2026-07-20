@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "aggregate_percent": 70.0,
+  "aggregate_provenance": {
+    "measured_percent": 70.364165,
+    "calibration_commit": "62ad2537eae0dbe23cf8694cf4a78d219c0f9de3",
+    "source_head": "47058c4a9380733c569beebcfa327e4b256df684",
+    "run_id": 29700065867,
+    "evidence_url": "https://github.com/edithatogo/vop_poc_nz/actions/runs/29700065867",
+    "suite": "pytest tests/ with branch coverage",
+    "platform": "ubuntu-24.04-python-3.14",
+    "policy": "truthful least-covered supported-runner non-regression floor"
+  },
+  "critical_modules": {
+    "src/vop_poc_nz/c15_otel_contract.py": 95.0,
+    "src/vop_poc_nz/c15_performance.py": 90.0,
+    "src/vop_poc_nz/c15_reproducibility.py": 94.0,
+    "src/vop_poc_nz/c15_scientific_oracles.py": 95.0
+  },
+  "changed_line_percent": 95.0,
+  "changed_branch_percent": 100.0
+}

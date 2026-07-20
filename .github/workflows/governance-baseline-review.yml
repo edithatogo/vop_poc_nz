@@ -1,0 +1,91 @@
+name: Governance baseline protected review
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_run_id:
+        description: Capture workflow run containing the reviewed candidate
+        required: true
+        type: string
+      candidate_sha256:
+        description: Exact reviewed candidate SHA-256
+        required: true
+        type: string
+      source_revision:
+        description: Exact source commit recorded by the candidate
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  promote-reviewed-artifact:
+    name: Promote reviewed candidate to an uncommitted baseline artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: governance-baseline-approval
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify trusted tooling and protected source ancestry
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${{ inputs.candidate_run_id }}" =~ ^[1-9][0-9]*$ ]]
+          [[ "${{ inputs.candidate_sha256 }}" =~ ^[0-9a-f]{64}$ ]]
+          test "$GITHUB_REF" = "refs/heads/$DEFAULT_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$SOURCE_REVISION" "$GITHUB_SHA"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: governance-baseline-candidate
+          path: governance-review/candidate
+          run-id: ${{ inputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify candidate identity and source binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat governance-review/candidate/candidate.sha256)" = "${{ inputs.candidate_sha256 }}"
+          test "$(jq -r '.capture.source_revision' governance-review/candidate/candidate.json)" = "${{ inputs.source_revision }}"
+      - name: Acquire authoritative capture and environment approval evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p governance-review/evidence
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${{ inputs.candidate_run_id }}" > governance-review/evidence/capture-run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/approvals" > governance-review/evidence/approval-history.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - name: Install locked review environment
+        run: uv sync --frozen --extra dev
+      - name: Emit reviewed baseline and approval receipt without committing
+        run: >-
+          uv run --frozen python scripts/governance_baseline_review.py promote
+          --candidate governance-review/candidate/candidate.json
+          --candidate-sha256 "${{ inputs.candidate_sha256 }}"
+          --capture-run-metadata governance-review/evidence/capture-run.json
+          --approval-history governance-review/evidence/approval-history.json
+          --approval-environment governance-baseline-approval
+          --approval-run "github:${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          --output-baseline governance-review/approved/CON-SHR-0013.json
+          --output-receipt governance-review/approved/approval-receipt.json
+      - name: Retain reviewed artifacts for manual commit decision
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: governance-baseline-reviewed
+          path: governance-review/approved/
+          if-no-files-found: error
+          retention-days: 30

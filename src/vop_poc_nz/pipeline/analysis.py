@@ -45,10 +45,12 @@ def load_parameters(filepath: Optional[str] = None) -> dict:
         path = Path(filepath)
         if not path.exists():
             raise FileNotFoundError(f"Parameters file not found: {filepath}")
-        with path.open() as handle:
+        with path.open(encoding="utf-8") as handle:
             return yaml.safe_load(handle)
 
-    with resources.files("vop_poc_nz").joinpath("parameters.yaml").open("r") as handle:
+    with resources.files("vop_poc_nz").joinpath("parameters.yaml").open(
+        "r", encoding="utf-8"
+    ) as handle:
         return yaml.safe_load(handle)
 
 

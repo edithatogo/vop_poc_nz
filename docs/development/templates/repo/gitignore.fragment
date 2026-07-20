@@ -1,0 +1,13 @@
+# Local conductor and research artifacts
+.conductor/local/
+.pixi/
+.venv/
+.env
+.env.*
+results/local/
+outputs/local/
+artifacts/local/
+profiles/
+*.pkl
+*.prof
+*.scalene

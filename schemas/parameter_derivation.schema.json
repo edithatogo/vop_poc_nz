@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/vop_poc_nz/parameter_derivation.schema.json",
+  "title": "Parameter derivation provenance",
+  "type": "object",
+  "required": ["parameter_id", "case_id", "value", "unit", "derivation_type", "inputs", "formula", "source_refs"],
+  "properties": {
+    "parameter_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "value": {"type": ["number", "string"]},
+    "unit": {"type": "string"},
+    "price_year": {"type": ["integer", "null"]},
+    "currency": {"type": ["string", "null"]},
+    "derivation_type": {"enum": ["direct", "inflation_adjusted", "currency_converted", "calculated", "calibrated", "elicited"]},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "formula": {"type": "string"},
+    "source_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "notes": {"type": "string"}
+  }
+}

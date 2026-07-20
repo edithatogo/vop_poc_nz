@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Perspective regime discovery result",
+  "type": "object",
+  "required": ["labels", "centroids", "feature_names", "inertia", "regime_summaries"],
+  "properties": {
+    "labels": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+    "centroids": {
+      "type": "array",
+      "items": {"type": "array", "items": {"type": "number"}}
+    },
+    "feature_names": {"type": "array", "items": {"type": "string"}},
+    "inertia": {"type": "number", "minimum": 0},
+    "regime_summaries": {"type": "array", "items": {"type": "object"}}
+  }
+}

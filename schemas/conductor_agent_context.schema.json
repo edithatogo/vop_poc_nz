@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent context pack",
+  "type": "object",
+  "required": ["generated_at", "repo_root", "counts", "required_agent_sequence"],
+  "properties": {
+    "generated_at": {"type": "string"},
+    "repo_root": {"type": "string"},
+    "detected_project": {"type": "object"},
+    "active_track": {"type": ["string", "null"]},
+    "counts": {"type": "object"},
+    "high_risk_paths": {"type": "array", "items": {"type": "string"}},
+    "review_paths": {"type": "array", "items": {"type": "string"}},
+    "safe_integration_paths": {"type": "array", "items": {"type": "string"}},
+    "release_ready": {"type": "boolean"},
+    "release_blockers": {"type": "array"},
+    "required_agent_sequence": {"type": "array", "items": {"type": "string"}}
+  }
+}

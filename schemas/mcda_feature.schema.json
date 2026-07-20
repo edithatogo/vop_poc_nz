@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCDA-ready feature record",
+  "type": "object",
+  "required": [
+    "case_id",
+    "reference_perspective",
+    "evaluate_under",
+    "strategy",
+    "expected_net_benefit",
+    "probability_optimal",
+    "expected_value_rank",
+    "evop_reference_to_evaluation_per_person",
+    "perspective_discordance_probability"
+  ],
+  "properties": {
+    "case_id": {"type": ["string", "null"]},
+    "reference_perspective": {"type": "string"},
+    "evaluate_under": {"type": "string"},
+    "strategy": {"type": "string"},
+    "expected_net_benefit": {"type": "number"},
+    "probability_optimal": {"type": "number", "minimum": 0, "maximum": 1},
+    "expected_value_rank": {"type": "integer", "minimum": 1},
+    "evop_reference_to_evaluation_per_person": {"type": "number", "minimum": 0},
+    "evop_reference_to_evaluation_population": {"type": ["number", "null"]},
+    "perspective_discordance_probability": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+  }
+}

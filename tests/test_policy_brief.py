@@ -1,4 +1,4 @@
-from src.policy_brief_generator import generate_policy_brief
+from vop_poc_nz.policy_brief_generator import generate_policy_brief
 
 
 def test_policy_brief_generation(tmp_path):

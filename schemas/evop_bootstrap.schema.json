@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/evop_bootstrap.schema.json",
+  "title": "Directional EVoP bootstrap interval",
+  "type": "object",
+  "required": ["choose_under", "evaluate_under", "decision_rule", "estimate", "standard_error", "lower", "upper", "confidence", "bootstrap_replicates", "selection_tie_policy", "method_contract_version"],
+  "properties": {
+    "choose_under": {"type": "string", "minLength": 1},
+    "evaluate_under": {"type": "string", "minLength": 1},
+    "decision_rule": {"enum": ["expected_value", "per_draw"]},
+    "estimate": {"type": "number", "minimum": 0},
+    "standard_error": {"type": "number", "minimum": 0},
+    "lower": {"type": "number", "minimum": 0},
+    "upper": {"type": "number", "minimum": 0},
+    "confidence": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+    "bootstrap_replicates": {"type": "integer", "minimum": 2},
+    "seed": {"type": ["integer", "null"]},
+    "selection_tie_policy": {"enum": ["first", "split", "error"]},
+    "method_contract_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "bootstrap_estimates": {"type": "array", "items": {"type": "number", "minimum": 0}}
+  },
+  "additionalProperties": false
+}

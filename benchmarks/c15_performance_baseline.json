@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.1.0",
+  "workload_id": "c15-evpi-4096x4-f64-v1",
+  "workload": "c15 higher-dimensional EVPI kernel; 4096x4 float64 values; 40 iterations; 9 samples",
+  "parameters": {
+    "repeats": 9,
+    "iterations": 40,
+    "rows": 4096,
+    "strategies": 4,
+    "dtype": "float64"
+  },
+  "measurement": {
+    "interval_method": "deterministic_percentile_bootstrap",
+    "confidence": 0.95,
+    "bootstrap_resamples": 10000,
+    "minimum_samples": 5,
+    "config_digest": "d6b5f0457d37aa9e48ceebe5bda7b52ca9afa81b8d506d6a4cd82d684d7cd785"
+  },
+  "source": {
+    "commit": "700852f61a367a8bf3365e267009f2460e44fc00",
+    "workflow": "C15 Cross-platform Assurance",
+    "workflow_run_id": "29698712222",
+    "captured_at": "2026-07-20",
+    "derivation": "Deterministic percentile-bootstrap upper 95% confidence bounds retained from independent exact-head GitHub-hosted Linux and Windows jobs; three-fold cohort allowance capped at 0.05 seconds"
+  },
+  "cohorts": {
+    "Linux": {
+      "approved_runner_identity": {
+        "os": "Linux",
+        "architecture": "x86_64",
+        "python_series": "3.14",
+        "python_implementation": "CPython",
+        "ci_runner_os": "Linux",
+        "ci_runner_arch": "x86_64",
+        "ci_image_os": "ubuntu24"
+      },
+      "approved_runner_fingerprint": "bda07afba2f912980685735cabbde8568b9ede3be4448e8bc5f72032758c51fd",
+      "reference_upper_seconds": 0.010988,
+      "maximum_regression_factor": 3.0,
+      "absolute_ceiling_seconds": 0.05
+    },
+    "Windows": {
+      "approved_runner_identity": {
+        "os": "Windows",
+        "architecture": "x86_64",
+        "python_series": "3.14",
+        "python_implementation": "CPython",
+        "ci_runner_os": "Windows",
+        "ci_runner_arch": "x86_64",
+        "ci_image_os": "win25-vs2026"
+      },
+      "approved_runner_fingerprint": "869a9cc34bc9e0f31d42f880eb45e1ea5e1b9885892cc81fb2e7db78b3c1bee4",
+      "reference_upper_seconds": 0.008181,
+      "maximum_regression_factor": 3.0,
+      "absolute_ceiling_seconds": 0.05
+    }
+  }
+}

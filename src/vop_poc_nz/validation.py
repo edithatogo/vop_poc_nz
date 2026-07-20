@@ -2,16 +2,12 @@
 Validation utilities using pandera and pydantic for health economic analyses.
 """
 
-import os
 import warnings
-from typing import Optional
 
 import numpy as np
 import pandas as pd
-from pandera import Column, DataFrameSchema
+from pandera.pandas import Column, DataFrameSchema
 from pydantic import BaseModel, Field
-
-os.environ.setdefault("DISABLE_PANDERA_IMPORT_WARNING", "true")
 
 PSAResultsSchema = DataFrameSchema(
     {
@@ -40,9 +36,9 @@ class ParametersModel(BaseModel):
     costs: dict
     qalys: dict
     transition_matrices: dict
-    productivity_costs: Optional[dict] = None
-    friction_cost_params: Optional[dict] = None
-    productivity_loss_states: Optional[dict] = None
+    productivity_costs: dict | None = None
+    friction_cost_params: dict | None = None
+    productivity_loss_states: dict | None = None
 
 
 def validate_transition_matrices(params: dict) -> None:

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/vop_poc_nz/case_contract.schema.json",
+  "title": "vop_poc_nz case contract",
+  "type": "object",
+  "required": [
+    "case_id",
+    "case_type",
+    "model_family",
+    "decision_strategies",
+    "perspectives",
+    "cost_components",
+    "source_grade",
+    "validation_status"
+  ],
+  "properties": {
+    "case_id": {"type": "string", "minLength": 1},
+    "case_type": {
+      "type": "string",
+      "enum": ["policy_grade", "empirical_tutorial", "synthetic_fixture"]
+    },
+    "model_family": {"type": "string"},
+    "decision_strategies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string"}
+    },
+    "perspectives": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string"}
+    },
+    "cost_components": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string"}
+    },
+    "source_grade": {"type": "object"},
+    "validation_status": {"type": "object"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}
