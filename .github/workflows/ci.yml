@@ -56,6 +56,8 @@ jobs:
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.29"
       - name: Install locked development environment
         run: uv sync --frozen --extra dev
       - name: Enforce Ruff debt ratchet
@@ -86,6 +88,8 @@ jobs:
         with:
           python-version: "3.14t"
       - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.29"
       - name: Exercise minimal free-threaded Arrow boundary
         id: free_threaded_probe
         continue-on-error: true
