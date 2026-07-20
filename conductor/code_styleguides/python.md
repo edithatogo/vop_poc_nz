@@ -1,6 +1,6 @@
 # Python style guide
 
-- Target Python 3.14 and use complete type annotations for public APIs.
+- Support Python 3.12–3.14 and use complete type annotations for public APIs.
 - Prefer immutable Pydantic v2 models, frozen dataclasses, enums, protocols and
   narrow mappings over `Any`, untyped dictionaries or forwarding `**kwargs`.
 - Use NumPy-style docstrings for public scientific APIs.
@@ -12,4 +12,3 @@
 - Keep imports grouped as standard library, third party, then local package.
 - Match canonical `vop_poc_nz` package paths; top-level `src` modules may only
   be temporary deprecation shims.
-

@@ -2,7 +2,7 @@
 
 ## Runtime and domain modelling
 
-- Python 3.14 with an observational, non-blocking Python 3.14t lane.
+- Python 3.12–3.14 with an observational, non-blocking Python 3.14t lane.
 - Pydantic v2 for immutable external specifications, validation and generated
   JSON Schema.
 - NumPy and xarray for canonical in-memory numerical structures.
@@ -21,4 +21,3 @@
 - Scalene 2.3 profiles scheduled/manual representative workloads.
 - GitHub Actions supplies CI, security, dependency, build, release,
   provenance and experimental observation lanes.
-

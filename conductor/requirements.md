@@ -48,7 +48,7 @@ the linked track files contain detailed acceptance criteria.
 
 - **S1:** PyArrow and Polars round trips preserve logical types, metadata, and
   values across processes and operating systems.
-- **S2:** supported Python releases include 3.14; free-threaded Python is
+- **S2:** supported Python releases include 3.12–3.14; free-threaded Python is
   monitored as an observational, wheel-only frontier until dependencies mature.
 - **S3:** lint, dependency, coverage, evidence, and performance debt use
   ratchets so the baseline cannot silently regress.

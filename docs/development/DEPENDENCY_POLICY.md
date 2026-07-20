@@ -1,6 +1,6 @@
 # Dependency and experimental-feature policy
 
-The Python 3.14 line tracks the latest compatible stable direct dependencies and commits `uv.lock` for reproducibility. Run `uv lock --upgrade` followed by `python scripts/dependency_frontier.py . --strict` before a release or dependency PR.
+The Python 3.12–3.14 support line tracks the latest compatible stable direct dependencies and commits `uv.lock` for reproducibility. Run `uv lock --upgrade` followed by `python scripts/dependency_frontier.py . --strict` before a release or dependency PR.
 
 Apache Arrow/Parquet is the canonical public tabular interchange. JSON Lines is an explicit human-debug format, not an automatic fallback. Polars is available for lazy, Arrow-native processing; pandas remains supported for the existing analysis API during migration.
 

@@ -1,9 +1,9 @@
 # Merge deliberately into the live pyproject.toml; do not append duplicate tables.
 [project]
-requires-python = ">=3.14"
+requires-python = ">=3.12,<3.15"
 
 [tool.ruff]
-target-version = "py314"
+target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
@@ -19,7 +19,7 @@ ignore = [
 "tests/**/*.py" = ["S101", "PLR2004"]
 
 [tool.basedpyright]
-pythonVersion = "3.14"
+pythonVersion = "3.12"
 typeCheckingMode = "all"
 failOnWarnings = true
 reportAny = "error"
