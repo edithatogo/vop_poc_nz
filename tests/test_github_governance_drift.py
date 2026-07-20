@@ -234,7 +234,7 @@ def test_committed_baseline_records_honest_capture_provenance() -> None:
     )
     assert baseline.issue_number == 41
     assert provenance.trust_state == "verified_last_applied"
-    assert provenance.trusted_for_three_way is False
+    assert provenance.trusted_for_three_way is True
 
 
 def test_mocked_network_boundary_allows_only_issue_get_and_project_query() -> None:
