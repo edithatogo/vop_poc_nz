@@ -61,7 +61,7 @@ def _capture_run() -> dict[str, object]:
         "status": "completed",
         "conclusion": "success",
         "head_sha": "c" * 40,
-        "path": ".github/workflows/governance-baseline-capture.yml@main",
+        "path": ".github/workflows/governance-baseline-capture.yml",
         "head_branch": "main",
         "repository": {"full_name": "edithatogo/vop_poc_nz"},
         "actor": {"login": "capture-bot"},
@@ -182,7 +182,7 @@ def test_capture_run_metadata_is_authoritative(field: str) -> None:
 @pytest.mark.parametrize(
     ("field", "value"),
     [
-        ("path", ".github/workflows/governance-baseline-capture.yml@feature"),
+        ("path", ".github/workflows/governance-baseline-capture-other.yml"),
         ("head_branch", "feature"),
     ],
 )

@@ -251,7 +251,10 @@ def validate_capture_run(
         "status": "completed",
         "conclusion": "success",
         "head_sha": capture["tool_revision"],
-        "path": f"{capture['workflow_path']}@{capture['head_branch']}",
+        # GitHub's Actions run API reports the workflow path separately from
+        # the branch (the ref binding is validated by ``head_branch`` and the
+        # candidate's workflow_ref).
+        "path": capture["workflow_path"],
         "head_branch": capture["head_branch"],
     }
     for field, value in expected.items():
