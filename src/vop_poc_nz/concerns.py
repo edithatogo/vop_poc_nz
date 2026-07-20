@@ -360,9 +360,16 @@ def _public_evidence_lines(
 
 
 def _project_fields(record: GovernanceRecord) -> tuple[tuple[str, str], ...]:
+    # Project 28 uses ``Current track`` for active, track-linked concerns;
+    # retain the canonical ledger type while emitting the Project taxonomy.
+    project_record_type = (
+        "Current track"
+        if record.record_type == "concern" and record.track_ids
+        else record.record_type.replace("_", " ").title()
+    )
     fields: list[tuple[str, str]] = [
         ("Record ID", record.id),
-        ("Record Type", record.record_type.replace("_", " ").title()),
+        ("Record Type", project_record_type),
         ("Track ID", ", ".join(record.track_ids)),
     ]
     if isinstance(record, Risk):

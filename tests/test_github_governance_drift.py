@@ -233,7 +233,7 @@ def test_committed_baseline_records_honest_capture_provenance() -> None:
         )
     )
     assert baseline.issue_number == 41
-    assert provenance.trust_state == "unverified_initial_snapshot"
+    assert provenance.trust_state == "verified_last_applied"
     assert provenance.trusted_for_three_way is False
 
 
