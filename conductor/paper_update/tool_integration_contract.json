@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "tools": [
+    {"id": "sourceright", "repository": "edithatogo/sourceright", "role": "citation and source provenance", "required_receipt": "submission/source-manifest.json"},
+    {"id": "authentext", "repository": "edithatogo/authentext", "role": "authorship and textual provenance", "required_receipt": "submission/authentext-receipt.json"}
+  ],
+  "rules": [
+    "Pin each tool to an immutable commit or release.",
+    "Record input, output, license, and SHA-256 for every promoted artifact.",
+    "Keep credentials, private reviewer material, and unlicensed source text outside the submission bundle.",
+    "Fail closed if either tool receipt is absent or unverifiable."
+  ]
+}

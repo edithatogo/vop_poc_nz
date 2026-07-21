@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VOP arXiv paper update evidence contract",
+  "type": "object",
+  "required": ["schema_version", "source_revision", "package_version", "agents", "claims", "artifacts", "submission_ready"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "package_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+"},
+    "agents": {"type": "array", "minItems": 4, "items": {"type": "object", "required": ["id", "receipt_sha256"]}},
+    "claims": {"type": "array", "items": {"type": "object", "required": ["id", "evidence"]}},
+    "artifacts": {"type": "array", "items": {"type": "object", "required": ["path", "sha256"]}},
+    "submission_ready": {"type": "boolean"}
+  }
+}

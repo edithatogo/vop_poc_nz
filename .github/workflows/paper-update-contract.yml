@@ -1,0 +1,24 @@
+name: Paper update contract
+
+on:
+  pull_request:
+    paths: ["manuscript/**", "conductor/paper_update/**", ".github/workflows/paper-update-contract.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.14"}
+      - name: Validate contract schema and manuscript surfaces
+        run: |
+          python -m json.tool conductor/paper_update/submission_contract.json >/dev/null
+          test -f conductor/paper_update/agent_contracts.md
+          test -f conductor/paper_update/workflow.md
+          test -f manuscript/jss_submission.tex
+          ! rg -n "submission_ready.*true" conductor/paper_update --glob '*.json' || true
