@@ -2,7 +2,13 @@ name: Manuscript build
 
 on:
   pull_request:
-    paths: ["manuscript/**", "scripts/build_manuscript.ps1", ".github/workflows/manuscript-build.yml"]
+    paths:
+      - "manuscript/**"
+      - "scripts/build_manuscript.ps1"
+      - "scripts/regenerate_manuscript_results.py"
+      - "scripts/systematic_software_review.py"
+      - "src/vop_poc_nz/parameters.yaml"
+      - ".github/workflows/manuscript-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -13,6 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Verify manifest-backed analytical and review artifacts
+        shell: bash
+        run: |
+          uv sync --locked
+          uv run python scripts/regenerate_manuscript_results.py --verify
+          uv run python scripts/systematic_software_review.py --verify
+          uv run pytest tests/test_manuscript_regeneration.py tests/test_systematic_software_review.py -q
       - name: Compile arXiv and JSS manuscripts with TeX Live
         uses: xu-cheng/latex-action@v4
         with:

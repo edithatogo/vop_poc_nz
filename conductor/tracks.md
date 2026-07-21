@@ -36,3 +36,12 @@ complete; issue closure, merge, release, and publication remain human gates.*
 *Status: repository-owned implementation, exact-head hosted evidence, and
 independent review are complete; mutation-baseline approval, merge, signing,
 release, publication, and issue closure remain human gates.*
+
+---
+
+## [~] Track: Publication Evidence Completion
+
+*Link: [./tracks/publication-evidence-completion_20260721/index.md](./tracks/publication-evidence-completion_20260721/index.md)*
+
+*Status: regenerating all manuscript numerical results with uncertainty and
+performing a systematic software review before retaining the priority claim.*

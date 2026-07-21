@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "review_date": "2026-07-21",
+  "objective": "Identify reusable health-economic evaluation software with native multi-perspective analysis, DCEA, or a named directional Value of Perspective workflow.",
+  "source": "GitHub repository search API and linked package documentation",
+  "search_limit": "First 50 results per query, GitHub best-match order",
+  "queries": [
+    {"query": "cost effectiveness health economics Markov in:name,description,readme", "total_count": 203},
+    {"query": "health economic evaluation PSA EVPI in:name,description,readme", "total_count": 19},
+    {"query": "distributional cost effectiveness analysis DCEA in:name,description,readme", "total_count": 13},
+    {"query": "\"value of perspective\" health economics in:name,description,readme", "total_count": 0},
+    {"query": "cost effectiveness analysis package CEAC EVPI in:name,description,readme", "total_count": 19},
+    {"query": "health economic simulation package in:name,description,readme language:R", "total_count": 130},
+    {"query": "health technology assessment package Markov in:name,description,readme", "total_count": 329}
+  ],
+  "eligibility": {
+    "include": [
+      "Publicly accessible reusable software package or library",
+      "Implements health-economic CEA, decision modelling, PSA/VOI, or DCEA",
+      "Documentation or source available for feature verification"
+    ],
+    "exclude": [
+      "Tutorial, course, paper replication, or single-disease model only",
+      "Curated list without an analysis implementation",
+      "Proprietary or spreadsheet-only product",
+      "Repository under review"
+    ]
+  },
+  "flow": {
+    "records_retrieved": 202,
+    "duplicates_removed": 27,
+    "unique_records_screened": 175,
+    "title_description_excluded": 158,
+    "full_text_assessed": 17,
+    "full_text_excluded": 7,
+    "included": 10
+  },
+  "included": [
+    {"name": "dampack", "repository": "DARTH-git/dampack", "version": "v1.0.1", "language": "R", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/DARTH-git/dampack/tree/v1.0.1"},
+    {"name": "heemod", "repository": "aphp/heemod", "version": "v1.0.1", "language": "R", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/aphp/heemod/tree/v1.0.1"},
+    {"name": "BCEA", "repository": "giabaio/BCEA", "version": "v2.4.83", "language": "R", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/giabaio/BCEA/tree/v2.4.83"},
+    {"name": "hesim", "repository": "hesim-dev/hesim", "version": "v0.5.8", "language": "R/C++", "multi_perspective": "Manual", "dcea": "Supported", "named_directional_vop": "No", "evidence": "https://github.com/hesim-dev/hesim/tree/v0.5.8"},
+    {"name": "DCEA", "repository": "miqdadasaria/DCEA", "version": "unversioned HEAD (2025-04-16)", "language": "R", "multi_perspective": "No", "dcea": "Native", "named_directional_vop": "No", "evidence": "https://github.com/miqdadasaria/DCEA"},
+    {"name": "dceasimR", "repository": "heorlytics/dceasimR", "version": "unversioned HEAD (2026-06-25)", "language": "R", "multi_perspective": "No", "dcea": "Native", "named_directional_vop": "No", "evidence": "https://github.com/heorlytics/dceasimR"},
+    {"name": "econeval", "repository": "hmelberg/econeval", "version": "unversioned HEAD (2025-01-01)", "language": "Python", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/hmelberg/econeval"},
+    {"name": "heormodel", "repository": "pedroliman/heormodel", "version": "v0.7.4", "language": "Python", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/pedroliman/heormodel/tree/v0.7.4"},
+    {"name": "PyHEOR", "repository": "lenardar/PyHEOR", "version": "unversioned HEAD (2026-06-28)", "language": "Python", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/lenardar/PyHEOR"},
+    {"name": "rdecision", "repository": "ajsims1704/rdecision", "version": "1.3.0 release", "language": "R", "multi_perspective": "Manual", "dcea": "No", "named_directional_vop": "No", "evidence": "https://github.com/ajsims1704/rdecision/releases/tag/1.3.0"}
+  ],
+  "excluded_full_text": [
+    {"repository": "n8thangreen/health_economics_R_packages", "reason": "curated list, not analysis software"},
+    {"repository": "hesim-dev/rcea", "reason": "course materials"},
+    {"repository": "miqdadasaria/DCEA_short_course", "reason": "course materials"},
+    {"repository": "edithatogo/voiage", "reason": "VOI library without a full CEA modelling workflow in this review scope"},
+    {"repository": "okara4inceva/Markov-model-health-economics", "reason": "single spreadsheet model"},
+    {"repository": "TreeAge Pro", "reason": "proprietary software"},
+    {"repository": "Microsoft Excel / @RISK", "reason": "proprietary spreadsheet platform"}
+  ],
+  "limitations": [
+    "GitHub best-match results are capped at 50 per query and are not a census of all software.",
+    "Feature absence means not found in the inspected public documentation or named API, not impossible to implement.",
+    "CRAN and PyPI package pages linked from screened repositories were used for version corroboration, but no registry offers a controlled vocabulary for perspective analysis.",
+    "The review was performed by the authoring team without duplicate independent screening."
+  ]
+}
