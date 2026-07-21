@@ -10,10 +10,10 @@
     },
     "authentext": {
       "repository": "edithatogo/authentext",
-      "revision": "95ef9692d97f892d2633b591fff3645b2dda1336",
+      "revision": "7f70dad5b6deab1af92faf037ef2638e7f3aea05",
       "version": "3.2.0",
       "integration": "agent-agnostic editorial skill and provenance-preserving review",
-      "local_receipt": "failed:npm-test:sync-contract-version-drift"
+      "local_receipt": "verified:npm-test:passed;check-sync-clean:passed"
     }
   },
   "promotion_state": "pinned-not-promoted",
