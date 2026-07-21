@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "tools": [
     {"id": "sourceright", "repository": "edithatogo/sourceright", "role": "citation and source provenance", "required_receipt": "submission/source-manifest.json"},
-    {"id": "authentext", "repository": "edithatogo/authentext", "role": "authorship and textual provenance", "required_receipt": "submission/authentext-receipt.json"}
+    {"id": "authentext", "repository": "edithatogo/authentext", "role": "editorial-only meaning-preservation and self-critique QA", "required_receipt": "submission/authentext-receipt.json", "scope": "editorial_only", "must_not_claim": ["citation validation", "factual verification"]}
   ],
   "rules": [
     "Pin each tool to an immutable commit or release.",

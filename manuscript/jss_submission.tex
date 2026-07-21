@@ -14,6 +14,8 @@
 \usepackage{microtype}
 \usepackage{listings}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
 
 %% JSS emulation
 \newcommand{\pkg}[1]{\texttt{#1}}
@@ -185,6 +187,32 @@ The use of DCEA and VoP implies specific normative commitments that must be tran
 Users must explicitly acknowledge these value judgments when interpreting results.
 
 \section{Software design and implementation} \label{sec:arch}
+
+Figure~\ref{fig:contract-architecture} summarises the current contract-first
+architecture. The diagram is authored in PGF/TikZ so that the paper's
+architecture remains deterministic, editable, and typography-consistent with
+the surrounding text.
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=8mm and 12mm, >=Latex,
+  box/.style={draw, rounded corners, align=center, minimum width=28mm, minimum height=9mm, fill=blue!6},
+  gate/.style={draw, diamond, aspect=2, align=center, fill=orange!12}]
+  \node[box] (inputs) {Parameters\\and evidence};
+  \node[box, right=of inputs] (contracts) {Pydantic v2\\method contracts};
+  \node[box, right=of contracts] (kernel) {Calculation\\kernels};
+  \node[box, below=of contracts] (arrow) {Arrow/JSON\\result envelope};
+  \node[gate, below=of kernel] (gate) {Validation\\gates};
+  \node[box, right=of gate] (reports) {Reports, figures\\and paper receipts};
+  \draw[->] (inputs) -- (contracts);
+  \draw[->] (contracts) -- (kernel);
+  \draw[->] (kernel) -- (gate);
+  \draw[->] (gate) -- (reports);
+  \draw[->] (kernel) |- (arrow);
+  \draw[->] (arrow) -| (gate);
+\end{tikzpicture}
+\caption{Contract-first VOP architecture and publication evidence path.}
+\label{fig:contract-architecture}
+\end{figure}
 
 The \pkg{vop\_poc\_nz} package is designed as a modular, object-oriented framework built on the standard scientific Python stack (\pkg{numpy}, \pkg{pandas}, \pkg{scipy}, \pkg{matplotlib}).
 To ensure data integrity and type safety, we employ \pkg{pydantic} for strict parameter validation and \pkg{pandera} for runtime DataFrame schema validation.
@@ -471,6 +499,12 @@ results = model.run()
 \end{CodeInput}
 
 \subsection{Reproducing Case Studies}
+
+The reproducibility target is release \pkg{vop\_poc\_nz} 0.2.3 with the
+repository lockfiles and Python 3.12--3.14 support policy. Source provenance
+is checked with the pinned Sourceright revision, while AuthenText 3.2.0
+provides the editorial/provenance-preserving review workflow. These tools are
+used locally and are not embedded in the VOP source distribution.
 To facilitate reproducibility, we provide a comprehensive tutorial notebook (\code{tutorials/01\_introduction.ipynb}) that walks through the case studies presented in Section~\ref{sec:cases}.
 This notebook demonstrates how to:
 \begin{itemize}

@@ -1,0 +1,28 @@
+name: Manuscript build
+
+on:
+  pull_request:
+    paths: ["manuscript/**", "scripts/build_manuscript.ps1", ".github/workflows/manuscript-build.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  latex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile with TeX Live and biber
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: manuscript/jss_submission.tex
+          working_directory: manuscript
+          latexmk_use_xelatex: true
+          args: -interaction=nonstopmode -file-line-error
+      - name: Inspect PDF metadata and retain artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vop-poc-nz-manuscript
+          path: manuscript/jss_submission.pdf
+          if-no-files-found: error
