@@ -1,0 +1,9 @@
+{
+  "mode": "fail-closed",
+  "mutates_source": false,
+  "output": "external-directory-required",
+  "allowed_assets": [".tex", ".bib", ".cls", ".sty", ".png", ".jpg", ".jpeg", ".pdf", ".svg"],
+  "forbidden_inputs": ["auxiliary build files", "hidden files", "generated PDF"],
+  "safety": ["resolve references", "reject missing assets", "reject spaces in packaged paths", "sha256 every file"],
+  "upstream_inspiration": ["arXivIt", "arxiv-latex-cleaner", "ALC-NG"]
+}

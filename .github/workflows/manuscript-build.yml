@@ -26,6 +26,22 @@ jobs:
           name: vop-poc-nz-manuscript
           path: manuscript/jss_submission.pdf
           if-no-files-found: error
+      - name: Prepare fail-closed arXiv source bundle
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/vop-arxiv-package"
+          python scripts/prepare_arxiv_submission.py \
+            --source manuscript \
+            --output "$RUNNER_TEMP/vop-arxiv-package" \
+            --manifest "$RUNNER_TEMP/vop-arxiv-manifest.json"
+          cp "$RUNNER_TEMP/vop-arxiv-manifest.json" "$RUNNER_TEMP/vop-arxiv-package/submission-manifest.json"
+          tar -czf "$RUNNER_TEMP/vop-arxiv-source.tar.gz" -C "$RUNNER_TEMP/vop-arxiv-package" .
+      - name: Upload arXiv source bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vop-poc-nz-arxiv-source
+          path: ${{ runner.temp }}/vop-arxiv-source.tar.gz
+          if-no-files-found: error
       - name: Checkout pinned Sourceright tool (CI-only)
         uses: actions/checkout@v4
         with:

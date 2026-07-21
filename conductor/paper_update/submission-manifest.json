@@ -19,7 +19,10 @@
   "artifacts": [
     {"path":"manuscript/jss_submission.tex","sha256":"8a41b99ef242a7bcaff6f586c95f88d021dafeb94fc97534d2a400c6891836fa"},
     {"path":"conductor/paper_update/agent_contracts.md","sha256":"5f4393c73d9a27d6e295bd644e6d4119d16baa3e78658b1693d1e9b2a51a4e17"},
-    {"path":"conductor/paper_update/workflow.md","sha256":"2352893946ec000c6e938df23a8cee7c2025e4fefc8da2b0bbba38708a97ff33"}
+    {"path":"conductor/paper_update/workflow.md","sha256":"2352893946ec000c6e938df23a8cee7c2025e4fefc8da2b0bbba38708a97ff33"},
+    {"path":".github/workflows/manuscript-build.yml","sha256":"76f481112b8f74bd05daaafcf73f9636cd92e4b43239aa3d2dfd3ba9a0d026cb"},
+    {"path":"scripts/prepare_arxiv_submission.py","sha256":"cf3091c57db16002c4691ddced681894287a63717c2213247d7673cf4351c946"},
+    {"path":"conductor/paper_update/arxiv_packaging_policy.json","sha256":"8ef34f815d5900d2295fe594585d5495fe070a5d44bcb78360788dd1047f5b33"}
   ],
   "submission_ready": false
 }
