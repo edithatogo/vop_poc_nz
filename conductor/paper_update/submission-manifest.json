@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "source_revision": "dcf36050082128dd7b9b0c269a9fec4093a6d349",
+  "source_revision": "b883135adf14afdbe300a754f8eedafc2a09641e",
   "package_version": "0.2.3",
   "agents": [
     {"id":"literature","receipt_sha256":"2a1bc3619b36381f0a70e4e5071e444d5f8f66bedcfb8d6a28c9f102d36e0c91"},
