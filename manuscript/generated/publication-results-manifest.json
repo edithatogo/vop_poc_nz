@@ -1,0 +1,54 @@
+{
+  "analysis": {
+    "decision_wtp_nzd_per_qaly": 20000.0,
+    "draws": 10000,
+    "figure_wtp_nzd_per_qaly": 50000.0,
+    "interval": "equal-tailed 95% simulation interval",
+    "seed": 20260721,
+    "uncertainty_model": {
+      "distribution": "mean-one lognormal arm multipliers",
+      "health_system_cost_cv": 0.1,
+      "qaly_cv": 0.05,
+      "qaly_draws_shared_across_perspectives": true,
+      "societal_cost_cv": 0.15
+    }
+  },
+  "artifacts": [
+    {
+      "path": "manuscript/generated/publication-results.json",
+      "sha256": "ea53481f16a557a08b7520cf294bc3babc610d6d6a2f6958350d7b23cc9c14dc"
+    },
+    {
+      "path": "manuscript/generated/publication-results.tex",
+      "sha256": "f2b0627f54235cd0afd86d96d3b3bdb93ac3bc1bd4496b103cbcf447cf19d198"
+    },
+    {
+      "path": "manuscript/figures/generated/ceac_societal.png",
+      "sha256": "d0f9e951df1af659c3f1634958c88c5f6a843c613416c2abc7d01058f97f8439"
+    },
+    {
+      "path": "manuscript/figures/generated/cost_effectiveness_plane_comparative.png",
+      "sha256": "51200e029ea1c1ee0f8848864086671d05747e2a4081c6a269ab3d813136b8dc"
+    },
+    {
+      "path": "manuscript/figures/generated/delta_nmb_violin.png",
+      "sha256": "3e1067a5101923cc8a72fe8af23cbcc6bd7bbcd20b4ba2a1df2a68af7de25cd6"
+    },
+    {
+      "path": "manuscript/figures/generated/markov_trace_hpv_vaccination_new_treatment.png",
+      "sha256": "89c94bf5a2b9e8e063f5e05c4207e9b6af3d193aa180113e799c85139c2e0157"
+    }
+  ],
+  "environment": {
+    "matplotlib": "3.11.1",
+    "numpy": "2.5.1",
+    "python": "3.14.6",
+    "vop_poc_nz": "0.1.9.dev121+gf2ede645d.d20260720"
+  },
+  "generator": "scripts/regenerate_manuscript_results.py",
+  "generator_sha256": "e36ae82432528d5f0213fa82e07a10c6e73871fab2894d861f1cbd32562f0178",
+  "input": "src/vop_poc_nz/parameters.yaml",
+  "input_sha256": "f833accf6d53519ce66d9881a0a30984144e129b47bd4db8f0bfe8b1a32da1e9",
+  "schema_version": "1.0.0",
+  "source_revision": "c657462f8f28ef05fe6e0ac14d8e2856a3b1ea75"
+}

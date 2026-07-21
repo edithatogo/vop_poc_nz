@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "path": "manuscript/software_review/systematic-software-review.json",
+      "sha256": "b749995dba55dd866d4396aedc6b38e14037da8969f3994a70bef858ebcf6435"
+    },
+    {
+      "path": "manuscript/software_review/protocol.md",
+      "sha256": "2667f6cc04d5b341a246a9ee523556f2d19565973c50ba4b67ab9e8834ceec62"
+    },
+    {
+      "path": "scripts/systematic_software_review.py",
+      "sha256": "76e18b92c28cf598e2c9698c32eea739e1c180fe6ff4c46c37f75e485f6efbbf"
+    },
+    {
+      "path": "manuscript/software_review/software-comparison.tex",
+      "sha256": "9ab73802d17e91f014caa765784d03574e87a834247e54c8ff246c03bd5e9cb6"
+    }
+  ],
+  "priority_claim_supported_within_scope": true,
+  "review_date": "2026-07-21",
+  "schema_version": "1.0.0"
+}

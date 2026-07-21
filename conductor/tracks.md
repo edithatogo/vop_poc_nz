@@ -39,9 +39,10 @@ release, publication, and issue closure remain human gates.*
 
 ---
 
-## [~] Track: Publication Evidence Completion
+## [x] Track: Publication Evidence Completion [completed: 2026-07-21]
 
 *Link: [./tracks/publication-evidence-completion_20260721/index.md](./tracks/publication-evidence-completion_20260721/index.md)*
 
-*Status: regenerating all manuscript numerical results with uncertainty and
-performing a systematic software review before retaining the priority claim.*
+*Status: all manuscript analytical results are manifest-backed with uncertainty
+intervals; the bounded priority finding is supported by a systematic software
+review ledger and generated comparison table.*

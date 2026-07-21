@@ -1,0 +1,244 @@
+{
+  "analysis": {
+    "decision_wtp_nzd_per_qaly": 20000.0,
+    "draws": 10000,
+    "figure_wtp_nzd_per_qaly": 50000.0,
+    "interval": "equal-tailed 95% simulation interval",
+    "seed": 20260721,
+    "uncertainty_model": {
+      "distribution": "mean-one lognormal arm multipliers",
+      "health_system_cost_cv": 0.1,
+      "qaly_cv": 0.05,
+      "qaly_draws_shared_across_perspectives": true,
+      "societal_cost_cv": 0.15
+    }
+  },
+  "results": [
+    {
+      "discordance_probability": {
+        "interval_method": "Wilson score",
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.00038399837067659573
+      },
+      "hs_decision": "Accept",
+      "hs_icer": {
+        "estimand": "median",
+        "lower_95": -14600.26111698513,
+        "mcse": 24.89024732301436,
+        "mean": -8623.28278829592,
+        "upper_95": -4901.398534605642
+      },
+      "hs_incremental_nmb_per_person": {
+        "lower_95": 183803.77009954123,
+        "mcse": 312.68939912540833,
+        "mean": 242965.0208774923,
+        "upper_95": 306183.42151945824
+      },
+      "name": "HPV Vaccination",
+      "population": 1000,
+      "soc_decision": "Accept",
+      "soc_icer": {
+        "estimand": "median",
+        "lower_95": -26566.993037664597,
+        "mcse": 53.317616689106096,
+        "mean": -14132.735464913378,
+        "upper_95": -5846.1525227168695
+      },
+      "soc_incremental_nmb_per_person": {
+        "lower_95": 203208.82392115786,
+        "mcse": 465.30034422234013,
+        "mean": 290146.3776530639,
+        "upper_95": 386394.3203443715
+      },
+      "vop_per_person": {
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.0
+      }
+    },
+    {
+      "discordance_probability": {
+        "interval_method": "Wilson score",
+        "lower_95": 0.5580664888520492,
+        "mcse": 0.0049538183252921175,
+        "mean": 0.5678,
+        "upper_95": 0.5774814409688869
+      },
+      "hs_decision": "Reject",
+      "hs_icer": {
+        "estimand": "median",
+        "lower_95": -230380.98080765974,
+        "mcse": 18133.921281206625,
+        "mean": 17031.64731383721,
+        "upper_95": 251728.42247730427
+      },
+      "hs_incremental_nmb_per_person": {
+        "lower_95": -61121.40074834057,
+        "mcse": 289.1906014071764,
+        "mean": -4623.252674919593,
+        "upper_95": 52031.88712372086
+      },
+      "name": "Smoking Cessation",
+      "population": 1000,
+      "soc_decision": "Accept",
+      "soc_icer": {
+        "estimand": "median",
+        "lower_95": -1574401.21267046,
+        "mcse": 115058.7114887501,
+        "mean": -110706.18360068055,
+        "upper_95": 1409553.1839172277
+      },
+      "soc_incremental_nmb_per_person": {
+        "lower_95": 175072.186518036,
+        "mcse": 362.63701751202956,
+        "mean": 244597.52430903245,
+        "upper_95": 317610.6516205675
+      },
+      "vop_per_person": {
+        "lower_95": 0.0,
+        "mcse": 1146.119321164983,
+        "mean": 128706.3844868238,
+        "upper_95": 279088.2135557548
+      }
+    },
+    {
+      "discordance_probability": {
+        "interval_method": "Wilson score",
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.00038399837067659573
+      },
+      "hs_decision": "Accept",
+      "hs_icer": {
+        "estimand": "median",
+        "lower_95": -4060.4422125168035,
+        "mcse": 5.393319803610114,
+        "mean": -2748.56592268615,
+        "upper_95": -1938.0564580013827
+      },
+      "hs_incremental_nmb_per_person": {
+        "lower_95": 216158.71710917488,
+        "mcse": 356.44162353973445,
+        "mean": 285759.0959979379,
+        "upper_95": 355294.04621826083
+      },
+      "name": "Hepatitis C Therapy",
+      "population": 1000,
+      "soc_decision": "Accept",
+      "soc_icer": {
+        "estimand": "median",
+        "lower_95": -18944.665031636778,
+        "mcse": 27.784445910033696,
+        "mean": -12257.1019344226,
+        "upper_95": -8221.431316522827
+      },
+      "soc_incremental_nmb_per_person": {
+        "lower_95": 324919.5356531982,
+        "mcse": 430.61001856075643,
+        "mean": 406126.67888349714,
+        "upper_95": 494307.7843101684
+      },
+      "vop_per_person": {
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.0
+      }
+    },
+    {
+      "discordance_probability": {
+        "interval_method": "Wilson score",
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.00038399837067659573
+      },
+      "hs_decision": "Accept",
+      "hs_icer": {
+        "estimand": "median",
+        "lower_95": -13739.356063655701,
+        "mcse": 51.40410314777856,
+        "mean": -5177.801934797033,
+        "upper_95": -1967.6653445848242
+      },
+      "hs_incremental_nmb_per_person": {
+        "lower_95": 53571.36660755063,
+        "mcse": 245.70839321893436,
+        "mean": 101698.40682097628,
+        "upper_95": 150163.08990273453
+      },
+      "name": "Childhood Obesity Prevention",
+      "population": 1000,
+      "soc_decision": "Accept",
+      "soc_icer": {
+        "estimand": "median",
+        "lower_95": -141084.10284884676,
+        "mcse": 634.3449674475274,
+        "mean": -52830.98923550249,
+        "upper_95": -19679.167519475675
+      },
+      "soc_incremental_nmb_per_person": {
+        "lower_95": 159953.19353059953,
+        "mcse": 722.6037370908282,
+        "mean": 294838.8345373549,
+        "upper_95": 444678.8313497316
+      },
+      "vop_per_person": {
+        "lower_95": 0.0,
+        "mcse": 0.0,
+        "mean": 0.0,
+        "upper_95": 0.0
+      }
+    },
+    {
+      "discordance_probability": {
+        "interval_method": "Wilson score",
+        "lower_95": 0.7239380235536954,
+        "mcse": 0.004425502344367247,
+        "mean": 0.7327,
+        "upper_95": 0.7412832636045916
+      },
+      "hs_decision": "Reject",
+      "hs_icer": {
+        "estimand": "median",
+        "lower_95": -293351.95246224094,
+        "mcse": 14734.485999743963,
+        "mean": 30111.305269979915,
+        "upper_95": 335819.7827481238
+      },
+      "hs_incremental_nmb_per_person": {
+        "lower_95": -77680.989819109,
+        "mcse": 264.53637181555973,
+        "mean": -25428.33992590671,
+        "upper_95": 27081.691868157144
+      },
+      "name": "Housing Insulation",
+      "population": 1000,
+      "soc_decision": "Accept",
+      "soc_icer": {
+        "estimand": "median",
+        "lower_95": -130213.51403497807,
+        "mcse": 5588.873269767079,
+        "mean": -5658.299989400095,
+        "upper_95": 89133.38046124978
+      },
+      "soc_incremental_nmb_per_person": {
+        "lower_95": -23285.665587803433,
+        "mcse": 333.10034926929313,
+        "mean": 42471.573583902435,
+        "upper_95": 107429.42371359425
+      },
+      "vop_per_person": {
+        "lower_95": 0.0,
+        "mcse": 277.47476609915594,
+        "mean": 30853.444109188185,
+        "upper_95": 89121.86725268952
+      }
+    }
+  ],
+  "schema_version": "1.0.0"
+}

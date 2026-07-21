@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "source_revision": "b883135adf14afdbe300a754f8eedafc2a09641e",
+  "source_revision": "c657462e30e63b0f3b2f003e8b1a965667e253d2",
   "package_version": "0.2.3",
   "agents": [
     {"id":"literature","receipt_sha256":"2a1bc3619b36381f0a70e4e5071e444d5f8f66bedcfb8d6a28c9f102d36e0c91"},
@@ -14,22 +14,32 @@
   "claims": [
     {"id":"method-contracts","evidence":["docs/method/EVOP_CONTRACT.md","docs/method/PAF_CONTRACT.md"]},
     {"id":"reproducible-release","evidence":["pyproject.toml","uv.lock","pixi.toml"]},
-    {"id":"tool-provenance","evidence":["conductor/paper_update/tool_pins.json"]}
+    {"id":"tool-provenance","evidence":["conductor/paper_update/tool_pins.json"]},
+    {"id":"manifest-backed-results","evidence":["manuscript/generated/publication-results-manifest.json","manuscript/generated/publication-results.json"]},
+    {"id":"systematic-software-review","evidence":["manuscript/software_review/systematic-software-review.json","manuscript/software_review/software-review-manifest.json"]}
   ],
   "artifacts": [
-    {"path":"manuscript/jss_submission.tex","sha256":"c49529eadb91ae8d9147145c82c103c3744ea0df44d1396cdcb7f3d9f8026deb"},
+    {"path":"manuscript/jss_submission.tex","sha256":"870f9e572845bc4f3aca383826f4aa69f6913479b40e0f90ef272fe29c0cc0bd"},
     {"path":"manuscript/ref.bib","sha256":"b01c887b5ac94e5297ae97df2ee7a46cc9d980805a77ec189d4f1c81ec28a912"},
-    {"path":"conductor/paper_update/manuscript_revision_20260721.md","sha256":"4bcda122fd1eef53af08645ec470a8aa3fa80bf457d7c8ac8f55997682322499"},
+    {"path":"conductor/paper_update/manuscript_revision_20260721.md","sha256":"78d1dd0ca24fd53f858300dceeeaad61e76e11450c9822d59826ecf19da6137f"},
     {"path":"conductor/paper_update/agent_contracts.md","sha256":"5f4393c73d9a27d6e295bd644e6d4119d16baa3e78658b1693d1e9b2a51a4e17"},
     {"path":"conductor/paper_update/workflow.md","sha256":"2352893946ec000c6e938df23a8cee7c2025e4fefc8da2b0bbba38708a97ff33"},
-    {"path":".github/workflows/manuscript-build.yml","sha256":"5cb9d06912b47d00f04b4acff3cd5a85bef7d637997e66c8a62007657d130f65"},
+    {"path":".github/workflows/manuscript-build.yml","sha256":"0256f84ced6cf5a1de121ce7dc1301f18567f641d9ba904460031724c181149c"},
     {"path":"scripts/build_manuscript.ps1","sha256":"fa15e41fd8bc94d1893909753a898843b9a71987714ca2d326815a683f602e3a"},
     {"path":"manuscript/jss_journal.tex","sha256":"5b1500495c532f04cd2d37655e9e4c6e02d45a1094eb97bc183f2ea5dca12867"},
     {"path":"manuscript/jss.cls","sha256":"2be72971ed31651bd67fa1faef9f492b81aec1786bb039689176ed279a66cca7"},
     {"path":"manuscript/jss.bst","sha256":"71cf69fa29ff2f9ad583edc6fca44f51fd75cbae4201fffbdcb7c13b4a728f43"},
     {"path":"manuscript/jss-style-provenance.json","sha256":"60e0bcb2baf65804bf02d04e81e1736ecb6fc62220c118f4d957ef8394fe60dd"},
     {"path":"scripts/prepare_arxiv_submission.py","sha256":"acdf8994902163b638ff1a658530fd19fd62e96fc05b91c1331d3b7a7e639aa8"},
-    {"path":"conductor/paper_update/arxiv_packaging_policy.json","sha256":"8ef34f815d5900d2295fe594585d5495fe070a5d44bcb78360788dd1047f5b33"}
+    {"path":"conductor/paper_update/arxiv_packaging_policy.json","sha256":"8ef34f815d5900d2295fe594585d5495fe070a5d44bcb78360788dd1047f5b33"},
+    {"path":"scripts/regenerate_manuscript_results.py","sha256":"e36ae82432528d5f0213fa82e07a10c6e73871fab2894d861f1cbd32562f0178"},
+    {"path":"manuscript/generated/publication-results-manifest.json","sha256":"39bb491ce37bb086ef044eb1a9ee695f9bfda90671a4d98e6f466ff6ab345c3f"},
+    {"path":"manuscript/generated/publication-results.json","sha256":"ea53481f16a557a08b7520cf294bc3babc610d6d6a2f6958350d7b23cc9c14dc"},
+    {"path":"manuscript/generated/publication-results.tex","sha256":"f2b0627f54235cd0afd86d96d3b3bdb93ac3bc1bd4496b103cbcf447cf19d198"},
+    {"path":"scripts/systematic_software_review.py","sha256":"76e18b92c28cf598e2c9698c32eea739e1c180fe6ff4c46c37f75e485f6efbbf"},
+    {"path":"manuscript/software_review/systematic-software-review.json","sha256":"b749995dba55dd866d4396aedc6b38e14037da8969f3994a70bef858ebcf6435"},
+    {"path":"manuscript/software_review/software-review-manifest.json","sha256":"adf6a4fb8c24194fea57dde1b9f1b229b1c10ec70602d1c86670c7ca6ad5b8b6"},
+    {"path":"manuscript/software_review/software-comparison.tex","sha256":"9ab73802d17e91f014caa765784d03574e87a834247e54c8ff246c03bd5e9cb6"}
   ],
   "submission_ready": false
 }
