@@ -1,0 +1,1 @@
+{"agent":"authentext","repository":"edithatogo/authentext","revision":"7f70dad5b6deab1af92faf037ef2638e7f3aea05","version":"3.2.0","status":"verified","evidence":"npm test and check-sync-clean passed","reviewer":"automated"}

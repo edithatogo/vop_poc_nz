@@ -1,17 +1,25 @@
 {
   "schema_version": "1.0.0",
-  "source_revision": "0000000000000000000000000000000000000000",
-  "package_version": "0.0.0-dev",
+  "source_revision": "dcf36050082128dd7b9b0c269a9fec4093a6d349",
+  "package_version": "0.2.3",
   "agents": [
-    {"id": "literature", "receipt_sha256": "PENDING"},
-    {"id": "methods", "receipt_sha256": "PENDING"},
-    {"id": "reproducibility", "receipt_sha256": "PENDING"},
-    {"id": "editorial", "receipt_sha256": "PENDING"},
-    {"id": "integrator", "receipt_sha256": "PENDING"},
-    {"id": "sourceright", "receipt_sha256": "PENDING"},
-    {"id": "authentext", "receipt_sha256": "PENDING"}
+    {"id":"literature","receipt_sha256":"2a1bc3619b36381f0a70e4e5071e444d5f8f66bedcfb8d6a28c9f102d36e0c91"},
+    {"id":"methods","receipt_sha256":"eb876ab6fdc09793798d19aadea9ea22a4c50798e33134b71a8c85914f0f301a"},
+    {"id":"reproducibility","receipt_sha256":"fbd924d453ba2d2894d14b8277795981ed8c17da44e6c552f105dc775915eac1"},
+    {"id":"editorial","receipt_sha256":"dca1376a9ba6a80df50d5a744b9384d25d76a9fc2773ea46362bca495043f463"},
+    {"id":"integrator","receipt_sha256":"64616ce02031cc3bc7c187c8e8c77c394f984b34c6ee635cab31a4f2aab4e7c1"},
+    {"id":"sourceright","receipt_sha256":"3a79255140caa5d7faf89a230e0d7936fb4fcf9486cfd1aa83259ca9ff12324a"},
+    {"id":"authentext","receipt_sha256":"94b21b0e6dd9db7fd92bd5c26a1f9a2d7ea02206d457b6a30b4606f0dbae6bbd"}
   ],
-  "claims": [],
-  "artifacts": [],
+  "claims": [
+    {"id":"method-contracts","evidence":["docs/method/EVOP_CONTRACT.md","docs/method/PAF_CONTRACT.md"]},
+    {"id":"reproducible-release","evidence":["pyproject.toml","uv.lock","pixi.toml"]},
+    {"id":"tool-provenance","evidence":["conductor/paper_update/tool_pins.json"]}
+  ],
+  "artifacts": [
+    {"path":"manuscript/jss_submission.tex","sha256":"ad57d32263a1b12c2fbc3818a7120d61875dea0ae2dcaaa1f0952b2701f2d20d"},
+    {"path":"conductor/paper_update/agent_contracts.md","sha256":"5f4393c73d9a27d6e295bd644e6d4119d16baa3e78658b1693d1e9b2a51a4e17"},
+    {"path":"conductor/paper_update/workflow.md","sha256":"dc7f5e92130521c1e114bb9ad4082aaf2d24b4c7a3cbf41d537533a8c37d346a"}
+  ],
   "submission_ready": false
 }

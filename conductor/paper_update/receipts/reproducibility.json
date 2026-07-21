@@ -1,0 +1,1 @@
+{"agent":"reproducibility","status":"verified","evidence":["pyproject.toml","uv.lock","pixi.toml"],"release":"v0.2.3","reviewer":"automated","notes":"Exact release and lockfiles are identified; final clean-environment rerun remains required."}

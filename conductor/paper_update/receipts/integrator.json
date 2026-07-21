@@ -1,0 +1,1 @@
+{"agent":"integrator","status":"in_progress","evidence":["conductor/paper_update/submission_contract.json","conductor/paper_update/workflow.md"],"reviewer":"automated","notes":"Cannot emit submission_ready until final PDF, receipts, and human approval exist."}
