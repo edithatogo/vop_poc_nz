@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "source_revision": "0000000000000000000000000000000000000000",
+  "package_version": "0.0.0-dev",
+  "agents": [
+    {"id": "literature", "receipt_sha256": "PENDING"},
+    {"id": "methods", "receipt_sha256": "PENDING"},
+    {"id": "reproducibility", "receipt_sha256": "PENDING"},
+    {"id": "editorial", "receipt_sha256": "PENDING"},
+    {"id": "integrator", "receipt_sha256": "PENDING"},
+    {"id": "sourceright", "receipt_sha256": "PENDING"},
+    {"id": "authentext", "receipt_sha256": "PENDING"}
+  ],
+  "claims": [],
+  "artifacts": [],
+  "submission_ready": false
+}

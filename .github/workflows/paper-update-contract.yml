@@ -18,6 +18,7 @@ jobs:
       - name: Validate contract schema and manuscript surfaces
         run: |
           python -m json.tool conductor/paper_update/submission_contract.json >/dev/null
+          python scripts/validate_paper_update.py conductor/paper_update/submission-manifest.json
           test -f conductor/paper_update/agent_contracts.md
           test -f conductor/paper_update/workflow.md
           test -f manuscript/jss_submission.tex
