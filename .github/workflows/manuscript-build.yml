@@ -13,18 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile with TeX Live and biber
+      - name: Compile arXiv and JSS manuscripts with TeX Live
         uses: xu-cheng/latex-action@v4
         with:
-          root_file: manuscript/jss_submission.tex
+          root_file: |
+            jss_submission.tex
+            jss_journal.tex
           working_directory: manuscript
-          latexmk_use_xelatex: true
           args: -interaction=nonstopmode -file-line-error
       - name: Inspect PDF metadata and retain artifact
         uses: actions/upload-artifact@v4
         with:
           name: vop-poc-nz-manuscript
-          path: manuscript/jss_submission.pdf
+          path: |
+            manuscript/jss_submission.pdf
+            manuscript/jss_journal.pdf
           if-no-files-found: error
       - name: Prepare fail-closed arXiv source bundle
         shell: bash

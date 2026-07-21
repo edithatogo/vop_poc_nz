@@ -17,11 +17,18 @@
     {"id":"tool-provenance","evidence":["conductor/paper_update/tool_pins.json"]}
   ],
   "artifacts": [
-    {"path":"manuscript/jss_submission.tex","sha256":"8a41b99ef242a7bcaff6f586c95f88d021dafeb94fc97534d2a400c6891836fa"},
+    {"path":"manuscript/jss_submission.tex","sha256":"c49529eadb91ae8d9147145c82c103c3744ea0df44d1396cdcb7f3d9f8026deb"},
+    {"path":"manuscript/ref.bib","sha256":"b01c887b5ac94e5297ae97df2ee7a46cc9d980805a77ec189d4f1c81ec28a912"},
+    {"path":"conductor/paper_update/manuscript_revision_20260721.md","sha256":"4bcda122fd1eef53af08645ec470a8aa3fa80bf457d7c8ac8f55997682322499"},
     {"path":"conductor/paper_update/agent_contracts.md","sha256":"5f4393c73d9a27d6e295bd644e6d4119d16baa3e78658b1693d1e9b2a51a4e17"},
     {"path":"conductor/paper_update/workflow.md","sha256":"2352893946ec000c6e938df23a8cee7c2025e4fefc8da2b0bbba38708a97ff33"},
-    {"path":".github/workflows/manuscript-build.yml","sha256":"76f481112b8f74bd05daaafcf73f9636cd92e4b43239aa3d2dfd3ba9a0d026cb"},
-    {"path":"scripts/prepare_arxiv_submission.py","sha256":"cf3091c57db16002c4691ddced681894287a63717c2213247d7673cf4351c946"},
+    {"path":".github/workflows/manuscript-build.yml","sha256":"5cb9d06912b47d00f04b4acff3cd5a85bef7d637997e66c8a62007657d130f65"},
+    {"path":"scripts/build_manuscript.ps1","sha256":"fa15e41fd8bc94d1893909753a898843b9a71987714ca2d326815a683f602e3a"},
+    {"path":"manuscript/jss_journal.tex","sha256":"5b1500495c532f04cd2d37655e9e4c6e02d45a1094eb97bc183f2ea5dca12867"},
+    {"path":"manuscript/jss.cls","sha256":"2be72971ed31651bd67fa1faef9f492b81aec1786bb039689176ed279a66cca7"},
+    {"path":"manuscript/jss.bst","sha256":"71cf69fa29ff2f9ad583edc6fca44f51fd75cbae4201fffbdcb7c13b4a728f43"},
+    {"path":"manuscript/jss-style-provenance.json","sha256":"60e0bcb2baf65804bf02d04e81e1736ecb6fc62220c118f4d957ef8394fe60dd"},
+    {"path":"scripts/prepare_arxiv_submission.py","sha256":"acdf8994902163b638ff1a658530fd19fd62e96fc05b91c1331d3b7a7e639aa8"},
     {"path":"conductor/paper_update/arxiv_packaging_policy.json","sha256":"8ef34f815d5900d2295fe594585d5495fe070a5d44bcb78360788dd1047f5b33"}
   ],
   "submission_ready": false

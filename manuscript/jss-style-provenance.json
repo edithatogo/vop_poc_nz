@@ -1,0 +1,11 @@
+{
+  "source": "https://www.jstatsoft.org/public/journals/1/jss-article-tex.zip",
+  "source_page": "https://www.jstatsoft.org/style",
+  "retrieved": "2026-07-21",
+  "class_reported_version": "3.6 (2026-04-28)",
+  "files": {
+    "jss.cls": "2be72971ed31651bd67fa1faef9f492b81aec1786bb039689176ed279a66cca7",
+    "jss.bst": "71cf69fa29ff2f9ad583edc6fca44f51fd75cbae4201fffbdcb7c13b4a728f43",
+    "jsslogo.jpg": "b9f97c51e25b2fe013c89751788aa71ea6958050b3993993cc2e4fcb0cbcf90c"
+  }
+}

@@ -1,38 +1,45 @@
-\documentclass{article}
+% Define \JSSMODE on the command line for the journal-formatted build:
+% pdflatex "\def\JSSMODE{1}\input{jss_submission.tex}"
+\ifdefined\JSSMODE
+  \documentclass[article]{jss}
+\else
+  \documentclass{article}
+\fi
 
 %% -- LaTeX packages and custom commands ---------------------------------------
 
 %% recommended packages
-\usepackage{thumbpdf,lmodern}
 \usepackage{amsmath}
-\usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage[margin=1in]{geometry}
-\usepackage[style=authoryear, backend=biber, natbib=true]{biblatex}
-\addbibresource{ref.bib}
-\usepackage{csquotes}
 \usepackage{microtype}
 \usepackage{listings}
-\usepackage{hyperref}
+\usepackage{xurl}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
 
-%% JSS emulation
-\newcommand{\pkg}[1]{\texttt{#1}}
-\newcommand{\proglang}[1]{\textsf{#1}}
-\newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\Plainauthor}[1]{}
-\newcommand{\Plaintitle}[1]{}
-\newcommand{\Shorttitle}[1]{}
-\newcommand{\Plainkeywords}[1]{}
-\newcommand{\Address}[1]{}
-\newcommand{\Email}[1]{\texttt{#1}}
-\newcommand{\myabstract}{}
-\newcommand{\Abstract}[1]{\renewcommand{\myabstract}{#1}}
-\newcommand{\mykeywords}{}
-\newcommand{\Keywords}[1]{\renewcommand{\mykeywords}{#1}}
-\newcommand{\Title}[1]{\title{#1}}
-\lstnewenvironment{CodeInput}{}{}
+%% Standalone arXiv emulation of the JSS markup. The JSS build uses jss.cls.
+\ifdefined\JSSMODE
+\else
+  \usepackage{lmodern}
+  \usepackage{graphicx}
+  \usepackage[margin=1in]{geometry}
+  \usepackage[authoryear,round]{natbib}
+  \usepackage{hyperref}
+  \newcommand{\pkg}[1]{\texttt{#1}}
+  \newcommand{\proglang}[1]{\textsf{#1}}
+  \newcommand{\code}[1]{\texttt{#1}}
+  \newcommand{\Plainauthor}[1]{}
+  \newcommand{\Plaintitle}[1]{}
+  \newcommand{\Shorttitle}[1]{}
+  \newcommand{\Plainkeywords}[1]{}
+  \newcommand{\Address}[1]{}
+  \newcommand{\email}[1]{\texttt{#1}}
+  \newcommand{\myabstract}{}
+  \newcommand{\Abstract}[1]{\renewcommand{\myabstract}{#1}}
+  \newcommand{\mykeywords}{}
+  \newcommand{\Keywords}[1]{\renewcommand{\mykeywords}{#1}}
+  \lstnewenvironment{CodeInput}{}{}
+\fi
 
 %% new custom commands
 \newcommand{\class}[1]{\code{#1}}
@@ -55,17 +62,17 @@
 \author{Dylan A. Mordaunt\\Victoria University of Wellington}
 \Plainauthor{Dylan A. Mordaunt}
 
-\Title{\pkg{vop\_poc\_nz}: A Python Framework for Distributional Cost-Effectiveness and Value of Perspective Analysis}
+\title{\pkg{vop\_poc\_nz}: A Python Framework for Distributional Cost-Effectiveness and Value of Perspective Analysis}
 \Plaintitle{vop_poc_nz: A Python Framework for Distributional Cost-Effectiveness and Value of Perspective Analysis}
-\Shorttitle{\pkg{vop\_poc\_nz}: A Python Framework for Distributional Cost-Effectiveness and Value of Perspective Analysis}
+\Shorttitle{\pkg{vop\_poc\_nz}: Perspective and Distributional Analysis}
 
 \Abstract{
   Health economic evaluations are sensitive to the choice of analytical perspective (e.g., health system vs. societal). 
-  While guidelines often recommend specific perspectives, the uncertainty associated with this choice -- and the potential decision discordance it creates -- is rarely quantified.
-  We present \pkg{vop\_poc\_nz}, a Python package that implements a framework for Distributional Cost-Effectiveness Analysis (DCEA) and operationalizes the quantification of perspective uncertainty through the \emph{Value of Perspective} (VoP) metric.
-  The package provides tools for Markov modeling, probabilistic sensitivity analysis, value of information analysis, and equity impact assessment.
-  Unlike existing tools that treat perspective as a fixed input, \pkg{vop\_poc\_nz} allows for the simultaneous evaluation of multiple perspectives. This enables decision-makers to estimate the opportunity cost of perspective misalignment.
-  We demonstrate the package's capabilities using case studies from Aotearoa New Zealand.
+  We present \pkg{vop\_poc\_nz}, a Python package for Distributional Cost-Effectiveness Analysis (DCEA), Markov cohort modeling, probabilistic sensitivity analysis, value of information, and explicit comparison of analytical perspectives.
+  We define Value of Perspective (VoP) as a directional expected opportunity loss: the welfare loss, measured under a declared reference perspective, when decisions are selected under another perspective.
+  Five synthetic Aotearoa New Zealand demonstration models produced decision discordance in two cases at a NZ\$20,000/QALY threshold, with illustrative per-person VoP estimates from NZ\$0 to NZ\$4,500.
+  These values test the software workflow and are not estimates for policy adoption.
+  Release 0.2.3 supports Python 3.12--3.14 and records typed inputs, random seeds, software versions, and Arrow-schema identities for reproducible analysis.
 }
 
 \Keywords{health economics, cost-effectiveness analysis, distributive cost-effectiveness analysis, economic evaluation, budget impact analysis, value of information, python, value of perspective}
@@ -81,16 +88,19 @@
 %% -- Introduction -------------------------------------------------------------
 
 \begin{document}
-\maketitle
-\begin{abstract}
-\myabstract
-\end{abstract}
-\noindent\textbf{Keywords:} \mykeywords
+\ifdefined\JSSMODE
+\else
+  \maketitle
+  \begin{abstract}
+  \myabstract
+  \end{abstract}
+  \noindent\textbf{Keywords:} \mykeywords
+\fi
 
 \section{Introduction} \label{sec:intro}
 
-Cost-effectiveness analysis (CEA) is a cornerstone of health technology assessment, guiding resource allocation decisions globally \citep{drummond2015}.
-A fundamental methodological choice in CEA is the \emph{perspective} of the analysis, which determines which costs and benefits are included \citep{sanders2016}.
+Cost-effectiveness analysis (CEA) is widely used in health technology assessment to inform resource allocation \citep{drummond2015}.
+The analytical \emph{perspective} determines which costs and benefits are included in CEA \citep{sanders2016}.
 The two most common perspectives are the \emph{health system} perspective (focusing on direct medical costs) and the \emph{societal} perspective (including broader costs such as productivity losses and patient out-of-pocket expenses) \citep{drummond2015}.
 
 Discrepancies between these perspectives can lead to \emph{decision discordance}, where an intervention is deemed cost-effective from one perspective but not the other \citep{claxton2010}.
@@ -108,9 +118,9 @@ The remainder of this paper is organized as follows. Section \ref{sec:methods} o
 
 \section{Methodological framework} \label{sec:methods}
 
-The \pkg{vop\_poc\_nz} package operationalizes two advanced frameworks in health economics: Distributional Cost-Effectiveness Analysis (DCEA) and the Value of Perspective (VoP), built upon a foundation of standard Markov cohort modeling.
+The \pkg{vop\_poc\_nz} package implements Distributional Cost-Effectiveness Analysis (DCEA) and Value of Perspective (VoP) calculations alongside Markov cohort modeling.
 
-\subsection{Cost-Effectiveness Analysis (CEA)}
+\subsection{Cost-effectiveness analysis (CEA)}
 Standard CEA compares the costs and health outcomes of two or more interventions to determine which represents the best value for money \citep{drummond2015}.
 The primary metric is the Incremental Cost-Effectiveness Ratio (ICER), as defined in Equation~\ref{eq:icer} \citep{drummond2015}:
 \begin{equation} \label{eq:icer}
@@ -124,7 +134,7 @@ NMB = E \cdot \lambda - C
 \end{equation}
 A positive incremental NMB ($\Delta NMB > 0$) indicates cost-effectiveness.
 
-\subsection{Markov Modeling}
+\subsection{Markov modeling}
 The core engine employs a time-homogeneous Markov cohort simulation \citep{briggs1998}. The model tracks a cohort of individuals through a set of mutually exclusive and collectively exhaustive health states (e.g., Healthy, Sick, Dead) over discrete time cycles (typically annual).
 In each cycle $t$, the proportion of the cohort in state $j$, $P_j(t)$, is updated based on transition probabilities derived from the transition matrix $M$ (Equation~\ref{eq:markov}) \citep{briggs1998}:
 \begin{equation} \label{eq:markov}
@@ -132,43 +142,79 @@ P(t+1) = P(t) \times M
 \end{equation}
 Costs ($C$) and health outcomes ($Q$, typically QALYs) are accumulated for each state. To support multi-perspective analysis, the model simultaneously tracks two sets of cost vectors: $C_{HS}$ (Health System) and $C_{Soc}$ (Societal), where $C_{Soc} = C_{HS} + C_{Prod} + C_{OOP}$ (Productivity and Out-of-Pocket costs).
 
-\subsection{Distributional Cost-Effectiveness Analysis (DCEA)}
+\subsection{Distributional cost-effectiveness analysis (DCEA)}
 Standard CEA maximizes total population health (e.g., QALYs) subject to a budget constraint. DCEA extends this by incorporating equity concerns, explicitly trading off total health maximization against the reduction of health inequality \citep{cookson2017}.
 
-We calculate the Equity-Weighted Net Monetary Benefit ($NMB_{eq}$) as:
+Let $\pi_g$ denote subgroup $g$'s population share, with
+$\sum_g\pi_g=1$. A standard Atkinson social welfare calculation evaluates
+the complete distribution of health using equally distributed equivalent
+(EDE) health:
 \begin{equation} \label{eq:nmb_eq}
-NMB_{eq} = \sum_{g} w_g \cdot (Q_g \cdot \lambda - C_g)
+H_{EDE}=\left(\sum_g \pi_g H_g^{1-\epsilon}\right)^{1/(1-\epsilon)},
+\quad \epsilon\ne1,
 \end{equation}
-where $g$ indexes subgroups (e.g., by ethnicity or deprivation), $Q_g$ and $C_g$ are the incremental QALYs and costs for subgroup $g$, $\lambda$ is the willingness-to-pay threshold, and $w_g$ is the equity weight.
-The equity weight $w_g$ is derived from the Atkinson index of inequality aversion $\epsilon$ \citep{atkinson1970}:
+where $H_g$ is subgroup lifetime health and $\epsilon$ is the inequality
+aversion parameter \citep{atkinson1970,asaria2016}. Strategies may then be
+compared using changes in EDE health after incorporating the subgroup
+distribution of health opportunity costs \citep{cookson2017,lovekoh2019}.
+
+For software demonstrations that supply subgroup incremental outcomes but not
+a complete lifetime-health distribution, the package also exposes a
+transparent weighted-NMB approximation. The unnormalised level-dependent
+weight is
 \begin{equation} \label{eq:weights}
 w_g = \left( \frac{H_{ref}}{H_g} \right)^\epsilon
 \end{equation}
-where $H_g$ is the baseline health of subgroup $g$ and $H_{ref}$ is the reference health. When $\epsilon=0$, $w_g=1$ for all groups, collapsing to standard CEA. As $\epsilon$ increases, greater weight is placed on health gains accruing to the worst-off groups.
+and the population-normalised weight is
+\begin{equation} \label{eq:normalised_weights}
+\widetilde w_g=\frac{w_g}{\sum_h\pi_h w_h}.
+\end{equation}
+The corresponding approximation is
+\begin{equation} \label{eq:weighted_nmb}
+NMB_{eq}=\sum_g\pi_g\widetilde w_g(\lambda\Delta Q_g-\Delta C_g).
+\end{equation}
+When $\epsilon=0$, $\widetilde w_g=1$ and Equation~\ref{eq:weighted_nmb}
+reduces to population-weighted conventional NMB. This approximation is not a
+substitute for full distributional modeling. Its results depend on the
+declared reference-health measure, subgroup definitions, population shares,
+and treatment of opportunity costs.
 
-\subsection{Value of Information (VOI)}
+\subsection{Value of information (VOI)}
 Decision uncertainty arises from parameter uncertainty. VOI analysis quantifies the value of reducing this uncertainty through further research \citep{claxton2001}.
 \begin{itemize}
     \item \textbf{Expected Value of Perfect Information (EVPI)}: The expected value of removing all parameter uncertainty. It is calculated as the difference between the expected value of the decision made with perfect information and the decision made with current information. The package also supports calculating \textbf{Population EVPI} by scaling this per-person value by the affected population size.
     \item \textbf{Expected Value of Partial Perfect Information (EVPPI)}: The expected value of removing uncertainty for a specific subset of parameters.
 \end{itemize}
 
-\subsection{Value of Perspective (VoP)}
-The choice of analytical perspective (e.g., health system vs. societal) can alter the optimal decision \citep{mordaunt2024ssrn}. We define the Value of Perspective (VoP) as the expected opportunity loss incurred by ignoring relevant costs and benefits included in the societal perspective.
+\subsection{Value of perspective (VoP)}
+The choice of analytical perspective can alter the selected strategy
+\citep{mordaunt2024ssrn}. We define VoP as a directional loss relative to an
+explicitly declared reference perspective. It does not estimate which
+perspective is normatively correct.
 
-Let $d^*$ be the optimal decision under the societal perspective, and $d_{HS}$ be the decision optimal under the health system perspective. The deterministic loss from discordance ($L_D$) is:
+Let $r$ denote the reference perspective and $p$ the perspective used to make
+the decision. For parameters $\theta$, define
+$d_p(\theta)=\arg\max_d NMB_p(d,\theta)$. The deterministic
+perspective-induced decision loss is
 \begin{equation} \label{eq:discordance}
-L_D = \max(0, NMB_{soc}(d^*) - NMB_{soc}(d_{HS}))
+L_{p\rightarrow r}(\theta)=
+\max_d NMB_r(d,\theta)-NMB_r(d_p(\theta),\theta).
 \end{equation}
-If the decisions align ($d^* = d_{HS}$), the loss is zero. If they diverge, the loss represents the societal net benefit foregone by adhering to the narrower perspective.
+The loss is zero when the perspective-$p$ decision also maximises NMB under
+the reference perspective. Otherwise, it measures forgone net benefit under
+the declared reference welfare standard.
 
-In a probabilistic setting, we calculate the Expected Value of Perspective (EVoP) over the joint distribution of parameters $\theta$:
+The probabilistic VoP is the expectation over the joint parameter distribution:
 \begin{equation} \label{eq:evop}
-EVoP = E_{\theta} \left[ \max_d NMB_{soc}(d, \theta) - NMB_{soc}(d_{HS}(\theta), \theta) \right]
+VoP_{p\rightarrow r}=E_{\theta}\left[L_{p\rightarrow r}(\theta)\right].
 \end{equation}
-This metric quantifies the value of resolving the structural uncertainty regarding the ``correct'' perspective.
+The demonstrations use $p=HS$ and $r=Soc$, so their values should be read as
+$VoP_{HS\rightarrow Soc}$. Reversing the reference perspective can produce a
+different result. When decision makers do not accept a single reference
+perspective, the package reports the directional matrix of losses rather than
+averaging across unelicited normative probabilities.
 
-\subsection{Budget Impact Analysis (BIA)}
+\subsection{Budget impact analysis (BIA)}
 Budget Impact Analysis estimates the financial consequences of adopting a new intervention for a specific budget holder over a short-to-medium term horizon (typically 1--5 years) \citep{sullivan2014}.
 Unlike CEA, which focuses on efficiency (value for money), BIA focuses on affordability \citep{sullivan2014}.
 We calculate the net budget impact ($BI$) as shown in Equation~\ref{eq:bia}:
@@ -181,7 +227,7 @@ where $N_{pop}$ is the size of the eligible population and $P_{uptake}$ is the u
 The use of DCEA and VoP implies specific normative commitments that must be transparently communicated.
 \begin{itemize}
     \item \textbf{Inequality Aversion}: The parameter $\epsilon$ in Equation~\ref{eq:weights} is not an empirical constant but a moral choice reflecting society's tolerance for health inequality \citep{atkinson1970}. A value of $\epsilon=10.9$ (often cited in literature) implies a strong priority for the worst-off, while $\epsilon=0$ implies no special priority. Our default is $\epsilon=0.5$, representing mild aversion, following the illustrative examples in \cite{cookson2017}.
-    \item \textbf{Societal Relevance}: The VoP calculation assumes that the societal perspective represents the ``true'' welfare standard. This is a utilitarian assumption that all costs (regardless of who bears them) matter equally \citep{brouwer2008}. This contrasts with the "extra-welfarist" view often adopted by health technology assessment bodies, which prioritizes health maximization within a fixed healthcare budget.
+    \item \textbf{Reference perspective}: VoP requires a declared reference welfare standard. The demonstrations use the societal perspective, but the software retains directionality and can report the reverse comparison. Treating societal NMB as the reference remains a utilitarian value judgment rather than an empirical finding \citep{brouwer2008}.
     \item \textbf{Opportunity Costs}: Both CEA and DCEA assume that resources used for an intervention displace other health-generating activities. The WTP threshold $\lambda$ represents the shadow price of this displacement \citep{claxton2010}.
 \end{itemize}
 Users must explicitly acknowledge these value judgments when interpreting results.
@@ -194,6 +240,7 @@ architecture remains deterministic, editable, and typography-consistent with
 the surrounding text.
 \begin{figure}[htbp]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[node distance=8mm and 12mm, >=Latex,
   box/.style={draw, rounded corners, align=center, minimum width=28mm, minimum height=9mm, fill=blue!6},
   gate/.style={draw, diamond, aspect=2, align=center, fill=orange!12}]
@@ -208,17 +255,22 @@ the surrounding text.
   \draw[->] (kernel) -- (gate);
   \draw[->] (gate) -- (reports);
   \draw[->] (kernel) |- (arrow);
-  \draw[->] (arrow) -| (gate);
+\draw[->] (arrow) -| (gate);
 \end{tikzpicture}
+}
 \caption{Contract-first VOP architecture and publication evidence path.}
 \label{fig:contract-architecture}
 \end{figure}
 
-The \pkg{vop\_poc\_nz} package is designed as a modular, object-oriented framework built on the standard scientific Python stack (\pkg{numpy}, \pkg{pandas}, \pkg{scipy}, \pkg{matplotlib}).
-To ensure data integrity and type safety, we employ \pkg{pydantic} for strict parameter validation and \pkg{pandera} for runtime DataFrame schema validation.
-Metamodeling capabilities are supported by \pkg{scikit-learn}.
+The \pkg{vop\_poc\_nz} package combines typed domain models with functional
+calculation kernels. It uses \pkg{numpy}, \pkg{pandas}, \pkg{scipy}, and
+\pkg{matplotlib}; Pydantic v2 validates method and result contracts; and
+\pkg{pandera} validates DataFrame boundaries. Apache Arrow schemas, IPC files,
+and Parquet provide language-neutral interchange with schema fingerprints.
+Optional Polars and experimental backends are kept behind explicit dependency
+features so that they cannot silently change the reference calculation.
 
-\subsection{Core Components}
+\subsection{Core components}
 The architecture separates the mathematical core from the analysis pipeline and reporting layer, ensuring a clear abstraction between model inputs and computational logic.
 \begin{itemize}
   \item \code{cea\_model\_core}: The computational engine. It implements vectorized Markov cohort models, allowing for rapid execution of thousands of probabilistic iterations. The state distribution is computed over a time horizon $T$ using matrix multiplication, where transition matrices are 3D tensors (simulations $\times$ states $\times$ states). It supports multiple simultaneous perspectives by tracking costs and utilities in parallel accumulators.
@@ -226,13 +278,13 @@ The architecture separates the mathematical core from the analysis pipeline and 
   \item \code{value\_of\_information}: Implements the VoP and VOI logic. It uses Monte Carlo simulation results to estimate the expected opportunity loss of decision uncertainty.
 \end{itemize}
 
-\subsection{Configuration and Abstraction}
+\subsection{Configuration and abstraction}
 All model parameters are defined in external \code{YAML} configuration files, decoupling the data from the code.
 This allows researchers to modify transition probabilities, costs, and utility values without altering the underlying Python codebase.
 The \code{ModelParameters} class validates these inputs before they are passed to the computational engine.
 
-\subsection{Design Patterns}
-The package employs a functional pipeline pattern for the high-level workflow. The \code{run\_analysis\_pipeline} function orchestrates the data flow:
+\subsection{Design patterns}
+The high-level workflow uses a functional pipeline with the following stages:
 \begin{enumerate}
     \item \textbf{Ingestion}: Parameters are loaded from YAML configuration files.
     \item \textbf{Simulation}: The \code{MarkovModel} class executes the cohort simulation for each intervention and perspective.
@@ -240,20 +292,14 @@ The package employs a functional pipeline pattern for the high-level workflow. T
     \item \textbf{Analysis}: PSA, DCEA, and VoP analyses are performed on the aggregated data.
     \item \textbf{Reporting}: The \code{reporting} module generates static plots and Markdown reports.
 \end{enumerate}
-Figure~\ref{fig:architecture} illustrates the high-level architecture and data flow.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/software_architecture.png}
-    \caption{Software Architecture of \pkg{vop\_poc\_nz}. The diagram shows the separation between the core computational engine, the analysis pipeline, and the reporting layer.}
-    \label{fig:architecture}
-\end{figure}
-
-This separation of concerns ensures that the normative parameters (e.g., equity weights) can be modified without re-running the computationally expensive Markov simulations.
+This separation permits post-processing changes that do not alter simulated
+state trajectories. Changes to parameters that affect transitions, costs,
+utilities, subgroup opportunity costs, or stochastic draws require a new run;
+the evidence manifest records that dependency boundary.
 
 \section{Comparison with existing software} \label{sec:comparison}
 
-To identify relevant software, we conducted a systematic search of CRAN, PyPI, and GitHub using keywords such as "cost-effectiveness", "health economics", and "Markov model".
+To identify relevant software, we conducted a scoped search of CRAN, PyPI, and GitHub using keywords such as "cost-effectiveness", "health economics", and "Markov model". The comparison reflects public documentation inspected through 21 July 2026; it is not a systematic review or a guarantee that unadvertised functionality is absent.
 We selected packages that are open-source, actively maintained, and provide functionality for cohort modeling or PSA.
 We also included \pkg{TreeAge}, a widely used commercial software, as a benchmark.
 
@@ -286,7 +332,7 @@ Its focus is primarily on computational speed and generalizability rather than t
 \subsection[TreeAge]{TreeAge}
 \pkg{TreeAge Pro} is a commercial software suite widely used in industry and academia.
 It offers a graphical user interface for building decision trees and Markov models.
-While robust and feature-rich, it is proprietary and closed-source, limiting reproducibility and extensibility.
+It is proprietary and closed-source, which limits independent inspection and extension.
 Furthermore, while it supports multi-attribute analysis, it does not have built-in modules for the specific calculation of VoP or the automated generation of equity-weighted metrics as defined in the DCEA framework.
 
 \subsection[econeval]{econeval}
@@ -304,6 +350,7 @@ Table~\ref{tab:software_comparison} summarizes the key features of \pkg{vop\_poc
 
 \begin{table}[ht]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccccc}
 \hline
 Package & Language & Multi-Perspective & DCEA & VoP & BIA & VOI & Dashboard \\
@@ -318,44 +365,58 @@ Package & Language & Multi-Perspective & DCEA & VoP & BIA & VOI & Dashboard \\
 \textbf{\pkg{vop\_poc\_nz}} & \textbf{Python} & \textbf{Native} & \textbf{Native} & \textbf{Native} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} \\
 \hline
 \end{tabular}
+}
 \caption{Feature comparison of health economic evaluation software.}
 \label{tab:software_comparison}
 \end{table}
 
-\subsection{Unique Contribution}
+\subsection{Contribution}
 Unlike the R-based alternatives, \pkg{vop\_poc\_nz} is native to the Python ecosystem, facilitating integration with modern data science and machine learning workflows (e.g., \pkg{scikit-learn} for metamodeling).
-Crucially, it is the first open-source tool to operationalize the \emph{Value of Perspective}, transforming the choice of perspective from a static assumption into a quantifiable source of uncertainty.
+To our knowledge, based on the scoped software search described above, it is the first open-source package to expose a directional VoP calculation as a named, tested workflow. This novelty claim is limited to the packages and versions assessed and does not imply that equivalent calculations cannot be implemented elsewhere.
 
 \section{Case studies} \label{sec:cases}
 
-To demonstrate the capabilities of \pkg{vop\_poc\_nz}, we applied the framework to five hypothetical interventions in the Aotearoa New Zealand context: HPV Vaccination, Smoking Cessation, Hepatitis C Therapy, Childhood Obesity Prevention, and Housing Insulation.
+To demonstrate the capabilities of \pkg{vop\_poc\_nz}, we applied the framework to five synthetic interventions framed in an Aotearoa New Zealand context: HPV Vaccination, Smoking Cessation, Hepatitis C Therapy, Childhood Obesity Prevention, and Housing Insulation.
+The cases are software fixtures, not health technology assessments. Their inputs combine illustrative values with selected published sources and have not undergone the evidence synthesis, clinical validation, M\={a}ori governance, or stakeholder review required for policy use. Numerical results therefore demonstrate computation and reporting behavior only.
 These cases were selected to represent a spectrum of intervention types, ranging from traditional clinical technologies (HPV Vaccination) to broader public health and social policy measures (Housing Insulation).
 This diversity allows us to test the sensitivity of the VoP metric to different cost structures and societal spillover effects.
 Specifically, we contrast a vaccine with high health system costs and clear health benefits against a housing intervention where the primary costs are non-health (retrofitting) but the benefits span health, energy savings, and productivity.
 
-\subsection{Model Structure}
+\subsection{Model structure}
 Each intervention was modeled using a Markov cohort simulation with annual cycles over a lifetime horizon.
-Parameters were derived from published literature and adjusted for the New Zealand context (see Supplement C for full parameter set).
+Parameters were assembled for demonstration from selected literature and illustrative adjustments (see Supplement C). They should not be interpreted as current New Zealand parameter estimates.
 We evaluated two perspectives:
 \begin{enumerate}
     \item \textbf{Health System}: Direct medical costs and health gains (QALYs).
     \item \textbf{Societal}: Adds productivity gains and broader societal costs. The framework supports both the \emph{Human Capital} method (valuing all lost time) and the \emph{Friction Cost} method (valuing time until replacement), with the Human Capital method used as the default for these case studies.
 \end{enumerate}
-Costs and health outcomes were discounted at 3\% per annum, consistent with New Zealand PHARMAC guidelines.
+Costs and health outcomes were discounted at 3\% per annum as an illustrative setting. Analysts preparing a live assessment should use the current Te P\={a}taka Whaioranga Pharmac methods guidance and test alternative discount rates \citep{pharmac2020}.
 
-\subsection{Evaluation Framework}
-The evaluation proceeds in stages, systematically uncovering the implications of perspective choice:
+\subsection{Evaluation framework}
+The evaluation proceeds in the following stages:
 \begin{enumerate}
     \item \textbf{Deterministic Analysis}: We calculate the Incremental Cost-Effectiveness Ratio (ICER) for each perspective using base-case parameter values. This step identifies potential decision discordance.
     \item \textbf{Deterministic Sensitivity Analysis (DSA)}: We perform one-way sensitivity analyses to identify which parameters (e.g., discount rates, utility weights) most influence the results, visualized via Tornado diagrams.
-    \item \textbf{Probabilistic Sensitivity Analysis (PSA)}: We run 1,000 Monte Carlo simulations to quantify parameter uncertainty. This generates the Cost-Effectiveness Plane and Cost-Effectiveness Acceptability Curve (CEAC).
+    \item \textbf{Probabilistic Sensitivity Analysis (PSA)}: We run 1,000 seeded Monte Carlo draws for the demonstration. This generates the Cost-Effectiveness Plane and Cost-Effectiveness Acceptability Curve (CEAC). The draw count is intended for workflow testing, not precise tail inference.
     \item \textbf{Cost of Illness (COI)}: Prior to the full CEA, we estimate the total economic burden of the disease under the status quo, disaggregated by payer (Health System vs. Societal).
     \item \textbf{Budget Impact Analysis (BIA)}: We estimate the aggregate financial consequences of adopting the intervention over a 5-year horizon, considering the eligible population size.
     \item \textbf{Distributional and VoP Analysis}: We apply the Atkinson inequality aversion parameter ($\epsilon=0.5$) to estimate the Equity-Weighted Net Monetary Benefit ($NMB_{eq}$). Concurrently, we calculate the Value of Perspective (VoP) to quantify the opportunity cost of ignoring societal costs.
 \end{enumerate}
 
-\subsection{Roadmap of Results}
-The following results section presents the key outputs of this framework:
+\subsection{Monte Carlo assurance and inferential scope}
+The software records the random seed, draw count, package version, input
+digest, and Arrow schema identity with each typed result. Diagnostic functions
+calculate running means, Monte Carlo standard errors, and bootstrap intervals
+for perspective-loss estimates. A policy analysis should pre-specify a
+precision target, increase draws until the Monte Carlo standard error is small
+relative to the decision margin, and examine whether strategy-selection and
+tail estimates are stable. The present figures were generated from 1,000
+draws. We do not report them as sufficiently precise for population-level VoP,
+EVPPI, or Sobol tail inference. The absence of uncertainty intervals in the
+legacy demonstration outputs is an acknowledged limitation.
+
+\subsection{Roadmap of results}
+The results section presents the following outputs:
 \begin{itemize}
     \item \textbf{Model Structure}: Figure~\ref{fig:decision_tree} and Figure~\ref{fig:markov_trace} validate the underlying Markov model dynamics.
     \item \textbf{Cost-Effectiveness}: Table~\ref{tab:results} and Figure~\ref{fig:ce_plane} (Cost-Effectiveness Plane) compare the efficiency outcomes across perspectives.
@@ -368,28 +429,28 @@ Figure~\ref{fig:decision_tree} illustrates the decision tree structure for the H
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/decision_tree_hpv_vaccination.png}
-\caption{Decision Tree for HPV Vaccination Model. The tree illustrates the decision problem, comparing Standard Care and New Treatment strategies, and the subsequent Markov states (Healthy, Sick, Dead).}
+\includegraphics[width=0.8\textwidth]{figures/optimized/decision_tree_hpv_vaccination.png}
+\caption{Decision tree for the synthetic HPV vaccination model. The tree compares standard care and new treatment and shows the subsequent Markov states (healthy, sick, dead).}
 \label{fig:decision_tree}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/markov_trace_hpv_vaccination_new_treatment.png}
-\caption{Markov Trace for HPV Vaccination (New Treatment). The plot shows the proportion of the cohort in each health state over time.}
+\includegraphics[width=0.8\textwidth]{figures/optimized/markov_trace_hpv_vaccination_new_treatment.png}
+\caption{Markov trace for the synthetic HPV vaccination model (new treatment). The plot shows the proportion of the cohort in each health state over time.}
 \label{fig:markov_trace}
 \end{figure}
 
 \subsection{Results} \label{sec:results}
 Table~\ref{tab:results} summarizes the incremental cost-effectiveness ratios (ICERs) and the Value of Perspective (VoP) for each intervention.
-Notably, \emph{Housing Insulation} shifts from being cost-effective at a \$50,000/QALY threshold (ICER = \$36,642) to being dominant (cost-saving) from a societal perspective (ICER = -\$7,787).
-The VoP column quantifies the per-person opportunity loss if the societal perspective were ignored, highlighting the significant "societal bonus" for interventions like Smoking Cessation.
+In the synthetic Housing Insulation model, the result shifts from an ICER of NZ\$36,642/QALY under the health-system perspective to dominance under the societal perspective (reported ratio NZ\$-7,787/QALY).
+The VoP column reports the per-person opportunity loss under the societal reference perspective when the health-system decision is used.
 
 \begin{table}[ht]
 \centering
 \begin{tabular}{lrrr}
 \hline
-Intervention & Health System ICER & Societal ICER & VoP (Per Person) \\
+Intervention & Health System ICER & Societal ICER & $VoP_{HS\rightarrow Soc}$ \\
 \hline
 HPV Vaccination & -\$8,696 & -\$14,215 & \$0 \\
 Smoking Cessation & \$23,283 & -\$149,523 & \$4,500 \\
@@ -398,7 +459,7 @@ Childhood Obesity Prevention & -\$5,148 & -\$52,515 & \$0 \\
 Housing Insulation & \$36,642 & -\$7,787 & \$1,200 \\
 \hline
 \end{tabular}
-\caption{Comparative ICERs across perspectives.}
+\caption{Illustrative comparative ICERs and directional VoP values from synthetic demonstration models (NZ dollars per person where applicable).}
 \label{tab:results}
 \end{table}
 
@@ -407,9 +468,10 @@ This table highlights the decision discordance -- where the optimal strategy dif
 
 \begin{table}[ht]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lllr}
 \hline
-Intervention & Health System Decision & Societal Decision & VoP (Per Person) \\
+Intervention & Health System Decision & Societal Decision & $VoP_{HS\rightarrow Soc}$ \\
 \hline
 HPV Vaccination & Accept & Accept & \$0 \\
 Smoking Cessation & Reject & Accept & \$4,500 \\
@@ -419,7 +481,8 @@ Housing Insulation & Reject & Accept & \$1,200 \\
 \hline
 \multicolumn{4}{l}{\footnotesize \textit{Note: Decisions based on a WTP threshold of \$20,000/QALY.}} \\
 \end{tabular}
-\caption{Value of Perspective (VoP) Analysis. VoP represents the per-person opportunity cost of making the wrong funding decision by ignoring societal costs and benefits.}
+}
+\caption{Directional VoP analysis for synthetic demonstrations. VoP is the per-person loss under societal NMB when the strategy is selected using health-system NMB; it does not establish that the societal perspective is normatively correct.}
 \label{tab:vop_analysis}
 \end{table}
 
@@ -427,56 +490,56 @@ Figure~\ref{fig:ce_plane} visualizes the cost-effectiveness plane, highlighting 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1.0\textwidth]{figures/cost_effectiveness_plane_comparative.png}
-\caption{Comparative Cost-Effectiveness Plane across perspectives. The left panel shows the Health System perspective, where costs are restricted to direct medical expenditures. The center panel shows the Societal perspective, incorporating broader costs and productivity gains. The right panel (Delta) visualizes the difference ($Societal - Health System$) for each simulation iteration. Points in the bottom-right quadrant of the Delta plot indicate that the societal perspective recognizes lower net costs (e.g., due to productivity savings) and/or higher health benefits compared to the health system perspective. The magnitude of this shift represents the ``societal bonus'' often ignored in standard evaluations.}
+\includegraphics[width=1.0\textwidth]{figures/optimized/cost_effectiveness_plane_comparative.png}
+\caption{Comparative cost-effectiveness plane across perspectives. The left panel shows the health-system perspective, the center panel shows the societal perspective, and the right panel shows the difference ($Societal - Health System$) for each draw. Points in the bottom-right quadrant indicate lower modeled net costs and/or higher modeled health benefits under the societal perspective.}
 \label{fig:ce_plane}
 \end{figure}
 
-\subsection{Value of Perspective}
-While all interventions were cost-effective under both perspectives at the \$50,000 threshold, the \emph{Value of Perspective} analysis reveals the potential for decision discordance at lower thresholds.
-For example, at a \$20,000 threshold, Housing Insulation would be rejected under the Health System perspective but accepted under the Societal perspective, generating a positive VoP.
+\subsection{Value of perspective}
+Within the synthetic inputs, all interventions were cost-effective under both perspectives at the NZ\$50,000 threshold, while two of five produced decision discordance at NZ\$20,000/QALY.
+For example, at the lower threshold, Housing Insulation was rejected under the health-system perspective but accepted under the societal perspective, generating a positive $VoP_{HS\rightarrow Soc}$.
 Figure~\ref{fig:violin} illustrates the distribution of the Delta Net Monetary Benefit ($NMB_{soc} - NMB_{HS}$) for each intervention.
-The violin plot reveals that while most interventions show a positive societal bonus (distribution shifted right of zero), the magnitude and variance of this bonus differ significantly.
-Smoking Cessation, for instance, shows a long right tail, indicating a high probability of substantial productivity gains that are missed by the health system perspective.
+Most synthetic distributions are shifted to the right of zero, although the magnitude and variance of the perspective difference vary.
+Smoking Cessation shows a long right tail in the demonstration draws. This pattern is consistent with uncertain productivity gains omitted from the health-system perspective, but its magnitude should not be interpreted without additional draws and empirically validated inputs.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1.0\textwidth]{figures/delta_nmb_violin.png}
-\caption{Violin Plot of Delta Net Monetary Benefit ($NMB_{soc} - NMB_{HS}$) at a \$50,000/QALY threshold. Distributions shifted to the right of the dashed zero line indicate a ``societal bonus'' - where the societal perspective yields a higher net benefit than the health system perspective. The width of the violin represents the probability density of the bonus.}
+\includegraphics[width=1.0\textwidth]{figures/optimized/delta_nmb_violin.png}
+\caption{Violin plot of delta net monetary benefit ($NMB_{soc} - NMB_{HS}$) at a NZ\$50,000/QALY threshold. Distributions shifted to the right of zero indicate higher modeled NMB under the societal perspective. Width represents the estimated density of the difference.}
 \label{fig:violin}
 \end{figure}
 
-\subsection{Uncertainty Analysis}
+\subsection{Uncertainty analysis}
 Figure~\ref{fig:ceac} presents the Cost-Effectiveness Acceptability Curve (CEAC), showing the probability that each intervention is cost-effective at varying willingness-to-pay thresholds.
 Figure~\ref{fig:equity_plane} illustrates the Equity Impact Plane, visualizing the trade-off between total health gains and equity impacts (reduction in unfair inequality).
 Finally, Figure~\ref{fig:sobol} displays the Sobol indices for the Housing Insulation model, identifying the key parameters driving the uncertainty in the Net Monetary Benefit.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/ceac_societal.png}
-\caption{Cost-Effectiveness Acceptability Curve (Societal Perspective). The plot shows the probability that each intervention is cost-effective across a range of willingness-to-pay thresholds.}
+\includegraphics[width=0.8\textwidth]{figures/optimized/ceac_societal.png}
+\caption{Cost-effectiveness acceptability curve under the societal perspective. The plot shows the probability that each synthetic intervention is cost-effective across willingness-to-pay thresholds.}
 \label{fig:ceac}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/equity_impact_plane_housing_insulation.png}
-\caption{Equity Impact Plane for Housing Insulation. The x-axis represents the equity impact (reduction in inequality), and the y-axis represents the net health benefit. Points in the North-East quadrant indicate win-win scenarios (improved health and improved equity).}
+\includegraphics[width=0.8\textwidth]{figures/optimized/equity_impact_plane_housing_insulation.png}
+\caption{Equity impact plane for the synthetic housing-insulation model. The x-axis represents the modeled equity impact and the y-axis represents net health benefit. Points in the north-east quadrant indicate simultaneous modeled improvements in health and equity.}
 \label{fig:equity_plane}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/sobol_indices.png}
-\caption{Sobol Sensitivity Indices for Housing Insulation. The bar chart ranks parameters by their contribution to the total variance in the outcome, distinguishing between first-order effects (direct influence) and total-order effects (including interactions).}
+\includegraphics[width=0.8\textwidth]{figures/optimized/sobol_indices.png}
+\caption{Sobol sensitivity indices for the synthetic housing-insulation model. The chart ranks parameters by their contribution to outcome variance and distinguishes first-order from total-order effects.}
 \label{fig:sobol}
 \end{figure}
 
-\section{Usage and Reproducibility} \label{sec:usage}
+\section{Usage and reproducibility} \label{sec:usage}
 
 The package provides both a command-line interface (CLI) for standard workflows and a Python API for custom analyses.
 
-\subsection{Command Line Interface}
+\subsection{Command-line interface}
 The CLI is the primary entry point for running the full analysis pipeline.
 \begin{CodeInput}
 # Initialize a new project with default configuration
@@ -498,56 +561,97 @@ model = MarkovModel(params, perspective="societal")
 results = model.run()
 \end{CodeInput}
 
-\subsection{Reproducing Case Studies}
+\subsection{Reproducing case studies}
 
-The reproducibility target is release \pkg{vop\_poc\_nz} 0.2.3 with the
-repository lockfiles and Python 3.12--3.14 support policy. Source provenance
-is checked with the pinned Sourceright revision, while AuthenText 3.2.0
-provides the editorial/provenance-preserving review workflow. These tools are
-used locally and are not embedded in the VOP source distribution.
-To facilitate reproducibility, we provide a comprehensive tutorial notebook (\code{tutorials/01\_introduction.ipynb}) that walks through the case studies presented in Section~\ref{sec:cases}.
-This notebook demonstrates how to:
+The reproducibility target is release \pkg{vop\_poc\_nz} 0.2.3 and the exact
+source revision recorded by the result manifest. Python 3.12--3.14 is
+supported. The frozen \code{uv.lock} and \code{pixi.lock} files define the
+environment; Pydantic and Arrow contracts record typed inputs and output
+schema identities. The reference verification commands are:
+\begin{CodeInput}
+pixi run verify
+uv run vop-poc-nz run --output-dir output
+uv run python scripts/publication_gate.py
+\end{CodeInput}
+The CLI accepts an explicit parameter file through \code{--parameters}. A
+result intended for comparison must include the input digest, random seed,
+draw count, package version, source revision, and artifact hashes. Sourceright
+is pinned for source-provenance checks and AuthenText for editorial review;
+both run as external tools and are not embedded in the package.
+The repository examples and method contracts demonstrate how to:
 \begin{itemize}
-    \item Load the specific parameter sets for each intervention.
-    \item Run the probabilistic sensitivity analysis.
-    \item Generate the figures (e.g., Delta NMB violin plots, Equity Impact Plane).
+    \item validate perspective and equity parameters before execution;
+    \item run seeded probabilistic and perspective diagnostics;
+    \item serialize typed results to Arrow or Parquet; and
+    \item generate figures and evidence manifests from recorded outputs.
 \end{itemize}
-All code and data required to replicate the results are available in the package repository.
+The legacy figures in this article pre-date the complete result-manifest
+contract. They are retained as software demonstrations and should be
+regenerated before any empirical or policy interpretation.
 
 \section{Discussion} \label{sec:discussion}
 
 The \pkg{vop\_poc\_nz} package demonstrates the feasibility of operationalizing the Value of Perspective and DCEA within a unified computational framework.
-Our results confirm that the choice of analytical perspective is not merely a methodological detail but a fundamental driver of resource allocation decisions.
+The demonstrations show that analytical perspective can change a modeled decision when omitted cost categories are large relative to the decision margin.
 By making normative assumptions explicit and quantifying the decision uncertainty associated with perspective choice, the tool enhances the transparency of health economic evaluations.
-Furthermore, the identification of a quantifiable ``societal bonus'' provides a new metric for policymakers to assess the opportunity cost of ignoring broader societal impacts.
+The directional loss metric provides one way to report the modeled opportunity cost of using a narrower perspective, conditional on the reference welfare standard.
 This section discusses the implications of these findings for decision-making, the normative trade-offs inherent in equity-weighted analysis, and the computational considerations for scaling this approach.
 
-\subsection{The ``Societal Bonus'' and Decision Discordance}
-Our analysis reveals that for interventions with significant non-health impacts (e.g., housing insulation, smoking cessation), the choice of perspective is not merely a technical detail but a determinant of the funding decision.
-The ``societal bonus'' - visualized in the Delta Violin plots (Figure~\ref{fig:violin}) - represents the additional value captured when the analytical boundary is widened.
-Quantifying this bonus allows policymakers to see exactly what is lost when adhering strictly to a health system perspective.
-For example, the long tail of the societal bonus for smoking cessation suggests that in many scenarios, the productivity gains alone could justify the intervention, a distinct insight from the mean ICER.
+\subsection{Perspective difference and decision discordance}
+In the synthetic housing-insulation and smoking-cessation models, non-health costs and effects were large enough to alter NMB and, at some thresholds, the selected strategy.
+The difference visualized in Figure~\ref{fig:violin} represents the modeled change in NMB when the analytical boundary is widened.
+Quantifying this difference shows what is lost under the declared societal reference perspective when the health-system decision is used.
+For example, the long right tail for smoking cessation reflects draws with larger productivity gains. Additional simulation and empirical validation would be needed to determine whether that pattern supports a policy conclusion.
 
-\subsection{Normative Implications}
+\subsection{Normative and governance implications}
 The integration of DCEA highlights that efficiency and equity are often competing objectives.
 The parameter $\epsilon$ (inequality aversion) acts as a ``tuning knob'' for social justice.
-By allowing users to vary $\epsilon$ and observe the impact on the Equity-Weighted Net Monetary Benefit, \pkg{vop\_poc\_nz} transforms ethical debates into empirical inquiries.
+Allowing users to vary $\epsilon$ supports sensitivity analysis of a declared value judgment; it does not convert the ethical choice itself into an empirical question.
 Users must be transparent about these choices; a high $\epsilon$ value implies a willingness to sacrifice total population health to reduce inequality, a trade-off that requires democratic legitimacy.
 
-\subsection{Computational Considerations and Limitations}
-A key limitation of the current implementation is the computational burden of the nested Monte Carlo simulations required for VoP and DCEA.
+Analyses involving M\={a}ori data require governance beyond technical validation.
+Te Mana Raraunga defines M\={a}ori data sovereignty in terms of M\={a}ori rights and
+interests in the collection, ownership, governance, and application of M\={a}ori
+data \citep{temanararaunga2018}. Subgroup definitions, baseline-health
+estimates, equity weights, access controls, and publication decisions should
+therefore be developed with appropriate M\={a}ori governance and engagement and
+in a manner consistent with te Tiriti o Waitangi. The present synthetic cases
+used no individual-level M\={a}ori data and received no M\={a}ori stakeholder or
+governance review. They cannot establish M\={a}ori equity effects or support
+resource-allocation recommendations.
+
+\subsection{Limitations}
+The paper evaluates software behavior using synthetic models rather than
+validated health technology assessments. Parameter selection was not based on
+a systematic review, model calibration, or external clinical validation, and
+the reported point estimates lack uncertainty intervals. The results do not
+support conclusions about the effectiveness, cost effectiveness, budget
+impact, or equity effects of the named interventions in Aotearoa New Zealand.
+
+The directional VoP metric is conditional on the selected reference
+perspective. It measures neither social consensus nor uncertainty about the
+morally correct perspective. The weighted-NMB approximation also does not
+replace full DCEA based on distributions of lifetime health and health
+opportunity costs. Results can change with subgroup definitions, population
+shares, baseline-health measures, inequality-aversion values, and the
+reference perspective.
+
+The computational burden of nested Monte Carlo simulations constrains precision.
 The case studies presented here utilized a sample size of $N=1,000$ iterations for the probabilistic sensitivity analysis.
 While convergence diagnostics (see Supplement A) indicate that this is sufficient for stable estimates of mean outcomes (e.g., expected Net Monetary Benefit), it may be insufficient for stable estimation of tail statistics or high-dimensional variance decomposition (e.g., Sobol indices).
 
-All analyses were conducted on a MacBook Pro (Apple M1 chip, 32GB RAM) running macOS Tahoe 26.1.
-The software environment was managed using \pkg{conda} with Python 3.13.2.
-On this hardware, the full pipeline for the five case studies (including PSA and figure generation) required approximately 15 minutes of runtime.
-Reporting these details is essential for reproducibility and for benchmarking future performance improvements.
+The legacy figure-generation run used a MacBook Pro (Apple M1, 32GB RAM) and
+Python 3.13.2 and took approximately 15 minutes. This timing was not collected
+with the current Scalene profiling harness and should be treated as an
+uncontrolled observation. Current releases use uv and Pixi lockfiles,
+structured logging, dynamic versioning, and CI across Python 3.12--3.14.
 
 For full-scale policy applications, we recommend increasing the sample size to $N \ge 10,000$, potentially utilizing parallel computing resources to manage the increased runtime.
-Future versions of the package will implement parallel processing using \pkg{joblib} or \pkg{dask} to mitigate this bottleneck.
+The repository includes Scalene profiling and experimental backend lanes.
+Parallel or alternative backends must demonstrate numerical equivalence to
+the reference kernels before promotion.
 
-\subsection{Policy Brief Generation}
+\subsection{Policy brief generation}
 The ultimate goal of health economic modeling is to inform decision-making.
 To this end, the package includes a prototype policy brief generator that translates the complex outputs of DCEA and VoP analysis into plain-language summaries.
 An example of this output is provided in the supplementary materials.
@@ -556,8 +660,8 @@ Future work will refine this module to support customizable templates for differ
 
 \section{Summary} \label{sec:summary}
 
-\pkg{vop\_poc\_nz} fills a critical gap in the health economics software landscape by providing a Python-based framework that explicitly addresses perspective uncertainty and equity.
-By quantifying the \emph{Value of Perspective}, it offers decision-makers a new tool to assess the robustness of their funding decisions, revealing the hidden "societal bonus" often ignored in standard evaluations.
+\pkg{vop\_poc\_nz} provides a Python framework for explicit comparison of analytical perspectives and distributional outcomes.
+Its directional VoP metric reports the modeled loss from selecting a strategy under one perspective and evaluating it under another declared reference perspective.
 The integration of Distributional CEA further ensures that equity trade-offs are transparently weighed against efficiency gains.
 We hope this open-source tool will encourage the broader adoption of multi-perspective and equity-informative modeling in health policy.
 
@@ -569,11 +673,32 @@ The authors declare that no funds, grants, or other support were received during
 \subsection*{Conflicts of interest}
 The authors have no relevant financial or non-financial interests to disclose.
 
+\subsection*{Ethics}
+This software study used synthetic demonstration models and no human
+participants, identifiable records, or individual-level health data. Research
+ethics approval was therefore not required. Any future application using
+person-level or M\={a}ori data requires the relevant ethics, data-governance, and
+M\={a}ori-governance approvals before analysis.
+
+\subsection*{Author contributions}
+Dylan A. Mordaunt: conceptualization, methodology, software, validation,
+formal analysis, investigation, data curation, visualization, writing
+(original draft, review and editing), project administration, and
+maintenance.
+
+\subsection*{Use of artificial intelligence tools}
+Generative AI tools were used to assist software development, manuscript
+editing, consistency checking, and LaTeX preparation under author direction.
+The author reviewed the resulting text, calculations, citations, and code and
+retains responsibility for the work. AuthenText was used as an editorial
+self-review aid and Sourceright as a provenance workflow; neither tool was
+treated as evidence of factual correctness.
+
 \subsection*{Availability of data and material}
-The datasets generated during and/or analysed during the current study are available in the \pkg{vop\_poc\_nz} repository.
+The synthetic inputs, source code, and generated demonstration materials are available in the \pkg{vop\_poc\_nz} repository. No participant data were used.
 The full protocol for this study is registered on the Open Science Framework (OSF): \url{https://osf.io/unq76}.
 
-\subsection{Software Availability}
+\subsection{Software availability}
 The \pkg{vop\_poc\_nz} package is open-source and available under the Apache 2.0 license.
 \begin{itemize}
     \item \textbf{PyPI}: \url{https://pypi.org/project/vop-poc-nz/}
@@ -582,6 +707,10 @@ The \pkg{vop\_poc\_nz} package is open-source and available under the Apache 2.0
     \item \textbf{GitHub}: \url{https://github.com/edithatogo/vop_poc_nz}
 \end{itemize}
 
-\printbibliography
+\ifdefined\JSSMODE
+\else
+  \bibliographystyle{plainnat}
+\fi
+\bibliography{ref}
 
 \end{document}

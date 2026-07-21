@@ -117,6 +117,7 @@ output/
 debug_output_*.txt
 
 # LaTeX
+manuscript/build-*/
 *.aux
 *.bbl
 *.bcf
