@@ -26,3 +26,22 @@ jobs:
           name: vop-poc-nz-manuscript
           path: manuscript/jss_submission.pdf
           if-no-files-found: error
+      - name: Checkout pinned Sourceright tool (CI-only)
+        uses: actions/checkout@v4
+        with:
+          repository: edithatogo/sourceright
+          ref: dde39b3bb334f79f12e395a5317b21e036336bdd
+          path: .ci-tools/sourceright
+      - name: Verify Sourceright arXiv package boundary
+        shell: pwsh
+        working-directory: .ci-tools/sourceright
+        run: ./scripts/verify-arxiv-package.ps1
+      - name: Checkout pinned AuthenText tool (CI-only)
+        uses: actions/checkout@v4
+        with:
+          repository: edithatogo/authentext
+          ref: 7f70dad5b6deab1af92faf037ef2638e7f3aea05
+          path: .ci-tools/authentext
+      - name: Run AuthenText editorial workflow tests
+        working-directory: .ci-tools/authentext
+        run: npm ci --ignore-scripts && npm test
