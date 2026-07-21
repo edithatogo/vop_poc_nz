@@ -19,7 +19,7 @@
   "artifacts": [
     {"path":"manuscript/jss_submission.tex","sha256":"8a41b99ef242a7bcaff6f586c95f88d021dafeb94fc97534d2a400c6891836fa"},
     {"path":"conductor/paper_update/agent_contracts.md","sha256":"5f4393c73d9a27d6e295bd644e6d4119d16baa3e78658b1693d1e9b2a51a4e17"},
-    {"path":"conductor/paper_update/workflow.md","sha256":"dc7f5e92130521c1e114bb9ad4082aaf2d24b4c7a3cbf41d537533a8c37d346a"}
+    {"path":"conductor/paper_update/workflow.md","sha256":"2352893946ec000c6e938df23a8cee7c2025e4fefc8da2b0bbba38708a97ff33"}
   ],
   "submission_ready": false
 }
