@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at": "2026-07-21",
+  "tools": {
+    "sourceright": {
+      "repository": "edithatogo/sourceright",
+      "revision": "dde39b3bb334f79f12e395a5317b21e036336bdd",
+      "integration": "arxiv/ technical-preview source and provenance packet",
+      "local_receipt": "verified:verify-arxiv-package.ps1:passed"
+    },
+    "authentext": {
+      "repository": "edithatogo/authentext",
+      "revision": "95ef9692d97f892d2633b591fff3645b2dda1336",
+      "version": "3.2.0",
+      "integration": "agent-agnostic editorial skill and provenance-preserving review",
+      "local_receipt": "failed:npm-test:sync-contract-version-drift"
+    }
+  },
+  "promotion_state": "pinned-not-promoted",
+  "external_submission": false
+}
