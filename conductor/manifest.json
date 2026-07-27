@@ -34,7 +34,7 @@
         "C00"
       ],
       "file": "tracks/C01_evop_method_contract_and_conformance.md",
-      "default_status": "in_progress"
+      "default_status": "planned"
     },
     {
       "id": "C02",
@@ -256,7 +256,7 @@
         "C15"
       ],
       "file": "tracks/specialized-voi-v1-2_20260727/index.md",
-      "default_status": "planned"
+      "default_status": "in_progress"
     }
   ],
   "method_contract_version": "1.1.0"
