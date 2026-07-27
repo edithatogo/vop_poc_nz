@@ -24,5 +24,5 @@
 - [x] **C16-T8:** Test missing credentials and unregistered repositories; retain
   the existing planner's remote-human-edit and three-way-conflict tests for
   managed issue and Project update proposals. [ba07539]
-- [~] **C16-T9:** Run repository and hosted validation, retaining merge,
-  release and issue closure as separate gates.
+- [x] **C16-T9:** Run repository and hosted validation, retaining merge,
+  release and issue closure as separate gates. [231ee6a]
