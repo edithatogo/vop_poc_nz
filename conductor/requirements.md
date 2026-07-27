@@ -43,6 +43,25 @@ the linked track files contain detailed acceptance criteria.
   concern, assumption, risk, decision, evidence reference, issue link,
   parameter, numerical policy, calculation and result has a stable typed
   identity, validated relationships, provenance and a compatibility policy.
+- **M14 — Estimation-focused variance VOI (C16, planned v1.2.0):**
+  `EVPPI_var` and `EVSI_var` declare scalar/vector target shape, component
+  units, variance or covariance functional, conditioning and sampling models,
+  estimator uncertainty, diagnostics and provenance without aliasing
+  decision-focused EVPPI/EVSI.
+- **M15 — Study-design efficiency (C16, planned v1.2.0):** COSS returns
+  evaluated designs, feasible range/set, EVSI/cost/signed-ENBS curves,
+  deterministic tie policy, optimum, boundary state, uncertainty around the
+  optimum and plotting inputs; EVSI/EVPI has explicit common-unit,
+  zero-denominator and bounds behavior.
+- **M16 — Utility and clairvoyance semantics (C16, planned v1.2.0):** Expected
+  Value of Clairvoyance is an alias or presentation of the expected-utility
+  value of a clairvoyant policy governed by VOIAGE issue #595, not a duplicate
+  kernel or an unconditional alias for monetary EVPI.
+- **M17 — Cross-repository projection (C16, planned v1.2.0):** one canonical,
+  versioned public projection drives bounded managed sections, native
+  issue/subissue links and Project 28 fields for every registered consumer
+  repository, with dry-run, conflict detection and fail-closed credential
+  handling.
 
 ### Should have
 
@@ -60,6 +79,9 @@ the linked track files contain detailed acceptance criteria.
   runs on bounded scheduled/manual lanes with artifacts, not hidden local steps.
 - **S7:** GitHub synchronization uses stable markers, bounded managed sections,
   dry-run plans and three-way conflict detection while preserving human content.
+- **S8:** Rust/Python/R/Julia/Mojo dispositions, accessible plots and
+  independently reproducible analytical/enumerable references should be
+  available before the specialized v1.2.0 contracts are promoted.
 
 ### Could have
 
@@ -72,6 +94,8 @@ the linked track files contain detailed acceptance criteria.
 - **C5:** signed provenance and attestations for promoted interchange bundles.
 - **C6:** deterministic generated governance tables, JSON projections and
   Mermaid traceability graphs derived from the canonical typed ledger.
+- **C7:** reviewed vector-target covariance functionals beyond trace,
+  determinant and declared weighted quadratic forms.
 
 ### Won't have now
 
@@ -85,6 +109,17 @@ the linked track files contain detailed acceptance criteria.
   they are superseded.
 - **W6:** automation accepting risk, approving irreversible decisions, closing
   human-controlled issues, or publishing local/private evidence.
+- **W7:** a duplicate VoC numerical method, silent COSS extrapolation outside
+  the feasible design set, or relabeling `total_voi / total_cost` as EVSI/EVPI.
+
+## Planned-version traceability
+
+| Planned version | MoSCoW | Requirements | Owning track | GitHub records |
+|---|---|---|---|---|
+| v1.2.0 | Must | M14 | C16 / `estimation_focused_variance_voi_20260727` | VOIAGE #619, parent #318 |
+| v1.2.0 | Must | M15 | C16 / `study_design_efficiency_20260727` | VOIAGE #571, parent #318 |
+| v1.2.0 | Must | M16 | C16 / `supported_frontier_method_completion_20260723` | VOIAGE #595, parent #318 |
+| v1.2.0 | Must | M17 | C16 / C12 | Project 28 and every registered consumer repository |
 
 ## Verification
 

@@ -242,6 +242,21 @@
       ],
       "file": "tracks/operational-assurance-excellence_20260720/index.md",
       "default_status": "completed"
+    },
+    {
+      "id": "C16",
+      "slug": "specialized_voi_v1_2_governance",
+      "title": "Specialized estimation and study-efficiency VOI governance",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C12",
+        "C15"
+      ],
+      "file": "tracks/specialized-voi-v1-2_20260727/index.md",
+      "default_status": "in_progress"
     }
   ],
   "method_contract_version": "1.1.0"

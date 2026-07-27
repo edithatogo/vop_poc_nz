@@ -1,0 +1,73 @@
+name: Specialized VOI canonical sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - conductor/requirements.md
+      - conductor/design.md
+      - conductor/tracks/specialized-voi-v1-2_20260727/**
+  workflow_dispatch:
+    inputs:
+      dispatch:
+        description: Send the bounded notification to registered consumers.
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - run: uv sync --frozen --extra dev
+      - run: >-
+          uv run python scripts/dispatch_specialized_voi_projection.py
+          --canonical-ref "${{ github.sha }}"
+
+  dispatch:
+    needs: validate
+    if: github.event_name == 'push' || inputs.dispatch == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.11.29"
+          enable-cache: true
+      - run: uv sync --frozen --extra dev
+      - id: credential
+        env:
+          GOVERNANCE_SYNC_TOKEN: ${{ secrets.CROSS_REPOSITORY_GOVERNANCE_TOKEN }}
+        run: |
+          if [ -z "$GOVERNANCE_SYNC_TOKEN" ]; then
+            echo "state=blocked_missing_credential" >> "$GITHUB_OUTPUT"
+            echo "::warning::Dispatch withheld: CROSS_REPOSITORY_GOVERNANCE_TOKEN is not configured."
+          else
+            echo "state=ready" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.credential.outputs.state == 'ready'
+        env:
+          GOVERNANCE_SYNC_TOKEN: ${{ secrets.CROSS_REPOSITORY_GOVERNANCE_TOKEN }}
+        run: >-
+          uv run python scripts/dispatch_specialized_voi_projection.py
+          --canonical-ref "${{ github.sha }}" --dispatch

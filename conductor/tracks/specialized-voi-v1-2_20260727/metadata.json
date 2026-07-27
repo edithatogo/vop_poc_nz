@@ -1,0 +1,22 @@
+{
+  "track_id": "C16",
+  "type": "feature",
+  "status": "in_progress",
+  "planned_version": "1.2.0",
+  "created_at": "2026-07-27T08:26:00Z",
+  "updated_at": "2026-07-27T08:51:33Z",
+  "description": "Canonical cross-repository governance for specialized estimation and study-efficiency VOI.",
+  "evidence_schema": "1.0",
+  "repositories": [
+    "vop_poc_nz",
+    "voiage"
+  ],
+  "requirement_ids": [
+    "M14",
+    "M15",
+    "M16",
+    "M17"
+  ],
+  "github_parent_issue": "https://github.com/edithatogo/voiage/issues/318",
+  "github_project": "https://github.com/users/edithatogo/projects/28"
+}
