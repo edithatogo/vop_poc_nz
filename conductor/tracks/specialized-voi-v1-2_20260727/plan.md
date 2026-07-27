@@ -20,9 +20,9 @@
 - [x] **C16-T7:** Add a fail-closed consumer registration and dispatch path
   that creates bounded projection-mirror synchronization proposals in
   registered repositories; managed issue and Project updates remain separately
-  authorized three-way plans.
+  authorized three-way plans. [ba07539]
 - [x] **C16-T8:** Test missing credentials and unregistered repositories; retain
   the existing planner's remote-human-edit and three-way-conflict tests for
-  managed issue and Project update proposals.
-- [ ] **C16-T9:** Run repository and hosted validation, retaining merge,
+  managed issue and Project update proposals. [ba07539]
+- [~] **C16-T9:** Run repository and hosted validation, retaining merge,
   release and issue closure as separate gates.
