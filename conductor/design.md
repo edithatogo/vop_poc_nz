@@ -119,6 +119,44 @@ resolution to the same uv lock, preventing two divergent dependency truths.
 Expensive or ecosystem-sensitive experiments are explicit evidence lanes and
 cannot silently redefine the stable runtime contract.
 
+## Specialized VOI v1.2.0
+
+```mermaid
+flowchart LR
+    Target["Declared scalar or vector target"] --> Functional["Variance or covariance functional"]
+    Prior["Prior and conditioning model"] --> Estimation["EVPPI_var / EVSI_var"]
+    Sampling["Sampling model and design"] --> Estimation
+    Functional --> Estimation
+    Estimation --> Assurance["Estimator uncertainty and assurance"]
+
+    Designs["Evaluated feasible designs"] --> EVSI["Decision EVSI"]
+    EVSI --> ENBS["Signed ENBS curve"]
+    Cost["Research and opportunity cost"] --> ENBS
+    ENBS --> COSS["COSS optimum + tie/boundary state"]
+    COSS --> Plot["Accessible plotting inputs"]
+    EVSI --> Efficiency["EVSI / EVPI diagnostic"]
+    EVPI["Commensurate EVPI"] --> Efficiency
+
+    Utility["Declared utility and wealth/reference state"] --> Clairvoyant["Clairvoyant policy"]
+    Clairvoyant --> VoC["VoC presentation under #595"]
+```
+
+```mermaid
+flowchart TD
+    Canonical["C16 canonical v1.2.0 requirements"] --> Projection["Versioned public projection"]
+    Projection --> Planner["Three-way conflict-safe sync planner"]
+    Planner --> Voiage["edithatogo/voiage managed issue sections"]
+    Planner --> Other["Other registered consumer repositories"]
+    Voiage --> Hierarchy["#313 > #318 > #571/#595/#619"]
+    Hierarchy --> Project["GitHub Project 28"]
+    Other --> Project
+    Project --> Fields["MoSCoW + Contract Version + Track ID + Record ID + Sync State"]
+    Conflict{"Conflict, missing credential, or private data?"}
+    Planner --> Conflict
+    Conflict -->|yes| Stop["Fail closed; emit reconciliation plan"]
+    Conflict -->|no and authorized| Apply["Update managed fields only"]
+```
+
 ## Typed domain and governance model
 
 ```mermaid
