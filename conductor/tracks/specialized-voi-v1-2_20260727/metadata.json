@@ -1,10 +1,10 @@
 {
   "track_id": "C16",
   "type": "feature",
-  "status": "in_progress",
+  "status": "completed",
   "planned_version": "1.2.0",
   "created_at": "2026-07-27T08:26:00Z",
-  "updated_at": "2026-07-27T08:51:33Z",
+  "updated_at": "2026-07-27T09:48:25Z",
   "description": "Canonical cross-repository governance for specialized estimation and study-efficiency VOI.",
   "evidence_schema": "1.0",
   "repositories": [
@@ -18,5 +18,25 @@
     "M17"
   ],
   "github_parent_issue": "https://github.com/edithatogo/voiage/issues/318",
-  "github_project": "https://github.com/users/edithatogo/projects/28"
+  "github_project": "https://github.com/users/edithatogo/projects/28",
+  "gates": [
+    {
+      "id": "hosted-canonical-dispatch",
+      "kind": "hosted_check",
+      "status": "passed",
+      "evidence": "VOP run 30254899492 and VOIAGE run 30255356259"
+    },
+    {
+      "id": "mirror-proposal-review",
+      "kind": "human_review",
+      "status": "pending",
+      "evidence": "https://github.com/edithatogo/voiage/pull/626"
+    },
+    {
+      "id": "release-and-issue-closure",
+      "kind": "human_governance",
+      "status": "pending",
+      "evidence": "Explicitly excluded from automated synchronization."
+    }
+  ]
 }
