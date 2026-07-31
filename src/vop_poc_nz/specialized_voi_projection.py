@@ -50,6 +50,36 @@ def _validate_registered_repositories(value: Mapping[str, Any]) -> list[str]:
     return repositories
 
 
+def _validate_implementation_evidence(issue: Mapping[str, Any]) -> None:
+    if "implementation_status" in issue and (
+        issue["implementation_status"] != "experimental_repository_evidence"
+    ):
+        raise ValueError(
+            "implementation_status must equal 'experimental_repository_evidence'"
+        )
+    if "capability_contract" in issue:
+        _require_string(issue["capability_contract"], "capability_contract")
+    if "subissues" in issue:
+        subissues = issue["subissues"]
+        if (
+            not isinstance(subissues, list)
+            or not subissues
+            or any(
+                not isinstance(subissue, int) or subissue <= 0
+                for subissue in subissues
+            )
+            or len(subissues) != len(set(subissues))
+        ):
+            raise ValueError(
+                "subissues must be a non-empty list of unique positive integers"
+            )
+    if "implementation_pr" in issue and (
+        not isinstance(issue["implementation_pr"], int)
+        or issue["implementation_pr"] <= 0
+    ):
+        raise ValueError("implementation_pr must be a positive integer")
+
+
 def _validate_issues(value: Mapping[str, Any], repositories: list[str]) -> None:
     issues = value.get("issues")
     if not isinstance(issues, list) or not issues:
@@ -61,6 +91,7 @@ def _validate_issues(value: Mapping[str, Any], repositories: list[str]) -> None:
             raise ValueError("every issue repository must be explicitly registered")
         if not isinstance(issue.get("number"), int) or issue["number"] <= 0:
             raise ValueError("issue number must be a positive integer")
+        _validate_implementation_evidence(issue)
 
 
 def load_projection(path: Path) -> dict[str, Any]:

@@ -30,6 +30,18 @@ def test_c16_projection_yields_only_explicitly_registered_dispatch_target() -> N
     assert plan["client_payload"]["canonical_ref"] == "0123456789abcdef"
 
 
+def test_c16_projection_records_study_efficiency_repository_evidence() -> None:
+    projection = load_projection(PROJECTION)
+    issue = next(issue for issue in projection["issues"] if issue["number"] == 571)
+
+    assert issue["implementation_status"] == "experimental_repository_evidence"
+    assert issue["capability_contract"] == (
+        "conductor/tracks/study_design_efficiency_20260727/contract.md"
+    )
+    assert issue["subissues"] == [680, 681, 682]
+    assert issue["implementation_pr"] == 679
+
+
 def test_c16_projection_rejects_unregistered_issue_repository(tmp_path: Path) -> None:
     value = json.loads(PROJECTION.read_text(encoding="utf-8"))
     value["issues"][0]["repository"] = "edithatogo/unregistered"
@@ -93,6 +105,24 @@ def _write_projection(tmp_path: Path, value: object) -> Path:
         (
             lambda value: value["issues"][0].update({"number": 0}),
             "positive integer",
+        ),
+        (
+            lambda value: value["issues"][1].update(
+                {"implementation_status": "stable"}
+            ),
+            "implementation_status",
+        ),
+        (
+            lambda value: value["issues"][1].update({"capability_contract": ""}),
+            "capability_contract",
+        ),
+        (
+            lambda value: value["issues"][1].update({"subissues": [680, 680]}),
+            "subissues",
+        ),
+        (
+            lambda value: value["issues"][1].update({"implementation_pr": 0}),
+            "implementation_pr",
         ),
     ],
 )

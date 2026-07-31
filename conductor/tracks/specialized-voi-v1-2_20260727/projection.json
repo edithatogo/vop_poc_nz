@@ -43,6 +43,14 @@
       "parent": 318,
       "track_id": "study_design_efficiency_20260727",
       "record_id": "experiment-portfolio-and-study-efficiency-voi",
+      "implementation_status": "experimental_repository_evidence",
+      "capability_contract": "conductor/tracks/study_design_efficiency_20260727/contract.md",
+      "subissues": [
+        680,
+        681,
+        682
+      ],
+      "implementation_pr": 679,
       "requirement_ids": [
         "M15",
         "M17"
