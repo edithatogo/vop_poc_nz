@@ -67,3 +67,11 @@ pending and remain separately gated.*
 *Status: repository-owned implementation, exact-head hosted evidence, and
 independent review are complete; mutation-baseline approval, merge, signing,
 release, publication, and issue closure remain human gates.*
+
+## [ ] Track: VOP repository assurance and maintenance closure [planned v1.3.0]
+
+*Link: [./tracks/vop-assurance-maintenance-v1-3_20260731/index.md](./tracks/vop-assurance-maintenance-v1-3_20260731/index.md)*
+
+*Status: C19 is planned under GitHub #55 > #53/#54 > #57–#62; hosted settings,
+consumer receipts, implementation, merge, issue closure, and release remain
+separate evidence gates.*

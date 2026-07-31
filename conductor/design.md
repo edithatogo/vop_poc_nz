@@ -35,7 +35,7 @@ schema, method, producer, and interchange metadata in Arrow outputs.
 
 ```mermaid
 flowchart TD
-    Manifest[conductor/manifest.json\nC00-C13]
+    Manifest[conductor/manifest.json\nC00-C19]
     Tracks[Current track specifications]
     Legacy[VOP legacy track map]
     VoiageArchive[VOIAGE archived track registry]
@@ -82,6 +82,31 @@ sequenceDiagram
     C->>A: Read through PyArrow or Polars
     C->>G: Compare schema, metadata and values
     G-->>P: Pass or fail closed
+```
+
+## VOP assurance and maintenance v1.3.0
+
+```mermaid
+flowchart TD
+    Root["C19 / #55 hardening programme"]
+    CI["#53 testing and CI"]
+    Governance["#54 security and governance"]
+    Root --> CI
+    Root --> Governance
+    CI --> Quality["#60 imports, coverage and static ratchets"]
+    CI --> Dependencies["#61 Renovate authority"]
+    CI --> Artifacts["#62 generated-artifact hygiene"]
+    Governance --> Rules["#57 main ruleset and Actions policy"]
+    Governance --> Receipts["#58 immutable dispatch receipts"]
+    Governance --> Drift["#59 governance drift validation"]
+    Rules --> Evidence["Hosted drift evidence"]
+    Receipts --> Evidence
+    Quality --> Gates["Exact-head quality gates"]
+    Dependencies --> Gates
+    Artifacts --> Gates
+    Drift --> Project["Project 28 / v1.3.0"]
+    Evidence --> Project
+    Gates --> Project
 ```
 
 ## Safety boundaries

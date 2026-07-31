@@ -24,3 +24,11 @@ Create a coherent public surface and verifiable releases across PyPI, conda, doc
 ## Agent operating rule
 
 Map the live worktree and inspect existing implementations before editing. Prefer the smallest compatible change, record evidence in the local track state, and never promote local/private artifacts implicitly.
+
+## C19 closure refinement
+
+Dependency-update authority is planned in
+[#61](https://github.com/edithatogo/vop_poc_nz/issues/61): validate Renovate,
+then remove Dependabot update automation so one authority governs lockfile,
+security, frontier, and hosted-test evidence. Release and publication remain
+separate gates.

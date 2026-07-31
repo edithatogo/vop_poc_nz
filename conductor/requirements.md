@@ -66,6 +66,26 @@ the linked track files contain detailed acceptance criteria.
   issue/subissue links and Project 28 fields for every registered consumer
   repository, with dry-run, conflict detection and fail-closed credential
   handling.
+- **M33 — Repository policy assurance (C19, planned v1.3.0):** `main` has a
+  solo-maintainer-compatible ruleset with exact stable required checks;
+  GitHub Actions defaults are read-only and approved actions are immutable,
+  with narrowly scoped write permissions and hosted drift evidence.
+- **M34 — Correlated synchronization assurance (C19, planned v1.3.0):**
+  governance dispatch requires a full canonical SHA, projection digest,
+  correlation ID, consumer-verifiable receipt and idempotency key; missing,
+  stale or mismatched evidence fails closed.
+- **M35 — Maintainability and quality truth (C19, planned v1.3.0):** first-party
+  tools use `vop_poc_nz`; legacy shims have a declared retirement policy; the
+  95% coverage intent, current enforced baseline, Ruff, BasedPyright and `ty`
+  are reconciled through transparent non-regressing ratchets.
+- **M36 — Dependency and artifact authority (C19, planned v1.3.0):** Renovate
+  is the sole dependency-update authority after validation, and transient
+  tracked bulk is removed while retained generated artifacts have an explicit
+  manifest-backed storage and provenance disposition.
+- **M37 — Governance projection truth (C19, planned v1.3.0):** canonical
+  manifest, requirements, design, track registry, issue backlog, `AGENTS.md`,
+  native subissue hierarchy, Project 28 fields and hosted settings are
+  generated from or validated against stable sources.
 
 ### Should have
 
@@ -180,6 +200,11 @@ the linked track files contain detailed acceptance criteria.
 | v1.3.0 | Must | M25-M26 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #593-#594, parent #318 |
 | v1.3.0 | Should | M23-M24, M27-M31 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #572, #582 and #596-#600, parent #318 |
 | v1.3.0 | Must | M32 | C18 / `sampling_acquisition_harm_voi_20260802` | VOIAGE #850, child of #570, dependency #571, under #841/#318 |
+| v1.3.0 | Must | M33 | C19 / C12 | VOP #57, parent #54 and #55 |
+| v1.3.0 | Must | M34 | C19 / C16 | VOP #58, parent #54 and #55 |
+| v1.3.0 | Must | M35 | C19 / C07 | VOP #60, parent #53 and #55 |
+| v1.3.0 | Must | M36 | C19 / C07 / C10 | VOP #61–#62, parent #53 and #55 |
+| v1.3.0 | Must | M37 | C19 / C12 | VOP #59, parent #54 and #55 |
 
 ## Verification
 
