@@ -199,6 +199,35 @@ flowchart TD
 
 ## Typed domain and governance model
 
+## Specialized VOI v1.3.0 residual frontier
+
+```mermaid
+flowchart TD
+    C16["Completed C16 / M14-M17"] --> C18["C18 / M22-M31"]
+    C17["C17 / M21 additive MCDA"] -. "parallel v1.3 wave" .-> C18
+    C18 --> Parent["VOIAGE #318"]
+    Parent --> Decision["Risk, forecasts, source portfolios"]
+    Parent --> Decompose["Implementation, model uncertainty, heterogeneity"]
+    Parent --> Dynamic["Event, sequential, social and realized sample value"]
+    Decision --> Evidence["Experimental runtime evidence"]
+    Decompose --> Evidence
+    Dynamic --> Evidence
+    Evidence --> Gates{"Scientific + hosted + parity + promotion gates"}
+    Gates -->|"pending"| Hold["Remain experimental"]
+    Gates -->|"separately satisfied"| Promote["Eligible for governed promotion"]
+```
+
+```mermaid
+flowchart LR
+    States["States + probabilities"] --> Policy["Declared policies and feasible sets"]
+    Signals["Signals, sources and chronology"] --> Policy
+    Uptake["Current and counterfactual implementation"] --> Policy
+    Risk["Utility, risk and constraints"] --> Policy
+    Policy --> Matrix["Conditional value matrix"]
+    Matrix --> Components["Gross, net, signed and interaction components"]
+    Components --> Diagnostics["Identities, uncertainty and solver assurance"]
+```
+
 ```mermaid
 flowchart LR
     Concern --> Assumption

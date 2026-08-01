@@ -78,6 +78,38 @@ the linked track files contain detailed acceptance criteria.
   interaction, regret, fractional rank acceptability and Pareto diagnostics.
   A merged experimental Python implementation is repository evidence, not
   scientific approval, stable promotion or Rust/R/Julia parity.
+- **M22 — Risk-sensitive and constrained information value (C18, planned
+  v1.3.0):** #570 values information through declared risk-sensitive utility or
+  risk functionals and feasible policies, with constraints, sampling risk and
+  catastrophic outcomes explicit. MoSCoW: Must.
+- **M23 — Forecast and signal information value (C18, planned v1.3.0):** #572
+  values calibrated forecasts or signals through posterior decision
+  consequences rather than accuracy alone. MoSCoW: Should.
+- **M24 — Information-source portfolio value (C18, planned v1.3.0):** #582
+  selects dependent source portfolios jointly with budgets, compatibility,
+  costs, complete ties and solver assurance. MoSCoW: Should.
+- **M25 — Information and implementation decomposition (C18, planned
+  v1.3.0):** #593 returns current/informed and imperfect/perfect implementation
+  cells, EVPIM/EVSIM/EVP/IA-EVSI components and an explicit interaction without
+  default independence. MoSCoW: Should.
+- **M26 — Uncertainty-modelling value (C18, planned v1.3.0):** #594 values
+  resolving model or solution uncertainty separately from acquiring empirical
+  information. MoSCoW: Should.
+- **M27 — Event-localized information value (C18, planned v1.3.0):** #596
+  localizes value to declared events or regions and reconciles to the governed
+  aggregate. MoSCoW: Should.
+- **M28 — Belief-state sequential information value (C18, planned v1.3.0):**
+  #597 values sensing and intervention policies over a declared transition
+  model, horizon and stopping rule. MoSCoW: Should.
+- **M29 — Signed social and strategic information value (C18, planned
+  v1.3.0):** #598 preserves harmful private/social effects instead of clamping
+  all information value to nonnegative classical VOI. MoSCoW: Should.
+- **M30 — Heterogeneity value decomposition (C18, planned v1.3.0):** #599
+  separates known-subgroup policy value from research-on-heterogeneity value,
+  with prevalence and interactions explicit. MoSCoW: Should.
+- **M31 — Outcome-conditional sample information value (C18, planned
+  v1.3.0):** #600 returns realized sample-value distributions and low-value
+  risk separately from expected EVSI and estimator error. MoSCoW: Should.
 - **S1:** PyArrow and Polars round trips preserve logical types, metadata, and
   values across processes and operating systems.
 - **S2:** supported Python releases include 3.12–3.14; free-threaded Python is
@@ -134,6 +166,8 @@ the linked track files contain detailed acceptance criteria.
 | v1.2.0 | Must | M16 | C16 / `risk_adjusted_information_pricing_20260731` | VOIAGE #595 and #694–#697, parent #318 |
 | v1.2.0 | Must | M17 | C16 / C12 | Project 28 and every registered consumer repository |
 | v1.3.0 | Should | M21 | C17 / `supported_frontier_method_completion_20260723` | VOIAGE #560 and #746–#750, parent #318; implementation PR #751 |
+| v1.3.0 | Must | M22 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #570, parent #318 |
+| v1.3.0 | Should | M23-M31 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #572, #582, #593, #594 and #596-#600, parent #318 |
 
 ## Verification
 
