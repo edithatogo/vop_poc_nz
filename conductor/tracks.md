@@ -29,6 +29,26 @@ complete; issue closure, merge, release, and publication remain human gates.*
 
 ---
 
+## [x] Track: Specialized VOI v1.2.0 governance [completed: 2026-07-31]
+
+*Link: [./tracks/specialized-voi-v1-2_20260727/index.md](./tracks/specialized-voi-v1-2_20260727/index.md)*
+
+*Status: completed C16 predecessor for M14–M17. Its v1.2.0 projection remains
+versioned and is not relabelled by the additive-MCDA continuation.*
+
+---
+
+## [~] Track: Finite additive MCDA information-value governance
+
+*Link: [./tracks/specialized-voi-v1-3_20260801/index.md](./tracks/specialized-voi-v1-3_20260801/index.md)*
+
+*Status: C17 governs M21 as a planned v1.3.0 Should capability and records
+VOIAGE PR #751 as experimental repository evidence. Scientific and hosted
+review, stable promotion, Rust/R/Julia parity, release and issue closure remain
+separate gates.*
+
+---
+
 ## [x] Track: Operational Assurance Excellence [completed: 2026-07-20]
 
 *Link: [./tracks/operational-assurance-excellence_20260720/index.md](./tracks/operational-assurance-excellence_20260720/index.md)*

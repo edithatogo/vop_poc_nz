@@ -1,4 +1,4 @@
-"""Validate and dispatch the bounded C16 specialized-VOI projection.
+"""Validate and dispatch versioned bounded specialized-VOI projections.
 
 Network dispatch is opt-in.  Validation and dispatch-plan construction are
 pure so callers can test governance inputs without credentials or mutation.
@@ -14,6 +14,22 @@ from typing import Any
 from urllib.request import Request, urlopen
 
 _EVENT_TYPE = "canonical-specialized-voi-updated"
+_PROJECTIONS = {
+    "specialized-voi-v1.2.0": {
+        "contract_version": "v1.2.0",
+        "canonical_track": "C16",
+        "projection_path": (
+            "conductor/tracks/specialized-voi-v1-2_20260727/projection.json"
+        ),
+    },
+    "specialized-voi-v1.3.0": {
+        "contract_version": "v1.3.0",
+        "canonical_track": "C17",
+        "projection_path": (
+            "conductor/tracks/specialized-voi-v1-3_20260801/projection.json"
+        ),
+    },
+}
 _REQUIRED_POLICY = {
     "stable_markers_required": True,
     "bounded_managed_sections_only": True,
@@ -65,8 +81,7 @@ def _validate_implementation_evidence(issue: Mapping[str, Any]) -> None:
             not isinstance(subissues, list)
             or not subissues
             or any(
-                not isinstance(subissue, int) or subissue <= 0
-                for subissue in subissues
+                not isinstance(subissue, int) or subissue <= 0 for subissue in subissues
             )
             or len(subissues) != len(set(subissues))
         ):
@@ -87,7 +102,10 @@ def _validate_issues(value: Mapping[str, Any], repositories: list[str]) -> None:
     for issue in issues:
         if not isinstance(issue, Mapping):
             raise ValueError("each issue must be an object")
-        if _require_string(issue.get("repository"), "issue repository") not in repositories:
+        if (
+            _require_string(issue.get("repository"), "issue repository")
+            not in repositories
+        ):
             raise ValueError("every issue repository must be explicitly registered")
         if not isinstance(issue.get("number"), int) or issue["number"] <= 0:
             raise ValueError("issue number must be a positive integer")
@@ -95,33 +113,50 @@ def _validate_issues(value: Mapping[str, Any], repositories: list[str]) -> None:
 
 
 def load_projection(path: Path) -> dict[str, Any]:
-    """Load and validate the stable, minimal C16 projection contract."""
+    """Load and validate a registered specialized-VOI projection contract."""
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError("projection root must be an object")
+    projection_id = _require_string(value.get("projection_id"), "projection_id")
+    registered = _PROJECTIONS.get(projection_id)
+    if registered is None:
+        raise ValueError(f"projection_id {projection_id!r} is not registered")
     expected = {
         "schema_version": "1.0.0",
-        "projection_id": "specialized-voi-v1.2.0",
-        "contract_version": "v1.2.0",
         "canonical_repository": "edithatogo/vop_poc_nz",
-        "canonical_track": "C16",
+        **registered,
     }
+    expected.pop("projection_path")
     for name, expected_value in expected.items():
         if value.get(name) != expected_value:
             raise ValueError(f"{name} must equal {expected_value!r}")
 
     policy = value.get("sync_policy")
     if not isinstance(policy, Mapping) or dict(policy) != _REQUIRED_POLICY:
-        raise ValueError("sync_policy does not preserve the C16 fail-closed boundary")
+        raise ValueError("sync_policy does not preserve the fail-closed boundary")
 
     repositories = _validate_registered_repositories(value)
     _validate_issues(value, repositories)
     return value
 
 
-def dispatch_plan(projection: Mapping[str, Any], canonical_ref: str) -> dict[str, Any]:
+def dispatch_plan(
+    projection: Mapping[str, Any],
+    canonical_ref: str,
+    projection_path: str | Path | None = None,
+) -> dict[str, Any]:
     """Return a deterministic, credential-free repository-dispatch plan."""
     canonical_ref = _require_string(canonical_ref, "canonical_ref")
+    projection_id = _require_string(projection.get("projection_id"), "projection_id")
+    registered = _PROJECTIONS.get(projection_id)
+    if registered is None:
+        raise ValueError(f"projection_id {projection_id!r} is not registered")
+    expected_path = registered["projection_path"]
+    selected_path = expected_path if projection_path is None else str(projection_path)
+    if selected_path != expected_path:
+        raise ValueError(
+            f"projection path for {projection_id} must equal {expected_path!r}"
+        )
     targets = [entry["repository"] for entry in projection["registered_repositories"]]
     return {
         "event_type": _EVENT_TYPE,
@@ -132,9 +167,7 @@ def dispatch_plan(projection: Mapping[str, Any], canonical_ref: str) -> dict[str
             "canonical_repository": projection["canonical_repository"],
             "canonical_track": projection["canonical_track"],
             "canonical_ref": canonical_ref,
-            "projection_path": (
-                "conductor/tracks/specialized-voi-v1-2_20260727/projection.json"
-            ),
+            "projection_path": selected_path,
         },
     }
 
@@ -165,4 +198,6 @@ def dispatch(plan: Mapping[str, Any], token: str | None = None) -> None:
         )
         with urlopen(request, timeout=30) as response:
             if response.status != 204:
-                raise RuntimeError(f"dispatch to {repository} returned {response.status}")
+                raise RuntimeError(
+                    f"dispatch to {repository} returned {response.status}"
+                )

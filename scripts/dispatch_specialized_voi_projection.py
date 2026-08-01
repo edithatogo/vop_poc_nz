@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate C16 and optionally dispatch its bounded consumer notification."""
+"""Validate a specialized-VOI projection and optionally dispatch it."""
 
 from __future__ import annotations
 
@@ -19,14 +19,16 @@ def main() -> int:
     parser.add_argument(
         "--projection",
         type=Path,
-        default=Path("conductor/tracks/specialized-voi-v1-2_20260727/projection.json"),
+        default=Path("conductor/tracks/specialized-voi-v1-3_20260801/projection.json"),
     )
     parser.add_argument("--canonical-ref", required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--dispatch", action="store_true")
     args = parser.parse_args()
 
-    plan = dispatch_plan(load_projection(args.projection), args.canonical_ref)
+    plan = dispatch_plan(
+        load_projection(args.projection), args.canonical_ref, args.projection
+    )
     rendered = json.dumps(plan, indent=2, sort_keys=True) + "\n"
     if args.output is None:
         print(rendered, end="")
