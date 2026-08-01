@@ -49,6 +49,16 @@ separate gates.*
 
 ---
 
+## [ ] Track: Specialized VOI v1.3.0 residual-frontier governance
+
+*Link: [./tracks/specialized-voi-v1-3-residual_20260801/index.md](./tracks/specialized-voi-v1-3-residual_20260801/index.md)*
+
+*Status: C18 governs M22-M31 and accepted #318 residual families. Runtime,
+scientific, hosted, parity, stable-promotion, release and closure evidence are
+pending and remain separately gated.*
+
+---
+
 ## [x] Track: Operational Assurance Excellence [completed: 2026-07-20]
 
 *Link: [./tracks/operational-assurance-excellence_20260720/index.md](./tracks/operational-assurance-excellence_20260720/index.md)*

@@ -271,6 +271,20 @@
       ],
       "file": "tracks/specialized-voi-v1-3_20260801/index.md",
       "default_status": "in_progress"
+    },
+    {
+      "id": "C18",
+      "slug": "specialized_voi_v1_3_residual_frontier_governance",
+      "title": "Specialized VOI v1.3.0 residual-frontier governance",
+      "repos": [
+        "vop_poc_nz",
+        "voiage"
+      ],
+      "depends_on": [
+        "C16"
+      ],
+      "file": "tracks/specialized-voi-v1-3-residual_20260801/index.md",
+      "default_status": "planned"
     }
   ],
   "method_contract_version": "1.1.0"
