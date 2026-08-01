@@ -68,6 +68,14 @@ def test_projection_rejects_an_unregistered_projection_id(tmp_path: Path) -> Non
         load_projection(_write_projection(tmp_path, value))
 
 
+def test_dispatch_plan_rejects_an_unregistered_projection_id() -> None:
+    projection = load_projection(PROJECTION_V13)
+    projection["projection_id"] = "specialized-voi-v9.9.9"
+
+    with pytest.raises(ValueError, match="is not registered"):
+        dispatch_plan(projection, "local-test")
+
+
 def test_c16_projection_records_study_efficiency_repository_evidence() -> None:
     projection = load_projection(PROJECTION)
     issue = next(issue for issue in projection["issues"] if issue["number"] == 571)
