@@ -91,10 +91,10 @@ the linked track files contain detailed acceptance criteria.
 - **M25 — Information and implementation decomposition (C18, planned
   v1.3.0):** #593 returns current/informed and imperfect/perfect implementation
   cells, EVPIM/EVSIM/EVP/IA-EVSI components and an explicit interaction without
-  default independence. MoSCoW: Should.
+  default independence. MoSCoW: Must.
 - **M26 — Uncertainty-modelling value (C18, planned v1.3.0):** #594 values
   resolving model or solution uncertainty separately from acquiring empirical
-  information. MoSCoW: Should.
+  information. MoSCoW: Must.
 - **M27 — Event-localized information value (C18, planned v1.3.0):** #596
   localizes value to declared events or regions and reconciles to the governed
   aggregate. MoSCoW: Should.
@@ -167,7 +167,8 @@ the linked track files contain detailed acceptance criteria.
 | v1.2.0 | Must | M17 | C16 / C12 | Project 28 and every registered consumer repository |
 | v1.3.0 | Should | M21 | C17 / `supported_frontier_method_completion_20260723` | VOIAGE #560 and #746–#750, parent #318; implementation PR #751 |
 | v1.3.0 | Must | M22 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #570, parent #318 |
-| v1.3.0 | Should | M23-M31 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #572, #582, #593, #594 and #596-#600, parent #318 |
+| v1.3.0 | Must | M25-M26 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #593-#594, parent #318 |
+| v1.3.0 | Should | M23-M24, M27-M31 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #572, #582 and #596-#600, parent #318 |
 
 ## Verification
 

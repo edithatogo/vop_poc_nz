@@ -7,6 +7,11 @@
   and catastrophic-outcome semantics explicit.
 - **C18-M02:** Preserve C16 and C17 as versioned predecessors and keep bounded
   synchronization fail closed.
+- **C18-M03 / M25:** #593 returns current/informed and imperfect/perfect
+  implementation value cells, EVPIM/EVSIM/EVP/IA-EVSI components and an explicit
+  interaction without assuming independence.
+- **C18-M04 / M26:** #594 values resolving model or solution uncertainty while
+  distinguishing model improvement from information acquisition.
 
 ## Should
 
@@ -14,11 +19,6 @@
   posterior decision consequences, not accuracy alone.
 - **C18-S02 / M24:** #582 optimizes dependent information-source portfolios
   jointly with budgets, compatibility, costs, ties and solver assurance.
-- **C18-S03 / M25:** #593 returns current/informed and imperfect/perfect
-  implementation value cells, EVPIM/EVSIM/EVP/IA-EVSI components and an explicit
-  interaction without assuming independence.
-- **C18-S04 / M26:** #594 values resolving model or solution uncertainty while
-  distinguishing model improvement from information acquisition.
 - **C18-S05 / M27:** #596 localizes information value to declared events or
   regions with additive reconciliation to the governed aggregate.
 - **C18-S06 / M28:** #597 values belief-state sequential sensing and intervention
