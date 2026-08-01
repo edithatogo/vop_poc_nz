@@ -4,18 +4,21 @@
 
 C16 is the canonical cross-repository planning contract for the specialized
 VOIAGE v1.2.0 family. It governs estimation-focused variance reduction, COSS,
-EVSI/EVPI efficiency and the VoC presentation while preserving the VOIAGE
-runtime repository as implementation owner.
+EVSI/EVPI efficiency, utility-equivalent information prices and the VoC
+presentation while preserving the VOIAGE runtime repository as implementation
+owner.
 
 ## Requirements
 
 1. Canonical requirements M14–M17 and this track's MoSCoW requirements agree.
 2. VOIAGE tracks `estimation_focused_variance_voi_20260727`,
-   `study_design_efficiency_20260727` and
-   `supported_frontier_method_completion_20260723` remain the detailed
-   implementation plans.
+   `study_design_efficiency_20260727`, and
+   `risk_adjusted_information_pricing_20260731` remain the detailed
+   implementation plans. The omnibus
+   `supported_frontier_method_completion_20260723` remains their parent
+   frontier programme and is not completed by one child delivery.
 3. GitHub hierarchy #313 > #318 > #571/#595/#619 remains native and
-   deduplicated.
+   deduplicated; #595 owns native delivery issues #694–#697.
 4. Project 28 exposes MoSCoW `Must`, Contract Version `v1.2.0`, Track ID,
    Record ID, planned/unverified evidence and synchronization state.
 5. A versioned public projection can be consumed by any registered repository;
