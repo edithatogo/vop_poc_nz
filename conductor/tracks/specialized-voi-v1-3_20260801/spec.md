@@ -36,8 +36,8 @@ repository evidence into a scientific, stable or parity claim.
    deduplicated. PR #751 is experimental implementation evidence only.
 5. Project 28 exposes MoSCoW `Should`, Contract Version `v1.3.0`, Priority
    `P1`, Status `In Progress`, Lifecycle `Open`, Record ID `mcda-voi`, Track ID
-   `supported_frontier_method_completion_20260723`, verified experimental
-   evidence and planned synchronization state.
+   `supported_frontier_method_completion_20260723`, unverified evidence state
+   and clean synchronization state.
 6. Projection synchronization preserves human content, detects three-way
    conflicts, fails closed without credentials or explicit registration, and
    never automatically merges, closes issues or releases artifacts.

@@ -27,8 +27,8 @@
       "Status": "In Progress",
       "Lifecycle": "Open",
       "Gate": "External",
-      "Evidence State": "Verified",
-      "Sync State": "Planned"
+      "Evidence State": "Unverified",
+      "Sync State": "Clean"
     }
   },
   "issues": [

@@ -50,6 +50,8 @@ def test_c17_projection_records_mcda_delivery_and_explicit_versioned_path() -> N
     assert issue["subissues"] == [746, 747, 748, 749, 750]
     assert issue["implementation_pr"] == 751
     assert issue["requirement_ids"] == ["M17", "M21"]
+    assert projection["github_project"]["fields"]["Evidence State"] == "Unverified"
+    assert projection["github_project"]["fields"]["Sync State"] == "Clean"
     assert plan["client_payload"]["projection_path"].endswith(
         "specialized-voi-v1-3_20260801/projection.json"
     )
@@ -66,6 +68,14 @@ def test_projection_rejects_an_unregistered_projection_id(tmp_path: Path) -> Non
 
     with pytest.raises(ValueError, match="is not registered"):
         load_projection(_write_projection(tmp_path, value))
+
+
+def test_dispatch_plan_rejects_an_unregistered_projection_id() -> None:
+    projection = load_projection(PROJECTION_V13)
+    projection["projection_id"] = "specialized-voi-v9.9.9"
+
+    with pytest.raises(ValueError, match="is not registered"):
+        dispatch_plan(projection, "local-test")
 
 
 def test_c16_projection_records_study_efficiency_repository_evidence() -> None:
