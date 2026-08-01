@@ -50,6 +50,8 @@ def test_c17_projection_records_mcda_delivery_and_explicit_versioned_path() -> N
     assert issue["subissues"] == [746, 747, 748, 749, 750]
     assert issue["implementation_pr"] == 751
     assert issue["requirement_ids"] == ["M17", "M21"]
+    assert projection["github_project"]["fields"]["Evidence State"] == "Unverified"
+    assert projection["github_project"]["fields"]["Sync State"] == "Clean"
     assert plan["client_payload"]["projection_path"].endswith(
         "specialized-voi-v1-3_20260801/projection.json"
     )
