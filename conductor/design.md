@@ -137,7 +137,13 @@ flowchart LR
     EVSI --> Efficiency["EVSI / EVPI diagnostic"]
     EVPI["Commensurate EVPI"] --> Efficiency
 
-    Utility["Declared utility and wealth/reference state"] --> Clairvoyant["Clairvoyant policy"]
+    Utility["Declared utility and wealth/reference state"] --> CurrentEU["Current-policy EU"]
+    Utility --> Clairvoyant["Clairvoyant-policy EU"]
+    CurrentEU --> EUI["EUI"]
+    Clairvoyant --> EUI
+    CurrentEU --> Prices["Inverse-utility CEI + BPI/SPI roots"]
+    Clairvoyant --> Prices
+    EUI --> PPI["Anchored PPI"]
     Clairvoyant --> VoC["VoC presentation under #595"]
 ```
 

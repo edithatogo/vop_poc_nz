@@ -4,7 +4,7 @@
 flowchart LR
     M14["M14: estimation variance VOI"] --> E["VOIAGE estimation track / #619"]
     M15["M15: COSS + EVSI/EVPI"] --> S["VOIAGE study-efficiency track / #571"]
-    M16["M16: VoC presentation"] --> U["VOIAGE frontier track / #595"]
+    M16["M16: EUI / CEI / BPI / SPI / PPI + VoC"] --> U["VOIAGE utility-price track / #595"]
     E --> P["Parent #318"]
     S --> P
     U --> P

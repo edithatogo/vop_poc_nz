@@ -53,10 +53,14 @@ the linked track files contain detailed acceptance criteria.
   deterministic tie policy, optimum, boundary state, uncertainty around the
   optimum and plotting inputs; EVSI/EVPI has explicit common-unit,
   zero-denominator and bounds behavior.
-- **M16 — Utility and clairvoyance semantics (C16, planned v1.2.0):** Expected
-  Value of Clairvoyance is an alias or presentation of the expected-utility
-  value of a clairvoyant policy governed by VOIAGE issue #595, not a duplicate
-  kernel or an unconditional alias for monetary EVPI.
+- **M16 — Utility-equivalent information pricing and clairvoyance semantics
+  (C16, planned v1.2.0):** VOIAGE issue #595 represents named utility,
+  wealth/reference state, risk attitude, payoff units, information/cost
+  location, current and informed policies, stakeholder scope, EUI, CEI, BPI,
+  SPI, anchored PPI, policy switches, root diagnostics and cross-problem
+  comparability. Expected Value of Clairvoyance is a presentation of the same
+  clairvoyant-policy result, not a duplicate numerical method; monetary EVPI
+  reduction requires verified positive-affine utility.
 - **M17 — Cross-repository projection (C16, planned v1.2.0):** one canonical,
   versioned public projection drives bounded managed sections, native
   issue/subissue links and Project 28 fields for every registered consumer
@@ -118,7 +122,7 @@ the linked track files contain detailed acceptance criteria.
 |---|---|---|---|---|
 | v1.2.0 | Must | M14 | C16 / `estimation_focused_variance_voi_20260727` | VOIAGE #619, parent #318 |
 | v1.2.0 | Must | M15 | C16 / `study_design_efficiency_20260727` | VOIAGE #571, parent #318 |
-| v1.2.0 | Must | M16 | C16 / `supported_frontier_method_completion_20260723` | VOIAGE #595, parent #318 |
+| v1.2.0 | Must | M16 | C16 / `risk_adjusted_information_pricing_20260731` | VOIAGE #595 and #694–#697, parent #318 |
 | v1.2.0 | Must | M17 | C16 / C12 | Project 28 and every registered consumer repository |
 
 ## Verification
