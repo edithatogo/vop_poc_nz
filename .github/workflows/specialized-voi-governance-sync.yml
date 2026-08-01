@@ -7,6 +7,9 @@ on:
       - conductor/requirements.md
       - conductor/design.md
       - conductor/tracks/specialized-voi-v1-2_20260727/**
+      - conductor/tracks/specialized-voi-v1-3_20260801/**
+      - src/vop_poc_nz/specialized_voi_projection.py
+      - scripts/dispatch_specialized_voi_projection.py
   workflow_dispatch:
     inputs:
       dispatch:
@@ -14,6 +17,14 @@ on:
         required: true
         default: false
         type: boolean
+      projection:
+        description: Versioned projection to validate and dispatch.
+        required: true
+        default: v1.3.0
+        type: choice
+        options:
+          - v1.3.0
+          - v1.2.0
 
 permissions:
   contents: read
@@ -34,9 +45,14 @@ jobs:
           version: "0.11.29"
           enable-cache: true
       - run: uv sync --frozen --extra dev
-      - run: >-
-          uv run python scripts/dispatch_specialized_voi_projection.py
-          --canonical-ref "${{ github.sha }}"
+      - name: Validate immutable v1.2 and current v1.3 projections
+        run: |
+          uv run python scripts/dispatch_specialized_voi_projection.py \
+            --projection conductor/tracks/specialized-voi-v1-2_20260727/projection.json \
+            --canonical-ref "${{ github.sha }}"
+          uv run python scripts/dispatch_specialized_voi_projection.py \
+            --projection conductor/tracks/specialized-voi-v1-3_20260801/projection.json \
+            --canonical-ref "${{ github.sha }}"
 
   dispatch:
     needs: validate
@@ -68,6 +84,11 @@ jobs:
       - if: steps.credential.outputs.state == 'ready'
         env:
           GOVERNANCE_SYNC_TOKEN: ${{ secrets.CROSS_REPOSITORY_GOVERNANCE_TOKEN }}
-        run: >-
-          uv run python scripts/dispatch_specialized_voi_projection.py
-          --canonical-ref "${{ github.sha }}" --dispatch
+        run: |
+          version="${{ inputs.projection || 'v1.3.0' }}"
+          projection="conductor/tracks/specialized-voi-v1-3_20260801/projection.json"
+          if [ "$version" = "v1.2.0" ]; then
+            projection="conductor/tracks/specialized-voi-v1-2_20260727/projection.json"
+          fi
+          uv run python scripts/dispatch_specialized_voi_projection.py \
+            --projection "$projection" --canonical-ref "${{ github.sha }}" --dispatch

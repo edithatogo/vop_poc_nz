@@ -17,6 +17,10 @@ PROJECTION = (
     Path(__file__).parents[1]
     / "conductor/tracks/specialized-voi-v1-2_20260727/projection.json"
 )
+PROJECTION_V13 = (
+    Path(__file__).parents[1]
+    / "conductor/tracks/specialized-voi-v1-3_20260801/projection.json"
+)
 
 
 def test_c16_projection_yields_only_explicitly_registered_dispatch_target() -> None:
@@ -28,6 +32,40 @@ def test_c16_projection_yields_only_explicitly_registered_dispatch_target() -> N
     assert plan["targets"] == ["edithatogo/voiage"]
     assert plan["client_payload"]["canonical_track"] == "C16"
     assert plan["client_payload"]["canonical_ref"] == "0123456789abcdef"
+    assert plan["client_payload"]["projection_path"].endswith(
+        "specialized-voi-v1-2_20260727/projection.json"
+    )
+
+
+def test_c17_projection_records_mcda_delivery_and_explicit_versioned_path() -> None:
+    projection = load_projection(PROJECTION_V13)
+    projection_path = "conductor/tracks/specialized-voi-v1-3_20260801/projection.json"
+    plan = dispatch_plan(projection, "fedcba9876543210", projection_path)
+    issue = next(issue for issue in projection["issues"] if issue["number"] == 560)
+
+    assert projection["projection_id"] == "specialized-voi-v1.3.0"
+    assert projection["contract_version"] == "v1.3.0"
+    assert projection["canonical_track"] == "C17"
+    assert issue["implementation_status"] == "experimental_repository_evidence"
+    assert issue["subissues"] == [746, 747, 748, 749, 750]
+    assert issue["implementation_pr"] == 751
+    assert issue["requirement_ids"] == ["M17", "M21"]
+    assert plan["client_payload"]["projection_path"].endswith(
+        "specialized-voi-v1-3_20260801/projection.json"
+    )
+
+
+def test_dispatch_rejects_a_projection_path_from_another_version() -> None:
+    with pytest.raises(ValueError, match="projection path"):
+        dispatch_plan(load_projection(PROJECTION_V13), "local-test", PROJECTION)
+
+
+def test_projection_rejects_an_unregistered_projection_id(tmp_path: Path) -> None:
+    value = json.loads(PROJECTION_V13.read_text(encoding="utf-8"))
+    value["projection_id"] = "specialized-voi-v9.9.9"
+
+    with pytest.raises(ValueError, match="is not registered"):
+        load_projection(_write_projection(tmp_path, value))
 
 
 def test_c16_projection_records_study_efficiency_repository_evidence() -> None:

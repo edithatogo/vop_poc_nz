@@ -69,6 +69,15 @@ the linked track files contain detailed acceptance criteria.
 
 ### Should have
 
+- **M21 — Finite additive MCDA information value (C17, planned v1.3.0):**
+  VOIAGE issue #560 provides exact finite perfect-information value under a
+  compensatory additive multi-criteria model with fixed ex-ante value
+  functions, declared criterion units and directions, a correlated joint
+  outcome/preference law, normalized nonnegative weights, complete ties,
+  criterion/preference/joint information actions, gross and signed net value,
+  interaction, regret, fractional rank acceptability and Pareto diagnostics.
+  A merged experimental Python implementation is repository evidence, not
+  scientific approval, stable promotion or Rust/R/Julia parity.
 - **S1:** PyArrow and Polars round trips preserve logical types, metadata, and
   values across processes and operating systems.
 - **S2:** supported Python releases include 3.12–3.14; free-threaded Python is
@@ -124,6 +133,7 @@ the linked track files contain detailed acceptance criteria.
 | v1.2.0 | Must | M15 | C16 / `study_design_efficiency_20260727` | VOIAGE #571, parent #318 |
 | v1.2.0 | Must | M16 | C16 / `risk_adjusted_information_pricing_20260731` | VOIAGE #595 and #694–#697, parent #318 |
 | v1.2.0 | Must | M17 | C16 / C12 | Project 28 and every registered consumer repository |
+| v1.3.0 | Should | M21 | C17 / `supported_frontier_method_completion_20260723` | VOIAGE #560 and #746–#750, parent #318; implementation PR #751 |
 
 ## Verification
 

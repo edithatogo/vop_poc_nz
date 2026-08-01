@@ -163,6 +163,40 @@ flowchart TD
     Conflict -->|no and authorized| Apply["Update managed fields only"]
 ```
 
+## Specialized VOI v1.3.0 additive MCDA continuation
+
+```mermaid
+flowchart LR
+    Raw["Raw criteria with units + directions"] --> Value["Fixed ex-ante value functions"]
+    Weights["Nonnegative normalized weights"] --> Additive["Finite additive value model"]
+    Joint["Correlated outcome/preference law"] --> Additive
+    Value --> Additive
+    Additive --> Baseline["Baseline expected policy + complete ties"]
+    Joint --> Criterion["Criterion-information partition"]
+    Joint --> Preference["Preference-information partition"]
+    Joint --> JointInfo["Joint-information partition"]
+    Baseline --> Compare["Gross + signed net information value"]
+    Criterion --> Compare
+    Preference --> Compare
+    JointInfo --> Compare
+    Compare --> Decomposition["Interaction + conditional increments"]
+    Compare --> Diagnostics["Regret + rank acceptability + Pareto"]
+```
+
+```mermaid
+flowchart TD
+    C16["Completed C16 / v1.2.0 predecessor"] --> C17["C17 / M21 planned v1.3.0"]
+    C17 --> Projection["Versioned v1.3.0 fail-closed projection"]
+    Projection --> Parent["VOIAGE #318 frontier programme"]
+    Parent --> MCDA["#560 additive MCDA information value"]
+    MCDA --> Children["#746–#750 native delivery subissues"]
+    MCDA --> Evidence["PR #751 experimental repository evidence"]
+    Evidence --> Gates{"Promotion gates satisfied?"}
+    Gates -->|"no"| Experimental["Remain experimental"]
+    Gates -->|"scientific + hosted + parity + stable review"| Promotion["Separate promotion decision"]
+    Projection --> Project["Project 28: Should + v1.3.0 + In Progress"]
+```
+
 ## Typed domain and governance model
 
 ```mermaid

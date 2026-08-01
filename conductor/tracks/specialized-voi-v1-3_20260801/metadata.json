@@ -1,0 +1,70 @@
+{
+  "track_id": "C17",
+  "type": "feature",
+  "status": "in_progress",
+  "planned_version": "1.3.0",
+  "moscow": "should",
+  "created_at": "2026-08-01T03:45:28Z",
+  "updated_at": "2026-08-01T04:15:00Z",
+  "description": "Canonical v1.3.0 governance for finite additive MCDA perfect-information value.",
+  "evidence_schema": "1.0",
+  "predecessor_track": "C16",
+  "predecessor_projection": "conductor/tracks/specialized-voi-v1-2_20260727/projection.json",
+  "repositories": [
+    "vop_poc_nz",
+    "voiage"
+  ],
+  "requirement_ids": [
+    "M17",
+    "M21"
+  ],
+  "github_parent_issue": "https://github.com/edithatogo/voiage/issues/318",
+  "github_issue": "https://github.com/edithatogo/voiage/issues/560",
+  "github_subissues": [
+    "https://github.com/edithatogo/voiage/issues/746",
+    "https://github.com/edithatogo/voiage/issues/747",
+    "https://github.com/edithatogo/voiage/issues/748",
+    "https://github.com/edithatogo/voiage/issues/749",
+    "https://github.com/edithatogo/voiage/issues/750"
+  ],
+  "implementation_pull_request": "https://github.com/edithatogo/voiage/pull/751",
+  "github_project": "https://github.com/users/edithatogo/projects/28",
+  "gates": [
+    {
+      "id": "voiage-experimental-implementation",
+      "kind": "repository_evidence",
+      "status": "satisfied",
+      "evidence": "VOIAGE PR #751 provides experimental Python exact finite additive-MCDA implementation evidence."
+    },
+    {
+      "id": "independent-scientific-review",
+      "kind": "scientific_review",
+      "status": "pending",
+      "evidence": "Required before scientific or stable promotion."
+    },
+    {
+      "id": "hosted-c17-exact-head",
+      "kind": "hosted_check",
+      "status": "pending",
+      "evidence": "Required for the exact C17 governance revision."
+    },
+    {
+      "id": "rust-r-julia-parity",
+      "kind": "cross_language_parity",
+      "status": "pending",
+      "evidence": "No shared-fixture Rust, R or Julia execution parity is claimed; Mojo remains external."
+    },
+    {
+      "id": "stable-promotion",
+      "kind": "human_governance",
+      "status": "pending",
+      "evidence": "Experimental evidence does not authorize stable promotion."
+    },
+    {
+      "id": "release-and-issue-closure",
+      "kind": "human_governance",
+      "status": "pending",
+      "evidence": "Release and issue closure are excluded from automatic synchronization."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+# C17 — Finite additive MCDA information-value governance
+
+- [Specification](./spec.md)
+- [Implementation Plan](./plan.md)
+- [MoSCoW requirements](./requirements.md)
+- [Mermaid design](./design.md)
+- [Metadata](./metadata.json)
+- [Evidence](./evidence.jsonl)
+- [Cross-repository projection](./projection.json)
+- [Completed C16 predecessor](../specialized-voi-v1-2_20260727/index.md)
+- [Canonical requirements](../../requirements.md)
+- [Canonical design](../../design.md)
+- [VOIAGE parent issue #318](https://github.com/edithatogo/voiage/issues/318)
+- [VOIAGE MCDA issue #560](https://github.com/edithatogo/voiage/issues/560)
+- [VOIAGE implementation PR #751](https://github.com/edithatogo/voiage/pull/751)
+- [GitHub Project 28](https://github.com/users/edithatogo/projects/28)
