@@ -1,0 +1,7 @@
+Task C18-T1A — Canonical M32 sampling-acquisition-harm synchronization
+
+Summary: Added planned v1.3.0 Must M32 to root and C18 MoSCoW requirements, canonical Mermaid governance, VOIAGE #850 traceability, and explicit independent-review, named-human-verdict, real-study authorization and blocked-runtime boundaries.
+
+Boundary: VOP owns governance only. No runtime, scientific approval, human verdict, real-study authorization, promotion, release, issue change or GitHub mutation is claimed.
+
+Validation: Conductor registry 19 tracks/33 issues/0 errors/0 warnings; canonical assertions and JSON passed; both Mermaid documents rendered successfully; diff check clean. The projection pytest was blocked by the clean repository dependency environment (missing pandera after package import), not a test failure.
