@@ -203,18 +203,36 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    C16["Completed C16 / M14-M17"] --> C18["C18 / M22-M31"]
+    C16["Completed C16 / M14-M17"] --> C18["C18 / M22-M32"]
     C17["C17 / M21 additive MCDA"] -. "parallel v1.3 wave" .-> C18
     C18 --> Parent["VOIAGE #318"]
     Parent --> Decision["Risk, forecasts, source portfolios"]
     Parent --> Decompose["Implementation, model uncertainty, heterogeneity"]
     Parent --> Dynamic["Event, sequential, social and realized sample value"]
+    Parent --> Acquisition["#850 / M32 sampling-acquisition-harm research scope"]
     Decision --> Evidence["Experimental runtime evidence"]
     Decompose --> Evidence
     Dynamic --> Evidence
+    Acquisition --> Evidence
     Evidence --> Gates{"Scientific + hosted + parity + promotion gates"}
     Gates -->|"pending"| Hold["Remain experimental"]
     Gates -->|"separately satisfied"| Promote["Eligible for governed promotion"]
+```
+
+```mermaid
+flowchart LR
+    Design["Sampling action d and explicit no-sampling comparator d0"] --> Joint["Information and acquisition-harm laws, parties, timing and units"]
+    Joint --> ScalarGate{"Mutually exclusive, separable and commensurate?"}
+    ScalarGate -->|"Yes"| Scalar["Signed incremental value with harm counted once"]
+    ScalarGate -->|"No"| NonScalar["Joint-welfare, constrained or vector result"]
+    Scalar --> Candidate["Exact candidate and mathematical feasibility"]
+    NonScalar --> Candidate
+    Candidate --> Review["Candidate-bound independent scientific/domain review"]
+    Review --> Human["Separate named human verdict"]
+    Human --> Runtime{"Runtime implementation separately authorized?"}
+    Runtime -->|"No or pending"| Unsupported["M32 unsupported research scope"]
+    Runtime -->|"Yes"| Future["Future VOIAGE Rust-authoritative implementation"]
+    Candidate -. "real-study deployment only" .-> Ethics["Accountable ethics/regulatory authorization where applicable"]
 ```
 
 ```mermaid

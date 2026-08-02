@@ -12,6 +12,13 @@
   interaction without assuming independence.
 - **C18-M04 / M26:** #594 values resolving model or solution uncertainty while
   distinguishing model improvement from information acquisition.
+- **C18-M05 / M32:** #850 governs sampling-acquisition-harm research scope with
+  an explicit no-sampling comparator, design-indexed information and harm laws,
+  affected parties, timing, units, catastrophe and mathematical risk criteria.
+  An additive scalar requires a mutually exclusive, separable and commensurate
+  outcome ledger; otherwise retain joint-welfare, constrained or vector
+  results. Runtime remains unsupported until the exact candidate passes
+  independent scientific/domain review and a separate named human verdict.
 
 ## Should
 

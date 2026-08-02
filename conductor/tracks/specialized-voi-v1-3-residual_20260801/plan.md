@@ -4,7 +4,11 @@
 
 - [ ] **C18-T1:** Freeze M22-M31, v1.3.0 MoSCoW traceability, estimand
   boundaries, exclusions and predecessor relationships. (AC-01, AC-02)
-- [ ] **C18-T2:** Reconcile #318 and #570/#572/#582/#593/#594/#596-#600 with
+- [x] **C18-T1A:** Extend the canonical v1.3.0 Must baseline with M32
+  sampling-acquisition-harm research scoping for VOIAGE #850, including the
+  fail-closed independent-review, named-human-verdict and runtime boundaries.
+  (AC-01, AC-02, AC-07) `03b3d1f`
+- [ ] **C18-T2:** Reconcile #318 and #570/#572/#582/#593/#594/#596-#600/#850 with
   Project 28 and create native nested delivery subissues. (AC-01, AC-05)
 - [ ] **C18-T3:** Run canonical Markdown, Mermaid, JSON and registry validation;
   record the initialization evidence. (AC-01, AC-02)
