@@ -110,6 +110,16 @@ the linked track files contain detailed acceptance criteria.
 - **M31 — Outcome-conditional sample information value (C18, planned
   v1.3.0):** #600 returns realized sample-value distributions and low-value
   risk separately from expected EVSI and estimator error. MoSCoW: Should.
+- **M32 — Sampling-acquisition-harm VOI research scope (C18, planned
+  v1.3.0):** VOIAGE issue #850 declares each sampling action and explicit
+  no-sampling comparator, affected parties, information and acquisition-harm
+  laws, timing, units, catastrophic outcomes, mathematical risk criteria and
+  constraints. Additive net value is permitted only for a mutually exclusive,
+  separable and commensurate outcome ledger; otherwise the result remains
+  joint-welfare, constrained or vector. Positive EVSI or ENBS never supplies
+  ethics or regulatory authorization. Runtime remains unsupported until an
+  exact candidate passes independent scientific/domain review and a separate
+  named human verdict. MoSCoW: Must.
 - **S1:** PyArrow and Polars round trips preserve logical types, metadata, and
   values across processes and operating systems.
 - **S2:** supported Python releases include 3.12–3.14; free-threaded Python is
@@ -169,6 +179,7 @@ the linked track files contain detailed acceptance criteria.
 | v1.3.0 | Must | M22 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #570, parent #318 |
 | v1.3.0 | Must | M25-M26 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #593-#594, parent #318 |
 | v1.3.0 | Should | M23-M24, M27-M31 | C18 / `supported_frontier_method_completion_20260723` | VOIAGE #572, #582 and #596-#600, parent #318 |
+| v1.3.0 | Must | M32 | C18 / `sampling_acquisition_harm_voi_20260802` | VOIAGE #850, child of #570, dependency #571, under #841/#318 |
 
 ## Verification
 

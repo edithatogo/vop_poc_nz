@@ -15,15 +15,18 @@ gate is separately evidenced.
 - MCDA v1.3.0 sibling/predecessor wave:
   `conductor/tracks/specialized-voi-v1-3_20260801/`.
 - VOIAGE parent programme: <https://github.com/edithatogo/voiage/issues/318>.
-- Native accepted-family issues #570, #572, #582, #593, #594 and #596-#600.
+- Native accepted-family issues #570, #572, #582, #593, #594, #596-#600 and
+  sampling-acquisition-harm scoping issue #850.
 - VOIAGE classification checkpoint:
   `conductor/tracks/voi_method_census_contract_reconciliation_20260723/classification-checkpoint.json`.
 - VOIAGE implementation track:
   `conductor/tracks/supported_frontier_method_completion_20260723/`.
+- VOIAGE sampling-acquisition-harm track:
+  `conductor/tracks/sampling_acquisition_harm_voi_20260802/`.
 
 ## Requirements
 
-1. M22-M31 are versioned v1.3.0 requirements with explicit MoSCoW priority,
+1. M22-M32 are versioned v1.3.0 requirements with explicit MoSCoW priority,
    estimand boundaries, units, conditioning, chronology, costs, policies and
    estimator or solver assurance.
 2. Every family must be implemented test-first or receive a reviewed exclusion;
@@ -37,7 +40,8 @@ gate is separately evidenced.
    implementation and information without assumed independence; modelling
    uncertainty separately from information acquisition; event, sequential,
    social, heterogeneity and realized-sample quantities without relabelling
-   classical aggregate VOI.
+   classical aggregate VOI; sampling-acquisition harm remains distinct from
+   ordinary cost, downstream decision harm and risk-sensitive clairvoyance.
 5. GitHub hierarchy, Project 28 fields, Conductor plans, roadmap, schemas,
    fixtures, runtime discovery and documentation must agree before a positive
    support claim.
@@ -46,7 +50,7 @@ gate is separately evidenced.
 
 ## Acceptance criteria
 
-- **AC-01:** Root and C18 MoSCoW requirements enumerate M22-M31 at v1.3.0 and
+- **AC-01:** Root and C18 MoSCoW requirements enumerate M22-M32 at v1.3.0 and
   trace each requirement to #318 and its native issue.
 - **AC-02:** Mermaid designs show conditioning, decision, decomposition,
   interaction and fail-closed promotion boundaries.
@@ -62,6 +66,10 @@ gate is separately evidenced.
   implementation and canonical-governance revision.
 - **AC-07:** Scientific review, parity, stable promotion, release and issue
   closure remain pending unless separately evidenced and authorized.
+- **AC-08:** M32 remains an unsupported research scope until a content-bound
+  independent scientific/domain review and separate named human verdict approve
+  the same narrow candidate; mathematical feasibility and positive ENBS never
+  authorize a real study.
 
 ## External gates
 
@@ -69,6 +77,8 @@ gate is separately evidenced.
 - Hosted exact-head validation in both canonical and runtime repositories.
 - Shared-fixture Rust, R and Julia parity where advertised; Mojo remains external.
 - Explicit stable-promotion, release and issue-closure decisions.
+- For M32, candidate-bound independent review, a separate named human verdict
+  and any applicable real-study ethics or regulatory authorization.
 
 ## Out of scope
 

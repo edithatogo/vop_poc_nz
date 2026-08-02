@@ -7,5 +7,5 @@
 - [Metadata](./metadata.json)
 - [Evidence ledger](./evidence.jsonl)
 
-C18 governs M22-M31 and the remaining accepted #318 families while preserving
+C18 governs M22-M32 and the remaining accepted #318 families while preserving
 VOP as canonical governance owner and VOIAGE as runtime owner.

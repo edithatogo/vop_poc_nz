@@ -53,7 +53,7 @@ separate gates.*
 
 *Link: [./tracks/specialized-voi-v1-3-residual_20260801/index.md](./tracks/specialized-voi-v1-3-residual_20260801/index.md)*
 
-*Status: C18 governs M22-M31 and accepted #318 residual families; canonical
+*Status: C18 governs M22-M32 and accepted #318 residual families; canonical
 M32 sampling-acquisition-harm synchronization is in progress. Runtime,
 scientific, hosted, parity, stable-promotion, release and closure evidence are
 pending and remain separately gated.*
