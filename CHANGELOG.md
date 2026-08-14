@@ -14,6 +14,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Locked Pixi/uv task parity, BasedPyright plus `ty`, Scalene profiling,
   mutation/security/experimental evidence lanes, and SHA-pinned Actions.
 
+## [0.2.4](https://github.com/edithatogo/vop_poc_nz/compare/v0.2.3...v0.2.4) (2026-08-14)
+
+
+### Features
+
+* add fail-closed paper evidence validator ([a58eee5](https://github.com/edithatogo/vop_poc_nz/commit/a58eee5ecbe705e60879d551feacd97209544bf4))
+* add paper update agent and tool contracts ([ab19f28](https://github.com/edithatogo/vop_poc_nz/commit/ab19f28ace33d3b36a11df7ba64dab45fe678536))
+* **governance:** dispatch bounded C16 consumer sync ([9190534](https://github.com/edithatogo/vop_poc_nz/commit/9190534328b8e5d5a4d8ab5bbfea21abdba10a5b))
+* modernize VOP LaTeX manuscript workflow ([9305c06](https://github.com/edithatogo/vop_poc_nz/commit/9305c067bd41651768161e688a0eda19ed6d5188))
+* populate paper evidence receipts and manifest ([b883135](https://github.com/edithatogo/vop_poc_nz/commit/b883135adf14afdbe300a754f8eedafc2a09641e))
+* record explicit administrator governance bypass ([dae9d1c](https://github.com/edithatogo/vop_poc_nz/commit/dae9d1cc494f8d7f21d55d00fb25b464e57bfc64))
+
+
+### Bug Fixes
+
+* align public concern body taxonomy ([c56b32e](https://github.com/edithatogo/vop_poc_nz/commit/c56b32ef603728f0f195cf564ae6fb5792e2ee23))
+* align tracked concern Project taxonomy ([d3309f0](https://github.com/edithatogo/vop_poc_nz/commit/d3309f0169cf0b8f1f715c67d288af2d441995e6))
+* **conductor:** preserve residual MoSCoW priorities ([#70](https://github.com/edithatogo/vop_poc_nz/issues/70)) ([4c8ae85](https://github.com/edithatogo/vop_poc_nz/commit/4c8ae85deaca82041589b0a664802f0c894648a5))
+* validate GitHub workflow path metadata ([f2ede64](https://github.com/edithatogo/vop_poc_nz/commit/f2ede645d0d6ca92202010713a6608845d8b83ff))
+
+
+### Documentation
+
+* **conductor:** add canonical C18/M32 sampling-harm scope ([#71](https://github.com/edithatogo/vop_poc_nz/issues/71)) ([e0ff1d2](https://github.com/edithatogo/vop_poc_nz/commit/e0ff1d2ce3361d52ee22bb01e105b92653ed606c))
+* **conductor:** record C16 mirror merge ([#56](https://github.com/edithatogo/vop_poc_nz/issues/56)) ([23287f8](https://github.com/edithatogo/vop_poc_nz/commit/23287f879fc39974be0fdf5c7a5db2c494dc13aa))
+* **conductor:** sync estimation variance C16 evidence ([#64](https://github.com/edithatogo/vop_poc_nz/issues/64)) ([cedc6fb](https://github.com/edithatogo/vop_poc_nz/commit/cedc6fbb17a5d999cb12bb300a01f87d976ec02e))
+* **conductor:** sync expected-utility VoC C16 plan ([#66](https://github.com/edithatogo/vop_poc_nz/issues/66)) ([9c25057](https://github.com/edithatogo/vop_poc_nz/commit/9c250572750b5ae760ef8bc1e52b8060a9758d56))
+* **conductor:** sync study efficiency C16 evidence ([#65](https://github.com/edithatogo/vop_poc_nz/issues/65)) ([ac61bb9](https://github.com/edithatogo/vop_poc_nz/commit/ac61bb9f46136dad480379785641bdf381ade7c2))
+* pin paper tool integration evidence ([56bd7e4](https://github.com/edithatogo/vop_poc_nz/commit/56bd7e41ae81175b2c7ae004bde626865fa29862))
+* record verified AuthenText integration ([dcf3605](https://github.com/edithatogo/vop_poc_nz/commit/dcf36050082128dd7b9b0c269a9fec4093a6d349))
+
+
+### Tests
+
+* assert promoted baseline trust ([b7879bc](https://github.com/edithatogo/vop_poc_nz/commit/b7879bcff3da911b256c716474d0187e34a716f4))
+
+
+### CI/CD
+
+* verify pinned paper tooling in manuscript build ([2c46db2](https://github.com/edithatogo/vop_poc_nz/commit/2c46db2fe5f907d894bb07f1127c008f10ee462e))
+
 ## [0.2.3](https://github.com/edithatogo/vop_poc_nz/compare/v0.2.2...v0.2.3) (2026-07-20)
 
 
