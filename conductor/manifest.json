@@ -285,6 +285,22 @@
       ],
       "file": "tracks/specialized-voi-v1-3-residual_20260801/index.md",
       "default_status": "planned"
+    },
+    {
+      "id": "C19",
+      "slug": "vop_assurance_and_maintenance_v1_3",
+      "title": "VOP repository assurance and maintenance closure",
+      "repos": [
+        "vop_poc_nz"
+      ],
+      "depends_on": [
+        "C07",
+        "C10",
+        "C12",
+        "C16"
+      ],
+      "file": "tracks/vop-assurance-maintenance-v1-3_20260731/index.md",
+      "default_status": "planned"
     }
   ],
   "method_contract_version": "1.1.0"

@@ -444,6 +444,78 @@
         "VOI-001"
       ],
       "priority": "P1"
+    },
+    {
+      "id": "VOP-034",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Protect main and harden GitHub Actions defaults",
+      "priority": "P0",
+      "labels": ["governance", "security", "github-actions"],
+      "depends_on": [],
+      "github_issue": 57,
+      "parent_issue": 54,
+      "body": "Implement a solo-maintainer-compatible main ruleset, read-only Actions defaults, narrowly scoped writes, immutable approved actions, and a hosted drift receipt."
+    },
+    {
+      "id": "VOP-035",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Bind governance dispatch to immutable consumer receipts",
+      "priority": "P0",
+      "labels": ["governance", "automation", "cross-repository"],
+      "depends_on": [],
+      "github_issue": 58,
+      "parent_issue": 54,
+      "body": "Bind dispatch and consumer confirmation to a full canonical SHA, projection digest, correlation ID, receipt, concurrency policy, and idempotency key."
+    },
+    {
+      "id": "VOP-036",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Eliminate governance documentation and registry drift",
+      "priority": "P0",
+      "labels": ["conductor", "governance", "documentation"],
+      "depends_on": ["VOP-034"],
+      "github_issue": 59,
+      "parent_issue": 54,
+      "body": "Generate or validate AGENTS, track registry, Mermaid range, issue backlog, Project fields, and hosted settings against canonical sources."
+    },
+    {
+      "id": "VOP-037",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Retire legacy imports and enforce transparent quality ratchets",
+      "priority": "P0",
+      "labels": ["maintenance", "testing", "typing"],
+      "depends_on": [],
+      "github_issue": 60,
+      "parent_issue": 53,
+      "body": "Move first-party execution to vop_poc_nz and reconcile coverage, Ruff, BasedPyright, and ty through explicit non-regressing ratchets."
+    },
+    {
+      "id": "VOP-038",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Make Renovate the dependency-update authority",
+      "priority": "P0",
+      "labels": ["dependencies", "renovate", "supply-chain"],
+      "depends_on": ["VOP-034"],
+      "github_issue": 61,
+      "parent_issue": 53,
+      "body": "Validate a reviewed Renovate policy, then remove Dependabot update automation and gate proposals with dependency and test evidence."
+    },
+    {
+      "id": "VOP-039",
+      "repository": "vop_poc_nz",
+      "track": "C19",
+      "title": "Remove generated and debug bulk under artifact governance",
+      "priority": "P1",
+      "labels": ["repo-hygiene", "artifacts", "reproducibility"],
+      "depends_on": [],
+      "github_issue": 62,
+      "parent_issue": 53,
+      "body": "Remove transient tracked bulk in a normal commit and record explicit manifest-backed storage and provenance dispositions for retained generated artifacts."
     }
   ]
 }

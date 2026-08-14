@@ -35,3 +35,13 @@ Turn the proof-of-concept into a clean empirical compendium and tutorial package
 ## Agent operating rule
 
 Map the live worktree and inspect existing implementations before editing. Prefer the smallest compatible change, record evidence in the local track state, and never promote local/private artifacts implicitly.
+
+## C19 closure refinement
+
+C19 turns the remaining C07 gaps into explicit planned-v1.3.0 work:
+
+- canonical import retirement and transparent quality ratchets: [#60](https://github.com/edithatogo/vop_poc_nz/issues/60);
+- generated/debug artifact disposition and prevention: [#62](https://github.com/edithatogo/vop_poc_nz/issues/62).
+
+These tasks are nested under #55 > #53 and do not invalidate the 2026-07-19
+implementation evidence above.

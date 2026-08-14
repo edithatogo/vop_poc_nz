@@ -33,3 +33,11 @@ Maintain a deduplicated issue registry, dependency-aware conductor dashboard, re
 ## Agent operating rule
 
 Map the live worktree and inspect existing implementations before editing. Prefer the smallest compatible change, record evidence in the local track state, and never promote local/private artifacts implicitly.
+
+## C19 closure refinement
+
+The remaining hosted-control and roadmap-drift work is nested under #55 > #54:
+
+- [#57](https://github.com/edithatogo/vop_poc_nz/issues/57): main ruleset and least-privilege Actions policy;
+- [#58](https://github.com/edithatogo/vop_poc_nz/issues/58): immutable dispatch identity, receipts, correlation, and idempotency;
+- [#59](https://github.com/edithatogo/vop_poc_nz/issues/59): canonical documentation, registry, design, backlog, and hosted-setting drift validation.
