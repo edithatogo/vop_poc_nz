@@ -67,7 +67,7 @@ experimental = [
     "orjson>=3.11.9,<4",
     "msgspec>=0.21.1,<1",
     "jax>=0.11.0,<0.12",
-    "numpyro>=0.21.0,<0.22",
+    "numpyro>=0.21.0,<0.23",
 ]
 
 [project.urls]
