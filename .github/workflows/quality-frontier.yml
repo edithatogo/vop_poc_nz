@@ -61,7 +61,11 @@ jobs:
           version: "0.11.29"
       - run: uv sync --frozen --extra dev
       - run: uv run python scripts/reproducible_build.py . --output .assurance/reproducible-build.json --dist-dir dist
-      - run: uv run twine check dist/*
+      # The frozen research environment retains its qualified dependencies.
+      # Twine 7 understands metadata 2.5 emitted by current build backends;
+      # qualify this isolated packaging tool without changing scientific pins.
+      - name: Check distributions with metadata-2.5-aware tooling
+        run: uvx --from twine==7.0.0 twine check dist/*
       - run: uv run --isolated --no-project --with dist/*.whl python -c "import vop_poc_nz; print(vop_poc_nz.__version__)"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

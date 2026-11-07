@@ -36,12 +36,38 @@ jobs:
           uv pip install --python .assurance/sbom-env/bin/python --no-deps .assurance/dist/*.whl
           uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment .assurance/sbom-env --pyproject pyproject.toml --mc-type library --output-reproducible --of JSON -o .assurance/sbom.cdx.json
       - name: Retain vulnerability evidence
-        run: uv run pip-audit -r .assurance/release-requirements.txt --format=json --output=.assurance/pip-audit.json
+        run: |
+          audit_status=0
+          uv run --no-sync pip-audit -r .assurance/release-requirements.txt --format=json --output=.assurance/pip-audit.json || audit_status=$?
+          uv run --no-sync python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('.assurance/pip-audit.json')
+          if not path.is_file():
+              raise SystemExit('Audit produced no JSON evidence; the gate remains failed.')
+          report = json.loads(path.read_text(encoding='utf-8'))
+          for dependency in report.get('dependencies', []):
+              vulnerabilities = dependency.get('vulns', [])
+              if vulnerabilities:
+                  print(json.dumps({
+                      'name': dependency['name'],
+                      'version': dependency['version'],
+                      'vulnerabilities': [
+                          {'id': item['id'], 'fix_versions': item.get('fix_versions', [])}
+                          for item in vulnerabilities
+                      ],
+                  }, sort_keys=True))
+          PY
+          exit "$audit_status"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: supply-chain-assurance
-          path: .assurance/
+          path: |
+            .assurance/*.json
+            .assurance/*.txt
+            .assurance/dist/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
