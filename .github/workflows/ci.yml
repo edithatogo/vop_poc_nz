@@ -24,20 +24,28 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
-        
-    - name: Install dependencies
+
+    - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+      with:
+        version: "0.11.29"
+    - name: Install qualified test dependencies
+      run: uv sync --locked --extra dev
+    - name: Record serialization writer identity
       run: |
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
-        
-    - name: Test with tox
-      run: tox
+        uv run --no-sync python -c "import pyarrow as pa, pyarrow.parquet as pq; print('installed pyarrow:', pa.__version__); print('committed fixture writer:', pq.read_metadata('contracts/vop-voiage/1.0.0/fixtures/typed-pipeline-records.parquet').created_by)"
+    - name: Test the complete suite
+      run: uv run --no-sync python -m pytest tests
+    - name: Retain supported static analysis checks
+      if: matrix.python-version == '3.14'
+      run: |
+        uv run --no-sync ruff check src/vop_poc_nz/perspective_io.py tests/test_perspective_io.py scripts/dependency_frontier.py
+        uv run --no-sync vulture src/vop_poc_nz/perspective_io.py --min-confidence 90
 
   quality-ratchets:
     runs-on: ubuntu-latest
