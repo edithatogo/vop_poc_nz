@@ -1,0 +1,77 @@
+name: Pillow lock qualification
+
+# Temporary branch-scoped qualification. Remove before merging the candidate.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'codex/paignia-ecosystem-handoffs-20261108'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: '0.11.29'
+      - name: Resolve only the identified security correction
+        run: |
+          cp uv.lock /tmp/vop-prior-uv.lock
+          uv lock --upgrade-package pillow==13.0.0
+          python - <<'PY'
+          import json
+          import tomllib
+          from pathlib import Path
+
+          before = tomllib.loads(Path('/tmp/vop-prior-uv.lock').read_text())
+          after = tomllib.loads(Path('uv.lock').read_text())
+          old_packages = before.pop('package')
+          new_packages = after.pop('package')
+          assert before == after, 'Unexpected lock metadata change'
+          assert [p for p in old_packages if p['name'] != 'pillow'] == [p for p in new_packages if p['name'] != 'pillow'], 'An unrelated dependency changed'
+          pillow = [p for p in new_packages if p['name'] == 'pillow']
+          assert len(pillow) == 1 and pillow[0]['version'] == '13.0.0'
+          print(json.dumps({'only_changed_package': 'pillow', 'candidate': '13.0.0', 'other_packages_unchanged': True}, sort_keys=True))
+          PY
+          git diff --stat -- uv.lock
+      - name: Test against the unchanged scientific reference artefacts
+        run: |
+          uv sync --locked --extra dev
+          uv run --no-sync python -m pytest tests
+          uv export --locked --no-dev --no-emit-project --format requirements-txt --output-file /tmp/vop-candidate-requirements.txt
+          uv run --no-sync pip-audit -r /tmp/vop-candidate-requirements.txt --format=json --output=/tmp/vop-candidate-audit.json
+          git diff --exit-code -- contracts
+      - name: Store the qualified lock blob for review without changing any branch
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        with:
+          script: |
+            const fs = require('fs');
+            const crypto = require('crypto');
+            const bytes = fs.readFileSync('uv.lock');
+            const result = await github.rest.git.createBlob({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              content: bytes.toString('base64'),
+              encoding: 'base64'
+            });
+            console.log(JSON.stringify({
+              qualified_lock_blob_sha: result.data.sha,
+              lock_sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
+              source_head: context.payload.pull_request.head.sha,
+              branch_modified: false,
+              reference_artefacts_modified: false
+            }));
