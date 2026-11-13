@@ -33,7 +33,7 @@ dependencies = [
     "pandera>=0.32.1,<1",
     "pydantic>=2.13.4,<3",
     "PyYAML>=6.0.3,<7",
-    "pyarrow>=25.0.0,<26",
+    "pyarrow>=25.0.0,<27",
     "polars>=1.42.1,<2",
     "psutil>=7.2.2,<8",
 ]
