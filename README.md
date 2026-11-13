@@ -1,240 +1,128 @@
-# Health Economic Analysis: Distributional Cost-Effectiveness Framework
+# Value of Perspective — New Zealand Proof of Concept
 
 [![Tests](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![Documentation](https://github.com/edithatogo/vop_poc_nz/actions/workflows/docs.yml/badge.svg)](https://edithatogo.github.io/vop_poc_nz/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
+**This repository is a proof of concept and research application, not a second general-purpose health-economic library.** It demonstrates perspective-dependent decisions, distributional cost-effectiveness and uncertainty using New Zealand scenarios.
 
-## Overview
+Reusable decision, perspective, equity and value-of-information capabilities belong in [Voiage](https://github.com/edithatogo/voiage) after independent verification and qualified consumer migration. NZ datasets, clinical/institutional assumptions, case studies and interpretation remain here. The current code has not all been migrated; this ownership statement is not a claim of native execution, numerical certification or production readiness.
 
-This implementation addresses the complete spectrum of health economic evaluation with a focus on equity considerations:
+See the [provider-promotion plan](conductor/vop-provider-promotion-20261108.md), [Conductor tracks](conductor/tracks.md) and [canonical manifest](conductor/manifest.json). Historical method IDs, outputs and acceptance limitations remain versioned.
 
-1. **Cost-Effectiveness Analysis (CEA)** - Validated Markov cohort models with proper discounting
-2. **Distributional CEA (DCEA)** - Equity analysis using Gini and Atkinson indices
-3. **Value of Information (VOI)** - EVPI/EVPPI for research prioritization
-4. **Global Sensitivity Analysis** - Sobol variance-based methods
-5. **Budget Impact Analysis (BIA)** - Multi-year projections with discounting
-6. **Comprehensive Reporting** - CHEERS 2022 compliant outputs
+## Scope and ecosystem
+
+The proof of concept includes CEA/Markov examples, distributional analysis, VOI, sensitivity analysis, budget-impact projections and reporting. Each capability retains its own scientific and implementation acceptance requirements; a catalogue entry or passing smoke test does not establish validity for every use.
+
+| Concern | Owner and boundary |
+|---|---|
+| Generic decision, perspective, equity and VOI methods | Voiage; promote one verified provider slice at a time. |
+| NZ evidence, scenarios and application interpretation | This proof of concept. |
+| Innovation adoption, competition, substitution and hype effects | Innovate, when a qualified application use requires it. |
+| Generic simulation time/state/resources/RNG/replay | Kairos; no duplicate simulation engine. |
+| General game algorithms | Paignia, the working name of the capability incubated in `new-drug-reimbursement-game`; extraction/publication pending. |
+
+These boundaries introduce no automatic new dependencies. A prescription count, adoption trajectory or strategic payoff requires an explicit valuation/perspective mapping before VOI analysis. Joint uncertainty and draw identity must be preserved.
 
 ## Architecture
 
 ![Architecture](docs/diagrams/architecture.mmd)
 
-The codebase is modular with clear separation between:
-- **Core Analysis**: CEA, DCEA, VOI, DSA modules
-- **Pipeline**: Orchestration and workflow management
-- **Visualization**: Publication-quality plotting
-- **Reporting**: Automated report generation
+The existing code separates analysis, pipeline orchestration, visualisation and reporting. The diagrams and examples describe the current prototype; the promotion plan defines the transition to provider-backed computation. See [architecture diagrams](docs/diagrams/) and the [tutorial](docs/TUTORIAL.md).
 
-See [architecture diagrams](docs/diagrams/) for detailed module dependencies and data flow.
+## Existing demonstration capabilities
 
-## Key Features
+- CEA and subgroup/perspective comparisons.
+- Distributional analysis using Gini/Atkinson indices and equity weights.
+- EVPI/EVPPI, population-level information value and acceptability outputs.
+- Sobol-style and deterministic sensitivity analyses.
+- Multi-year budget-impact examples.
+- Tables, plots and CHEERS-oriented reporting templates.
 
-### ✅ Distributional Cost-Effectiveness Analysis
-- **Equity Metrics**: Gini coefficient, Atkinson index (multiple ε values)
-- **Subgroup Analysis**: Automatic recursive CEA for population segments
-- **Equity Weighting**: Customizable weights for disadvantaged groups
-- **Visualization**: Lorenz curves, equity impact planes, inequality sensitivity
+These descriptions are not blanket validation or CHEERS-compliance claims. Existing custom implementations are candidates for independent verification, replacement by qualified providers or explicitly labelled reference use—not a reason to maintain duplicate generic production methods.
 
-### ✅ Value of Information
-- **EVPI**: Expected Value of Perfect Information using two-level Monte Carlo
-- **EVPPI**: Parameter-specific information value
-- **Population EVPI**: Time-discounted research value
-- **CEAC/CEAF**: Cost-effectiveness acceptability curves and frontiers
-
-### ✅ Sobol Sensitivity Analysis  
-- **Global SA**: Variance-based indices using Saltelli sampling
-- **First-order indices**: Main parameter effects
-- **Total-order indices**: Including interactions
-- **No external dependencies**: Custom implementation (no SALib required)
-
-### ✅ Enhanced Visualizations
-- **Acceptability Frontier**: Optimal intervention at each WTP threshold
-- **Population EVPI Timeline**: Research value decay over time
-- **Threshold Waterfall**: Decision-critical parameter ranges
-- **Multi-Interventionradar**: Trade-off visualization across dimensions
-
-### ✅ Budget Impact Analysis
-- **Multi-year projections** (1-10 years)
-- **Discounted costs** (customizable discount rate)
-- **Implementation costs** (one-time year 1 expenses)
-- **Net budget impact** (gross costs - offsets)
-
-## Quick Start
-
-### Installation
+## Quick start
 
 ```bash
-# Clone repository
-git clone <repository-url>
+git clone https://github.com/edithatogo/vop_poc_nz.git
 cd vop_poc_nz
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies and package
+source venv/bin/activate
 pip install -e .
-```
 
-### Basic Usage
-
-```bash
-# Run full analysis pipeline
 snakemake -c1
-
-# Run with specific version
 snakemake -c1 --config version=v2.0
-
-# Run tests
 pytest
-
-# Run linting
 ruff check src/ tests/
-ruff format src/ tests/
+ruff format --check src/ tests/
 ```
 
-### Python API
+Use the interpreter/dependency versions accepted by the current repository manifests and Conductor evidence. The commands above describe the prototype workflow, not an independently verified current installation receipt.
+
+### Python example
 
 ```python
 from vop_poc_nz import SobolAnalyzer, run_cea, run_dcea
-
-# Load parameters
 import yaml
+
 with open("src/parameters.yaml") as f:
     params = yaml.safe_load(f)
 
-# Run CEA with subgroups
 results = run_cea(
     params["hpv_vaccination"],
     perspective="societal",
-    productivity_cost_method="human_capital"
+    productivity_cost_method="human_capital",
 )
 
-# Perform DCEA if subgroups exist
 if results["subgroup_results"]:
     equity = run_dcea(
         results["subgroup_results"],
         epsilon=0.5,
-        equity_weights={"Low_SES": 1.5, "High_SES": 1.0}
+        equity_weights={"Low_SES": 1.5, "High_SES": 1.0},
     )
-    print(f"Atkinson Index: {equity['atkinson_index']:.3f}")
-    print(f"Gini Coefficient: {equity['gini_coefficient']:.3f}")
-
-# Run Sobol analysis
-def model_wrapper(params):
-    cea_results = run_cea(params, perspective="health_system")
-    return cea_results["incremental_nmb"]
-
-sobol = SobolAnalyzer(model_wrapper, param_distributions, n_samples=500)
-indices = sobol.calculate_sobol_indices()
-print(indices['indices'])
+    print(equity)
 ```
 
-## Directory Structure
+This is a retained prototype API example. Provider migrations must version any changed behaviour and test a clean installed consumer rather than silently redirecting scientific methods.
 
-```
-vop_poc_nz/
-├── src/                          # Source code
-│   ├── pipeline/                 # Analysis orchestration
-│   │   ├── analysis.py           # Core pipeline logic
-│   │   └── reporting.py          # Report generation
-│   ├── cea_model_core.py         # CEA Markov model
-│   ├── dcea_equity_analysis.py   # Distributional CEA
-│   ├── value_of_information.py   # VOI analysis
-│   ├── sobol_analysis.py         # Sobol sensitivity
-│   ├── dsa_analysis.py           # Deterministic SA
-│   ├── bia_model.py              # Budget impact
-│   ├── visualizations.py         # Core plotting
-│   ├── visualizations_extended.py # Additional plots
-│   ├── parameters.yaml           # Model parameters
-│   └── main.py                   # CLI entry point
-├── tests/                        # Unit tests (pytest)
-├── docs/                         # Documentation
-│   ├── diagrams/                 # Mermaid diagrams (.mmd)
-│   └── TUTORIAL.md               # Step-by-step guide
-├── output/                       # Generated outputs
-├── Snakefile                     # Workflow definition
-├── requirements.txt              # Dependencies
-└── README.md                     # This file
-```
+## Repository and outputs
 
-## Key Outputs
+Historical examples live under `src/`, including `cea_model_core.py`, `dcea_equity_analysis.py`, `value_of_information.py`, `sobol_analysis.py`, `dsa_analysis.py`, `bia_model.py`, pipeline and visualisation modules. Resolve the current canonical package paths before implementation; directory examples are not a substitute for source inspection.
 
-All outputs are saved to `output/latest/` (symlinked to `output/{version}/`):
+Tests are under `tests/`; documentation and diagrams are under `docs/`; the workflow is in `Snakefile`. Outputs are versioned under `output/`, with the existing `output/latest/` convention.
 
-### Tables (CSV)
-- `comparative_icer_table.csv` - Health System vs Societal perspectives
-- `parameters_assumptions_sources_table.csv` - Full transparency documentation
-- `dcea_equity_results.csv` - Subgroup analysis with equity metrics
-- `sobol_indices.csv` - Global sensitivity analysis results
+Typical outputs include perspective-comparison ICER tables, parameter/source tables, distributional results, sensitivity indices, acceptability curves/frontiers, population EVPI, equity plots and report/checklist drafts. Their scientific interpretation depends on the input evidence, selected method and recorded acceptance status.
 
-### Figures (PNG/PDF/SVG)
-- Cost-effectiveness planes
-- Tornado diagrams (1-way, 2-way, 3-way DSA)
-- CEAC/CEAF curves
-- Lorenz curves and equity impact planes
-- Sobol sensitivity bar charts
-- Acceptability frontiers
-- Population EVPI timelines
-- Multi-intervention radar plots
-
-### Reports (Markdown)
-- `combined_report.md` - Comprehensive analysis summary
-- `policy_brief.md` - Executive-level summary
-- `cheers_compliance.md` - CHEERS 2022 checklist
-
-## Methodological References
-
-- **CEA**: Drummond et al. (2015) - Methods for the Economic Evaluation of Health Care Programmes
-- **DCEA**: Cookson et al. (2017) - Distributional Cost-Effectiveness Analysis
-- **Atkinson Index**: Atkinson (1970) - On the Measurement of Inequality
-- **VOI**: Claxton et al. (2001) - The Value of Information
-- **Sobol Analysis**: Saltelli et al. (2010) - Variance-Based Sensitivity Analysis
-- **CHEERS**: Husereau et al. (2022) - CHEERS 2022 Reporting Guidelines
-
-## Testing
+## Testing and qualification
 
 ```bash
-# Run all tests
 pytest
-
-# Run with coverage
 pytest --cov=src --cov-report=html
-
-# Run specific test file
 pytest tests/test_dcea_equity_smoke.py
-
-# Run with verbose output
-pytest -v
 ```
 
-Test coverage: **64/64 tests passing** (100% pass rate)
+Use exact-commit CI and Conductor receipts for current test results. The former README's historical `64/64` claim is not a current-suite certification. Provider promotion additionally needs independent numerical fixtures, invalid-input tests, actual native dispatch, dependency/artefact identity and installed-consumer evidence. Existing scientific, hosted, parity, release and external-publication gates remain separate.
 
-## CI/CD
+## Methodological references
 
-GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push:
-1. Linting (`ruff check`)
-2. Formatting (`ruff format --check`)
-3. Unit tests (`pytest`)
-4. Coverage reporting
+- Drummond et al. (2015), *Methods for the Economic Evaluation of Health Care Programmes*.
+- Cookson et al. (2017), distributional cost-effectiveness analysis.
+- Atkinson (1970), measurement of inequality.
+- Claxton et al. (2001), value of information.
+- Saltelli et al. (2010), variance-based sensitivity analysis.
+- Husereau et al. (2022), CHEERS reporting guidelines.
 
-## Contributing
+Refer to method-specific source and validation records for exact implementations and their limitations.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Contributing and licence
 
-## License
+Open changes through a feature branch and pull request. Follow the current Conductor manifest, method ownership and provider-promotion plan. Do not add a duplicate generic solver or call planned functionality accepted merely because its documentation exists.
 
-Apache 2.0 License - see LICENSE file for details
+Apache 2.0; see [LICENSE](LICENSE).
 
 ## Citation
 
-If you use this code in your research, please cite:
+Retained citation for the historical proof-of-concept release; use the appropriate version when reproducing a specific analysis:
 
 ```bibtex
 @software{mordaunt_vop_poc_nz_2026,
@@ -247,12 +135,4 @@ If you use this code in your research, please cite:
 }
 ```
 
-## Contact
-
-For questions or issues, please open a GitHub issue.
-
-## Acknowledgments
-
-- Inspired by ISPOR guidelines for health economic evaluation
-- Developed as an open research-software project for Aotearoa New Zealand health-economic analysis
-- Thanks to reviewers whose feedback improved this implementation
+For questions or issues, open a GitHub issue. Developed as an open research proof of concept for Aotearoa New Zealand health-economic analysis.
