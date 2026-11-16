@@ -12,22 +12,27 @@ jobs:
   latex:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Compile with TeX Live and biber
-        uses: xu-cheng/latex-action@v4
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4
         with:
           root_file: manuscript/jss_submission.tex
           working_directory: manuscript
           latexmk_use_xelatex: true
           args: -interaction=nonstopmode -file-line-error
       - name: Inspect PDF metadata and retain artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vop-poc-nz-manuscript
           path: manuscript/jss_submission.pdf
           if-no-files-found: error
       - name: Checkout pinned Sourceright tool (CI-only)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: edithatogo/sourceright
           ref: dde39b3bb334f79f12e395a5317b21e036336bdd
@@ -37,7 +42,7 @@ jobs:
         working-directory: .ci-tools/sourceright
         run: ./scripts/verify-arxiv-package.ps1
       - name: Checkout pinned AuthenText tool (CI-only)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: edithatogo/authentext
           ref: 7f70dad5b6deab1af92faf037ef2638e7f3aea05
