@@ -291,3 +291,8 @@ For questions or issues, please open a GitHub issue.
 - Inspired by ISPOR guidelines for health economic evaluation
 - Developed as an open research-software project for Aotearoa New Zealand health-economic analysis
 - Thanks to reviewers whose feedback improved this implementation
+
+## Security
+
+Follow the [security policy](https://github.com/edithatogo/.github/blob/main/SECURITY.md) to report vulnerabilities
+privately. Keep credentials and sensitive data out of public issues and pull requests.
