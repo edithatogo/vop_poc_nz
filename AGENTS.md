@@ -1,5 +1,22 @@
 # Agent Handover Documentation
 
+## Current application boundary — 22 November 2026
+
+This repository is a demonstration and research application for both value of
+perspective and value of heterogeneity. It owns case studies, evidence,
+assumptions, interpretation and tutorial material. Voiage owns the reusable
+operational VOP/VOH/VOI methods, public contracts, backends and bindings.
+Contribute generic improvements upstream and adopt exact supported versions
+through the existing C09 plan, with independent application checks.
+
+Use Paignia for generic game representations/solvers and UOGTO for game
+semantics only when an application actually contains strategic interaction.
+Keep application payoffs and subgroup/perspective choices here; avoid reverse
+dependencies into this application from its providers. Read the current
+[product](conductor/product.md) and [C09 plan](conductor/tracks/C09_cross_repo_boundaries_and_adapters.md).
+Historical test counts and completion statements below are handover context,
+not current execution or provider-acceptance evidence.
+
 ## Project: Health Economic Analysis - NZMJ Submission
 
 ### Overview
