@@ -1,14 +1,47 @@
-# Health Economic Analysis: Distributional Cost-Effectiveness Framework
+# Value of Perspective and Value of Heterogeneity — NZ Demonstration
 
 [![Tests](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml/badge.svg)](https://github.com/edithatogo/vop_poc_nz/actions/workflows/ci.yml)
 [![Documentation](https://github.com/edithatogo/vop_poc_nz/actions/workflows/docs.yml/badge.svg)](https://edithatogo.github.io/vop_poc_nz/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-Comprehensive health economic evaluation framework implementing **Distributional Cost-Effectiveness Analysis (DCEA)** with rigorous value of information methods and global sensitivity analysis.
+`vop_poc_nz` is a demonstration and research application for **value of
+perspective (VOP)** and **value of heterogeneity (VOH)** in health-economic
+decisions, using Aotearoa New Zealand case studies and explicit illustrative
+examples. It owns case construction, evidence, interpretation and teaching.
+Reusable operational methods are developed and maintained in
+[Voiage](https://github.com/edithatogo/voiage).
+
+## Purpose and upstream responsibilities
+
+Perspective asks how the chosen accounting or evaluative viewpoint changes a
+decision and its consequences. Heterogeneity asks how decisions and their value
+change when prespecified population groups can receive different strategies.
+Neither question requires strategic interaction between players; add a game
+model only when the case actually calls for one.
+
+| Responsibility | Owner and integration rule |
+| --- | --- |
+| Application cases, data/provenance, assumptions, valuation choices, figures and interpretation | This repository. Keep the perspective, subgroup, strategy and uncertainty-draw identities explicit. |
+| Reusable perspective, heterogeneity and information-value calculations | Voiage public, versioned methods and contracts. Contribute generic improvements upstream and consume accepted versions here. |
+| Generic game representations and supported solvers, when a case needs them | [Paignia](https://github.com/edithatogo/paignia); [UOGTO](https://github.com/edithatogo/UOGTO) owns canonical game semantics. A Shapley-labelled proposal or an application formula is not by itself a qualified generic implementation. |
+| Simulation execution, when required | Optional [Kairos](https://github.com/edithatogo/kairos) integration; not a prerequisite for ordinary VOP/VOH examples. |
+
+Current Voiage source references are
+[`value_of_perspective`](https://github.com/edithatogo/voiage/blob/11a2bc8685f71c2ff351def742d439c28373cd46/voiage/methods/perspective.py)
+and [`value_of_heterogeneity`](https://github.com/edithatogo/voiage/blob/11a2bc8685f71c2ff351def742d439c28373cd46/voiage/methods/heterogeneity.py).
+These identify provider APIs; they do not certify that this application already
+uses those exact installed artifacts. The existing local calculations remain
+application/reference surfaces until a pinned, independently checked migration
+is recorded under [C09](conductor/tracks/C09_cross_repo_boundaries_and_adapters.md).
+The [product boundary](conductor/product.md) and [canonical Conductor registry](conductor/manifest.json)
+govern this work; the clarification changes no implementation or qualification
+status.
 
 ## Overview
 
-This implementation addresses the complete spectrum of health economic evaluation with a focus on equity considerations:
+The application combines the following analysis surfaces to demonstrate
+perspective and subgroup questions. Their individual methods and current
+evidence must be inspected before reusing results:
 
 1. **Cost-Effectiveness Analysis (CEA)** - Validated Markov cohort models with proper discounting
 2. **Distributional CEA (DCEA)** - Equity analysis using Gini and Atkinson indices
@@ -210,7 +243,9 @@ pytest tests/test_dcea_equity_smoke.py
 pytest -v
 ```
 
-Test coverage: **64/64 tests passing** (100% pass rate)
+The earlier README recorded 64 passing tests. That is a historical count, not
+a result for the current source or provider versions. Record the commands,
+revision and observed results for each change.
 
 ## CI/CD
 

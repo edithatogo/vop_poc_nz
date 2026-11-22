@@ -1,6 +1,30 @@
 # Contributing to vop_poc_nz
 
-Thank you for your interest in contributing to the Distributional Cost-Effectiveness Analysis Framework! This document provides guidelines and instructions for contributing.
+This repository demonstrates value of perspective and value of heterogeneity
+through health-economic applications. Read the [product boundary](conductor/product.md)
+and existing [C09 adapter plan](conductor/tracks/C09_cross_repo_boundaries_and_adapters.md)
+before changing reusable methods or dependencies.
+
+## Application and reusable-method ownership
+
+Keep cases, data, assumptions, perspective/subgroup definitions, figures and
+interpretation here. Voiage owns reusable VOP, VOH and VOI methods, their public
+contracts, backends and bindings. Contribute generic improvements there and
+adopt an exact supported version through an explicit consumer adapter; do not
+build a parallel operational method library inside this demonstration.
+
+For each adoption, preserve strategy, draw, perspective and subgroup pairing,
+units, weights and the decision rule. Compare a small independent expected
+result with the actual installed provider before migrating an application
+output. Keep earlier examples and explain versioned differences; do not relabel
+an existing result as produced by Voiage without executing the provider.
+
+If a new case introduces strategic interaction, record the shared intake key
+in [UOGTO](https://github.com/edithatogo/UOGTO/blob/main/docs/contracts/downstream-game-intake.md)
+and [Paignia](https://github.com/edithatogo/paignia/blob/main/docs/integrations/downstream-game-intake.md).
+Paignia owns generic game solving; Voiage continues to own information-value
+arithmetic. Domain payoffs and welfare assumptions remain application-owned.
+Ordinary perspective or subgroup comparisons do not acquire a game dependency.
 
 ## Code of Conduct
 
